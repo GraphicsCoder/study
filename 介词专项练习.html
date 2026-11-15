@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>英语专项训练 · 介词 Prepositions（四年级）</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#ffffff; --ink:#1f2430; --muted:#6b7280;
+    --line:#e5e7eb; --brand:#7a4de0; --brand-soft:#f0ebfd;
+    --ok:#15803d; --ok-soft:#e8f6ed; --no:#c2410c; --no-soft:#fdeee6;
+    --warn:#92400e; --warn-soft:#fef6e7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.65;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 16px 80px}
+  header.top{background:linear-gradient(135deg,#7a4de0,#9b7bf0);color:#fff;
+    border-radius:16px;padding:22px 24px;margin-bottom:18px}
+  header.top h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  header.top p{margin:0;opacity:.92;font-size:14px}
+  header.top a{color:#fff;text-decoration:underline}
+  .score-bar{display:flex;align-items:center;gap:12px;margin-top:14px;
+    background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px}
+  .bar{flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:#fff;transition:width .35s}
+
+  details.guide{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.guide summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px}
+  details.guide summary::marker{color:var(--brand)}
+  details.guide h4{margin:14px 0 6px;font-size:15px;color:#4c2b9c}
+  table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 14px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:#f3f5f9;font-weight:600}
+  td b{color:var(--brand)}
+  .pitfall{background:var(--warn-soft);border-left:4px solid #e9a23b;border-radius:8px;padding:10px 14px;margin:8px 0 14px;font-size:14px}
+  .chant{background:var(--brand-soft);border-radius:10px;padding:10px 14px;margin:8px 0 14px;font-size:15px;line-height:2}
+
+  nav.jump{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  nav.jump a{font-size:13px;text-decoration:none;color:var(--brand);background:#fff;
+    border:1px solid var(--line);border-radius:99px;padding:6px 12px}
+  nav.jump a:hover{background:var(--brand-soft)}
+
+  .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .tools .pill{font-size:13px;color:var(--muted);margin-left:auto}
+  details.mistakes{background:var(--card);border:1px solid #f0b48e;border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.mistakes summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px;color:var(--no)}
+  ol.mlist{margin:0 0 14px;padding-left:22px;font-size:14.5px}
+  ol.mlist li{margin:7px 0}
+  ol.mlist a{color:var(--brand);text-decoration:none}
+  ol.mlist a:hover{text-decoration:underline}
+  ol.mlist .where{color:var(--muted);font-size:12.5px;margin-left:6px}
+  .empty{color:var(--muted);font-size:14px;padding:4px 0 14px}
+
+  section.set{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px 20px;margin-bottom:20px;scroll-margin-top:12px}
+  section.set h2{margin:0 0 4px;font-size:19px}
+  h3.part{font-size:15px;margin:18px 0 2px;padding:6px 12px;border-radius:8px;background:var(--brand-soft);color:#4c2b9c}
+  .tip{font-size:13.5px;color:var(--muted);margin:0 0 14px}
+  .setbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .setbar .sc{font-size:13px;color:var(--muted);margin-left:auto}
+
+  .item{border-top:1px dashed var(--line);padding:13px 0;border-left:3px solid transparent;scroll-margin-top:16px;transition:background .3s}
+  .item.wrong{border-left-color:var(--no);background:#fff8f4;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.fixed{border-left-color:#86d7a5;background:#f7fcf9;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flagged{border-left-color:#e9a23b;background:var(--warn-soft);padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flash{background:#fff3cd}
+  .q{font-size:16px;margin:0 0 9px}
+  .q .n{display:inline-block;min-width:26px;color:var(--muted);font-size:14px}
+  .cn{color:var(--muted);font-size:14px;margin-left:6px}
+  .bad-word{color:var(--no);text-decoration:underline wavy var(--no);font-weight:600}
+  .badge{font-size:12px;border-radius:99px;padding:2px 9px;margin-left:8px;vertical-align:2px;white-space:nowrap}
+  .badge.wrong{background:var(--no-soft);color:var(--no);border:1px solid #f0b48e}
+  .badge.fixed{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+  .badge.ok{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:26px}
+  .opts{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px 26px}
+  button.opt{font-family:inherit;font-size:15px;padding:7px 16px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;min-width:74px}
+  button.opt:hover{background:var(--brand-soft)}
+  button.opt.pick{border-color:var(--brand);background:var(--brand-soft);font-weight:600}
+  button.opt.good{border-color:#86d7a5;background:var(--ok-soft);color:var(--ok);font-weight:600}
+  button.opt.bad{border-color:#f0b48e;background:var(--no-soft);color:var(--no)}
+  input.blank{width:120px;padding:4px 6px;font-size:15px;font-family:inherit;text-align:center;
+    border:0;border-bottom:2px solid #c9ced8;background:#fcfcfd;margin:0 3px}
+  input.blank:focus{outline:none;border-bottom-color:var(--brand);background:#fff}
+  input.blank.good{border-bottom-color:#2f9e5f;background:var(--ok-soft);color:var(--ok)}
+  input.blank.bad{border-bottom-color:#e07a3f;background:var(--no-soft);color:var(--no)}
+  .tplrow{margin-left:26px;font-size:16px;line-height:2.4;margin-bottom:6px}
+  button{font-family:inherit;font-size:13.5px;padding:8px 13px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink)}
+  button:hover{background:#f3f5f9}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.primary:hover{filter:brightness(1.07)}
+  button.flag{padding:7px 10px;line-height:1}
+  button.flag.on{background:var(--warn-soft);border-color:#e9a23b}
+  .fb{margin:8px 0 0 26px;font-size:14px;display:none}
+  .fb.show{display:block}
+  .fb .good{color:var(--ok)} .fb .bad{color:var(--no)} .fb .note{color:var(--warn)}
+  .reveal{display:none;margin:8px 0 0 26px;font-size:15px;background:var(--ok-soft);
+    border-left:4px solid #86d7a5;border-radius:8px;padding:8px 12px}
+  .reveal.show{display:block}
+  .reveal b{color:var(--ok)}
+  .why{display:block;color:#4a5568;font-size:13.5px;margin-top:3px}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:10px}
+
+  body.only-wrong .item:not(.wrong):not(.flagged){display:none}
+  body.only-wrong section.set.nowrong{display:none}
+  body.only-wrong details.guide{display:none}
+
+  /* ---------- 手机 / 小屏适配 ---------- */
+  @media (max-width:640px){
+    .wrap{padding:12px 10px 60px}
+    header.top{padding:16px 14px;border-radius:12px;margin-bottom:14px}
+    header.top h1{font-size:20px}
+    header.top p{font-size:13px;line-height:1.8}
+    .score-bar{font-size:12.5px;padding:7px 10px;gap:8px}
+
+    details.guide,details.mistakes{padding:2px 12px;border-radius:12px}
+    details.guide summary,details.mistakes summary{font-size:15px}
+    details.guide h4{font-size:14.5px}
+    .pitfall{font-size:13px;padding:10px 11px}
+    .chant{font-size:14px;line-height:1.9;padding:10px 11px}
+    table{font-size:12.5px}
+    th,td{padding:5px 6px}
+
+    nav.jump{gap:6px}
+    nav.jump a{font-size:12.5px;padding:5px 10px}
+    .tools{gap:6px}
+    .tools .pill{margin-left:0;width:100%;font-size:12.5px}
+
+    section.set{padding:14px 12px;border-radius:12px;margin-bottom:14px}
+    section.set h2{font-size:17px}
+    h3.part{font-size:14px;padding:6px 10px}
+    .tip{font-size:13px}
+    .setbar .sc{margin-left:0;width:100%}
+
+    .q{font-size:15px}
+    .q .n{min-width:20px}
+    .cn{font-size:13px}
+    .opts,.row{margin-left:6px;gap:6px}
+    .tplrow{margin-left:6px;font-size:15px;line-height:2.2}
+    .fb,.reveal{margin-left:6px}
+    .reveal{padding:8px 10px;font-size:14px}
+    .fb{font-size:13.5px}
+    .why{font-size:13px}
+
+    /* 选项长的自己占一整行，短的仍并排；文字可换行 */
+    button.opt{font-size:14px;padding:9px 12px;min-width:60px;max-width:100%;white-space:normal;line-height:1.5}
+    button{font-size:13px;padding:9px 11px}
+    button.flag{padding:9px 10px}
+    /* 字号必须 ≥16px，否则 iOS 点输入框会自动放大页面 */
+    input.blank{font-size:16px;width:100px;max-width:42vw}
+  }
+
+  @media print{
+    body{background:#fff}
+    nav.jump,.tools,.setbar button,.row button,header.top .score-bar,details.mistakes{display:none}
+    .reveal{display:block !important}
+    section.set{break-inside:avoid;border:0;padding:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>介词专项训练 Prepositions</h1>
+  <p>上海四年级 · 6 个专项 · 每节「A 选一选 → B 填一填 → C 改一改」三步走 · 做错自动进错题本<br>
+  配套练习：<a href="划线部分提问专项练习.html">对划线部分提问</a> · <a href="递等式计算专项练习.html">数学 · 递等式计算</a></p>
+  <div class="score-bar">
+    <span>总进度</span><span class="bar"><i id="totalBar"></i></span>
+    <span id="totalTxt">0 / 0 题答对</span>
+  </div>
+</header>
+
+<details class="guide" open>
+  <summary>📘 介词速查表（先看这里）</summary>
+
+  <h4>① 地点方位</h4>
+  <table>
+    <tr><th>介词</th><th>意思</th><th>例子</th></tr>
+    <tr><td><b>in</b></td><td>在…里面</td><td>in the box / in the bag / in Shanghai</td></tr>
+    <tr><td><b>on</b></td><td>在…上面（接触）</td><td>on the desk / on the wall / on the farm</td></tr>
+    <tr><td><b>under</b></td><td>在…下面</td><td>under the chair</td></tr>
+    <tr><td><b>behind</b></td><td>在…后面</td><td>behind the door</td></tr>
+    <tr><td><b>in front of</b></td><td>在…（外部的）前面</td><td>in front of the house</td></tr>
+    <tr><td><b>next to / beside</b></td><td>在…旁边</td><td>next to the bank</td></tr>
+    <tr><td><b>near</b></td><td>在…附近</td><td>near my home</td></tr>
+    <tr><td><b>between</b></td><td>在<b>两者</b>之间</td><td>between A <b>and</b> B</td></tr>
+    <tr><td><b>above / over</b></td><td>在…上方（不接触）</td><td>over the bridge</td></tr>
+  </table>
+
+  <h4>② 时间 in / on / at —— 「大 in 小 at，日子用 on」</h4>
+  <table>
+    <tr><th>介词</th><th>用在</th><th>例子</th></tr>
+    <tr><td><b>in</b></td><td>年、月、季节、上午/下午/晚上</td><td>in 2026, in May, in spring, in the morning</td></tr>
+    <tr><td><b>on</b></td><td>星期、日期、节日当天、<b>具体某天的早上</b></td><td>on Monday, on 1st May, on Children's Day, <b>on Monday morning</b></td></tr>
+    <tr><td><b>at</b></td><td>钟点、中午、夜里、周末</td><td>at six o'clock, at noon, <b>at night</b>, at the weekend</td></tr>
+  </table>
+
+  <h4>③ 交通方式</h4>
+  <div class="chant">
+    <b>by</b> + 交通工具（中间什么都不加）：by bus / by bike / by car / by plane / by underground<br>
+    <b>on foot</b> = 走路（唯一一个用 on 的！不能说 <s>by foot</s>）<br>
+    具体某一辆车 → <b>in</b> a car / <b>on</b> a bus（小车用 in，大车用 on）
+  </div>
+
+  <h4>④ 必背固定搭配</h4>
+  <table>
+    <tr><td>look <b>at</b> 看</td><td>listen <b>to</b> 听</td><td>wait <b>for</b> 等</td></tr>
+    <tr><td>good <b>at</b> 擅长</td><td>interested <b>in</b> 对…感兴趣</td><td>afraid <b>of</b> 害怕</td></tr>
+    <tr><td>late <b>for</b> 迟到</td><td>full <b>of</b> 装满</td><td>look <b>after</b> 照顾</td></tr>
+    <tr><td>talk <b>to</b> 和…说</td><td>thanks <b>for</b> 感谢</td><td>come <b>from</b> 来自</td></tr>
+    <tr><td>play <b>with</b> 玩</td><td>a photo <b>of</b> …的照片</td><td>look <b>like</b> 看起来像</td></tr>
+  </table>
+
+  <div class="pitfall">
+    <b>五大易错点</b><br>
+    ① <s>by foot</s> → <b>on foot</b>；<br>
+    ② <s>in Monday</s> → <b>on</b> Monday；<s>on the morning</s> → <b>in</b> the morning；但 <b>on</b> Monday morning（有具体日子就用 on）；<br>
+    ③ <s>at night</s> 是对的，<s>in night</s> 是错的；<br>
+    ④ between 后面是<b>两个</b>东西，中间用 <b>and</b>；<br>
+    ⑤ 介词后面跟动词要加 <b>-ing</b>：good at <b>swimming</b>，interested in <b>drawing</b>。
+  </div>
+</details>
+
+<nav class="jump" id="jump"></nav>
+
+<div class="tools">
+  <button id="btnOnlyWrong">只看错题 🔍</button>
+  <button id="btnRedo">重做所有错题</button>
+  <button id="btnClearMarks">清除错题记录</button>
+  <span class="pill" id="markStat"></span>
+</div>
+
+<details class="mistakes" id="mbox">
+  <summary id="msum">📕 错题本（0）</summary>
+  <div id="mlist"></div>
+</details>
+
+<div id="app"></div>
+<footer>做错的题自动标红 ✗ 进错题本，订正对了变 ✓ 已订正 · 🚩 手动标记要复习的题 · 记录保存在本机浏览器 · Ctrl+P 打印自动显示答案</footer>
+</div>
+
+<script>
+const DATA = [
+{
+  id:"p1", title:"专项一 · 地点方位介词",
+  tip:"in 里面 / on 上面 / under 下面 / behind 后面 / in front of 前面 / next to 旁边 / between…and… 两者之间",
+  parts:[
+  {label:"A · 选一选", type:"choice", items:[
+    {s:"The ball is ___ the box.", cn:"（球在盒子里面）", opts:["in","on","under"], a:0, why:"在…里面用 in。"},
+    {s:"There is a picture ___ the wall.", cn:"（画挂在墙上）", opts:["in","on","over"], a:1, why:"贴在表面、有接触，用 on。墙上的画是 on the wall。"},
+    {s:"The cat is sleeping ___ the chair.", cn:"（猫在椅子下面）", opts:["on","under","near"], a:1, why:"在…下面用 under。"},
+    {s:"Kitty sits ___ Alice and Ben.", cn:"（在两人中间）", opts:["among","between","behind"], a:1, why:"两者之间用 between…and…。"},
+    {s:"There is a tall tree ___ my house.", cn:"（树在我家前面）", opts:["in front of","in the front of","before"], a:0, why:"在外部的前面用 in front of；before 一般指时间上的「在…之前」。"},
+    {s:"My school is ___ the park.", cn:"（学校在公园旁边）", opts:["next to","between","under"], a:0, why:"在…旁边用 next to，也可以说 beside。"}
+  ]},
+  {label:"B · 填一填（每空一个介词）", type:"blank", items:[
+    {tpl:"The books are ___ the schoolbag.", cn:"（在书包里）", a:[["in"]], why:"in = 在…里面"},
+    {tpl:"My pencil is ___ the floor.", cn:"（在地板上）", a:[["on"]], why:"on = 接触表面"},
+    {tpl:"The boy is hiding ___ the door.", cn:"（躲在门后）", a:[["behind"]], why:"behind = 在…后面"},
+    {tpl:"There are some birds ___ the tree.", cn:"（鸟飞到树上停着）", a:[["in"]], why:"鸟、猴子等外来的东西「在树上」用 in the tree；树本身长出来的果子、叶子才用 on the tree。"},
+    {tpl:"There are many apples ___ the tree.", cn:"（苹果长在树上）", a:[["on"]], why:"树自己长的东西用 on the tree。和上一题对比记。"},
+    {tpl:"My home is ___ the supermarket.", cn:"（在超市附近）", a:[["near"]], why:"near = 在…附近"},
+    {tpl:"The plane is flying ___ the clouds.", cn:"（在云层上方，不接触）", a:[["above","over"]], why:"不接触的上方用 above 或 over。"},
+    {tpl:"The bank is ___ the school ___ the hospital.", cn:"（在学校和医院之间）", a:[["between"],["and"]], why:"between A and B，两个词都别漏。"}
+  ]},
+  {label:"C · 改一改（写出正确的介词）", type:"fix", items:[
+    {s:"The cat is 【in】 the table.", cn:"（猫在桌子下面）", a:["under"], why:"桌子下面 → under the table。"},
+    {s:"There is a clock 【in】 the wall.", cn:"（钟挂在墙上）", a:["on"], why:"墙上用 on the wall。"},
+    {s:"Tom sits 【between】 Jim.", cn:"（坐在 Jim 旁边）", a:["next to","beside","near"], why:"between 必须接两个人（between Jim and Ben）；只有一个人要用 next to / beside。"},
+    {s:"My cat is 【on】 the box. It can't get out.", cn:"（猫在盒子里，出不来）", a:["in"], why:"出不来说明在里面 → in the box。"},
+    {s:"The shop is 【on】 front of my house.", cn:"（在我家前面）", a:["in"], why:"固定搭配 in front of，没有 on front of。"}
+  ]}]
+},
+{
+  id:"p2", title:"专项二 · 时间介词 in / on / at",
+  tip:"口诀：年月季节早中晚用 in；星期日期节日用 on；几点钟、at night、at noon 用 at。",
+  parts:[
+  {label:"A · 选一选", type:"choice", items:[
+    {s:"We go to school ___ the morning.", cn:"（在早上）", opts:["in","on","at"], a:0, why:"in the morning / afternoon / evening。"},
+    {s:"My birthday is ___ 5th October.", cn:"（10月5日）", opts:["in","on","at"], a:1, why:"具体日期用 on。"},
+    {s:"I get up ___ six thirty.", cn:"（6:30）", opts:["in","on","at"], a:2, why:"钟点用 at。"},
+    {s:"It's very cold ___ winter.", cn:"（在冬天）", opts:["in","on","at"], a:0, why:"季节用 in。"},
+    {s:"The stars come out ___ night.", cn:"（在夜里）", opts:["in","on","at"], a:2, why:"at night 是固定搭配，不能说 in night。"},
+    {s:"We have a party ___ Monday morning.", cn:"（星期一早上）", opts:["in","on","at"], a:1, why:"★ 本来早上用 in，但前面有具体的某一天，就要改用 on。"}
+  ]},
+  {label:"B · 填一填（in / on / at）", type:"blank", items:[
+    {tpl:"School starts ___ eight o'clock.", cn:"", a:[["at"]], why:"钟点 → at"},
+    {tpl:"Children's Day is ___ 1st June.", cn:"", a:[["on"]], why:"日期 → on"},
+    {tpl:"It often rains ___ summer.", cn:"", a:[["in"]], why:"季节 → in"},
+    {tpl:"I do my homework ___ the evening.", cn:"", a:[["in"]], why:"in the evening"},
+    {tpl:"We don't go to school ___ Sunday.", cn:"", a:[["on"]], why:"星期 → on"},
+    {tpl:"My father comes home ___ half past six.", cn:"", a:[["at"]], why:"钟点 → at"},
+    {tpl:"We went to Beijing ___ 2025.", cn:"", a:[["in"]], why:"年份 → in"},
+    {tpl:"She was born ___ May, and I was born ___ 3rd May.", cn:"（月份 / 具体日期）", a:[["in"],["on"]], why:"只说月份用 in May；具体到某一天用 on 3rd May。"}
+  ]},
+  {label:"C · 改一改", type:"fix", items:[
+    {s:"I watch TV 【on】 the evening.", cn:"", a:["in"], why:"一天中的时段 → in the evening。"},
+    {s:"We have a music lesson 【in】 Friday.", cn:"", a:["on"], why:"星期 → on Friday。"},
+    {s:"The shop closes 【in】 nine o'clock.", cn:"", a:["at"], why:"钟点 → at nine o'clock。"},
+    {s:"He reads books 【in】 night.", cn:"", a:["at"], why:"固定搭配 at night。"},
+    {s:"We play football 【in】 Saturday afternoon.", cn:"", a:["on"], why:"有具体的某一天，整个短语用 on：on Saturday afternoon。"}
+  ]}]
+},
+{
+  id:"p3", title:"专项三 · 交通方式与方向",
+  tip:"by + 交通工具（中间不加 the / a）；走路只能说 on foot；具体某辆车：in a car / on a bus。",
+  parts:[
+  {label:"A · 选一选", type:"choice", items:[
+    {s:"I go to school ___ bike every day.", cn:"（骑自行车）", opts:["by","on","in"], a:0, why:"by + 交通工具，中间不加任何词：by bike。"},
+    {s:"My home is near. I go there ___ foot.", cn:"（走路去）", opts:["by","on","with"], a:1, why:"唯一例外：on foot，千万别写 by foot。"},
+    {s:"Dad takes me to school ___ his car.", cn:"（坐在他的车里）", opts:["by","in","on"], a:1, why:"有 his / the / a 修饰的具体小汽车 → in his car。"},
+    {s:"There are many people ___ the bus.", cn:"（在公交车上）", opts:["in","on","at"], a:1, why:"公交车、火车、飞机这类大车用 on the bus。"},
+    {s:"We flew to Hainan ___ plane.", cn:"（坐飞机）", opts:["by","on","in"], a:0, why:"by plane。"},
+    {s:"The students get ___ the school bus at eight.", cn:"（上车）", opts:["on","in","at"], a:0, why:"上大车 get on，下车 get off。"}
+  ]},
+  {label:"B · 填一填", type:"blank", items:[
+    {tpl:"My mother goes to work ___ underground.", cn:"（坐地铁）", a:[["by"]], why:"by underground"},
+    {tpl:"It's not far. Let's go ___ foot.", cn:"", a:[["on"]], why:"on foot"},
+    {tpl:"Please get ___ the bus. We are here.", cn:"（下车）", a:[["off"]], why:"get off = 下车"},
+    {tpl:"We are going ___ the Shanghai Museum.", cn:"（去博物馆）", a:[["to"]], why:"go to + 地点"},
+    {tpl:"Peter comes ___ Australia.", cn:"（来自澳大利亚）", a:[["from"]], why:"come from = 来自"},
+    {tpl:"They go to the park ___ taxi.", cn:"", a:[["by"]], why:"by taxi"},
+    {tpl:"Look! Sam is ___ the plane.", cn:"（在飞机上）", a:[["on"]], why:"on the plane"},
+    {tpl:"We walk ___ school every morning.", cn:"（走路去学校）", a:[["to"]], why:"walk to school = go to school on foot"}
+  ]},
+  {label:"C · 改一改", type:"fix", items:[
+    {s:"I go to the park 【by】 foot.", cn:"", a:["on"], why:"on foot，最常考的错。"},
+    {s:"She goes to work 【by the】 bus.", cn:"（只填一个介词）", a:["by"], why:"by bus 中间不能加 the/a。"},
+    {s:"My father goes to Beijing 【on】 train.", cn:"", a:["by"], why:"by train。"},
+    {s:"There are two children 【in】 the school bus.", cn:"（在校车上）", a:["on"], why:"大车用 on the bus。"},
+    {s:"Hurry up! Get 【in】 the bus, please.", cn:"（上公交车）", a:["on"], why:"上大车用 get on。"}
+  ]}]
+},
+{
+  id:"p4", title:"专项四 · 动词 / 形容词 + 介词 固定搭配",
+  tip:"这些搭配是死记的：look at / listen to / wait for / good at / be afraid of / late for …",
+  parts:[
+  {label:"A · 选一选", type:"choice", items:[
+    {s:"Look ___ the blackboard, please.", cn:"（看黑板）", opts:["at","to","on"], a:0, why:"look at = 看。"},
+    {s:"I like listening ___ music.", cn:"（听音乐）", opts:["at","to","of"], a:1, why:"listen to = 听。"},
+    {s:"They are waiting ___ the school bus.", cn:"（等校车）", opts:["for","at","to"], a:0, why:"wait for = 等待。"},
+    {s:"My sister is good ___ English.", cn:"（擅长英语）", opts:["in","at","for"], a:1, why:"be good at = 擅长。"},
+    {s:"Don't be late ___ school.", cn:"（上学迟到）", opts:["for","to","at"], a:0, why:"be late for = 迟到。"},
+    {s:"The little girl is afraid ___ dogs.", cn:"（害怕狗）", opts:["of","for","at"], a:0, why:"be afraid of = 害怕。"}
+  ]},
+  {label:"B · 填一填", type:"blank", items:[
+    {tpl:"Can you help me ___ my homework?", cn:"（帮我做作业）", a:[["with"]], why:"help sb with sth"},
+    {tpl:"Thank you ___ your present.", cn:"（谢谢你的礼物）", a:[["for"]], why:"thank you for sth"},
+    {tpl:"The box is full ___ books.", cn:"（装满了书）", a:[["of"]], why:"be full of"},
+    {tpl:"I'm interested ___ drawing.", cn:"（对画画感兴趣）", a:[["in"]], why:"be interested in + 名词 / 动词-ing"},
+    {tpl:"Please look ___ my little brother.", cn:"（照顾弟弟）", a:[["after"]], why:"look after = 照顾"},
+    {tpl:"Miss Fang is talking ___ my mother.", cn:"（和妈妈谈话）", a:[["to","with"]], why:"talk to / talk with 都可以"},
+    {tpl:"He is good ___ playing football.", cn:"（擅长踢足球）", a:[["at"]], why:"good at 后面动词加 -ing"},
+    {tpl:"We arrive ___ school at seven forty.", cn:"（到达学校，小地方）", a:[["at"]], why:"arrive at + 小地方；arrive in + 大城市"}
+  ]},
+  {label:"C · 改一改", type:"fix", items:[
+    {s:"Listen 【at】 me carefully.", cn:"", a:["to"], why:"listen to。"},
+    {s:"Look 【to】 that beautiful bird!", cn:"", a:["at"], why:"look at。"},
+    {s:"I'm waiting 【to】 my friend.", cn:"", a:["for"], why:"wait for。"},
+    {s:"She is good 【in】 swimming.", cn:"", a:["at"], why:"be good at。"},
+    {s:"Thanks 【of】 your help.", cn:"", a:["for"], why:"thanks for。"}
+  ]}]
+},
+{
+  id:"p5", title:"专项五 · with / for / about / of / from / like",
+  tip:"with 用…/和…一起；for 为了、给；about 关于；of …的；from 从、来自；like 像。",
+  parts:[
+  {label:"A · 选一选", type:"choice", items:[
+    {s:"I write ___ a pen.", cn:"（用钢笔写）", opts:["with","by","in"], a:0, why:"用某个工具用 with。"},
+    {s:"This is a book ___ animals.", cn:"（关于动物的书）", opts:["of","about","for"], a:1, why:"about = 关于。"},
+    {s:"This present is ___ you.", cn:"（给你的礼物）", opts:["for","to","with"], a:0, why:"for = 给、为了。"},
+    {s:"Look at this photo ___ my family.", cn:"（我家的照片）", opts:["of","for","in"], a:0, why:"a photo of = …的照片。"},
+    {s:"He looks ___ his father.", cn:"（看起来像他爸爸）", opts:["at","like","for"], a:1, why:"look like = 看起来像；look at = 看。"},
+    {s:"I'd like a glass ___ milk.", cn:"（一杯牛奶）", opts:["of","for","with"], a:0, why:"a glass of / a cup of / a bottle of。"}
+  ]},
+  {label:"B · 填一填", type:"blank", items:[
+    {tpl:"I often play ___ my friends after school.", cn:"（和朋友玩）", a:[["with"]], why:"play with"},
+    {tpl:"What do you have ___ breakfast?", cn:"（早餐吃什么）", a:[["for"]], why:"have … for breakfast / lunch / dinner"},
+    {tpl:"Tom comes ___ the UK.", cn:"（来自英国）", a:[["from"]], why:"come from"},
+    {tpl:"Let me tell you a story ___ a brave boy.", cn:"（关于一个勇敢男孩）", a:[["about"]], why:"a story about"},
+    {tpl:"The girl ___ long hair is my cousin.", cn:"（长头发的女孩）", a:[["with"]], why:"with = 带着、有着"},
+    {tpl:"Here is a card ___ my teacher.", cn:"（给老师的卡片）", a:[["for"]], why:"for = 给"},
+    {tpl:"This is a picture ___ the Bund.", cn:"（外滩的图片）", a:[["of"]], why:"a picture of"},
+    {tpl:"Can I cut the cake ___ this knife?", cn:"（用这把刀）", a:[["with"]], why:"用工具 → with"}
+  ]},
+  {label:"C · 改一改", type:"fix", items:[
+    {s:"I draw 【by】 a pencil.", cn:"（用铅笔画）", a:["with"], why:"用具体工具用 with；by 后面一般跟交通工具或方式。"},
+    {s:"This book is 【of】 the moon.", cn:"（关于月亮）", a:["about"], why:"关于 → about。"},
+    {s:"Thank you. This flower is 【to】 you.", cn:"（给你的）", a:["for"], why:"给某人 → for you。"},
+    {s:"She comes 【of】 Japan.", cn:"", a:["from"], why:"come from。"},
+    {s:"I'd like two cups 【for】 tea.", cn:"（两杯茶）", a:["of"], why:"a cup of tea。"}
+  ]}]
+},
+{
+  id:"p6", title:"专项六 · 综合闯关 ★",
+  tip:"把前面五节的知识混在一起考，做错的就回到对应专项再复习一遍。",
+  parts:[
+  {label:"A · 选一选", type:"choice", items:[
+    {s:"The ducks are swimming ___ the lake.", cn:"（在湖里）", opts:["in","on","at"], a:0, why:"在水里游 → in the lake。"},
+    {s:"We often have a picnic ___ Sunday morning.", cn:"", opts:["in","on","at"], a:1, why:"有具体的某一天 → on Sunday morning。"},
+    {s:"My grandpa goes to the park ___ foot every day.", cn:"", opts:["by","on","with"], a:1, why:"on foot。"},
+    {s:"Don't laugh ___ others.", cn:"（嘲笑别人）", opts:["at","to","of"], a:0, why:"laugh at = 嘲笑。"},
+    {s:"There is a bridge ___ the river.", cn:"（河上的桥）", opts:["in","over","under"], a:1, why:"横跨在上方 → over the river。"},
+    {s:"I'm looking ___ my keys. Where are they?", cn:"（寻找钥匙）", opts:["at","for","after"], a:1, why:"look for = 寻找；look at 看；look after 照顾。三个一起记。"},
+    {s:"The Spring Festival is usually ___ January or February.", cn:"", opts:["in","on","at"], a:0, why:"月份 → in。"},
+    {s:"She sits ___ me and my sister.", cn:"（在我和姐姐中间）", opts:["among","between","behind"], a:1, why:"两者之间 → between…and…。"}
+  ]},
+  {label:"B · 填一填", type:"blank", items:[
+    {tpl:"My birthday is ___ 12th December. We have a party ___ seven o'clock ___ the evening.", cn:"（日期 / 钟点 / 时段）", a:[["on"],["at"],["in"]], why:"on + 日期，at + 钟点，in the evening。"},
+    {tpl:"I go to school ___ bus, but my brother goes ___ foot.", cn:"", a:[["by"],["on"]], why:"by bus / on foot，对比记。"},
+    {tpl:"Look ___ the boy ___ the tree. He is good ___ climbing.", cn:"（看那个树上的男孩）", a:[["at"],["in"],["at"]], why:"look at；人在树上用 in the tree；be good at。"},
+    {tpl:"There is a cat ___ the door and a dog ___ the door.", cn:"（门后 / 门前）", a:[["behind"],["in front of"]], why:"behind 后面，in front of 前面。这一空要填三个单词。"},
+    {tpl:"Thank you ___ the book ___ sea animals.", cn:"（感谢 / 关于海洋动物）", a:[["for"],["about"]], why:"thank you for；a book about。"},
+    {tpl:"We arrive ___ Beijing ___ Monday morning.", cn:"（到达北京 / 星期一早上）", a:[["in"],["on"]], why:"arrive in + 大城市；on Monday morning。"}
+  ]},
+  {label:"C · 改一改", type:"fix", items:[
+    {s:"The students are listening 【at】 the teacher.", cn:"", a:["to"], why:"listen to。"},
+    {s:"We have an English lesson 【in】 Wednesday.", cn:"", a:["on"], why:"星期 → on。"},
+    {s:"My father often reads newspapers 【in】 night.", cn:"", a:["at"], why:"at night。"},
+    {s:"Kitty goes to the zoo 【by】 her father's car.", cn:"（坐她爸爸的车）", a:["in"], why:"有 her father's 修饰的具体小汽车 → in her father's car。"},
+    {s:"I'm looking 【at】 my pencil box. I can't find it.", cn:"（寻找）", a:["for"], why:"找东西 → look for。"},
+    {s:"There is a lot of water 【on】 the bottle.", cn:"（瓶子里）", a:["in"], why:"在容器里 → in the bottle。"}
+  ]}]
+}
+];
+
+/* ===================== 引擎 ===================== */
+const TOTAL = DATA.reduce((n,s)=>n + s.parts.reduce((m,p)=>m+p.items.length,0), 0);
+const SET_TOTAL = {}; DATA.forEach(s=>SET_TOTAL[s.id]=s.parts.reduce((m,p)=>m+p.items.length,0));
+const KEY = "prep-practice-v1";
+let saved = {}; try{ saved = JSON.parse(localStorage.getItem(KEY) || "{}"); }catch(e){ saved = {}; }
+const correct = new Set(saved.correct || []);
+const wrong   = new Set(saved.wrong   || []);
+const fixedS  = new Set(saved.fixed   || []);
+const flag    = new Set(saved.flag    || []);
+const picked  = saved.picked || {};          // 选择题已选项
+const INDEX = {};
+
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const word = s => s.toLowerCase().replace(/[^a-z' ]/g,"").replace(/\s+/g," ").trim();
+const mark = q => esc(q).replace(/【(.+?)】/g,'<span class="bad-word">$1</span>');
+const qText = it => it.s !== undefined ? it.s : it.tpl;
+
+function render(){
+  const app = document.getElementById("app"), jump = document.getElementById("jump");
+  DATA.forEach(set=>{
+    jump.insertAdjacentHTML("beforeend", `<a href="#${set.id}">${set.title.split(" · ")[0]}</a>`);
+    const sec = document.createElement("section");
+    sec.className="set"; sec.id=set.id;
+    sec.innerHTML = `<h2>${set.title}</h2><p class="tip">${set.tip}</p>
+      <div class="setbar">
+        <button class="primary" data-act="check" data-set="${set.id}">检查本节</button>
+        <button data-act="reveal" data-set="${set.id}">显示本节答案</button>
+        <button data-act="clear" data-set="${set.id}">清空重做</button>
+        <span class="sc" id="sc-${set.id}"></span>
+      </div>`;
+    set.parts.forEach((part,pi)=>{
+      sec.insertAdjacentHTML("beforeend", `<h3 class="part">${part.label}</h3>`);
+      part.items.forEach((it,i)=>{
+        const id = `${set.id}-${pi}-${i}`;
+        INDEX[id] = {item:it, type:part.type, setId:set.id,
+                     setTitle:set.title.split(" · ")[0], part:part.label.split(" · ")[0], num:i+1};
+        const div = document.createElement("div");
+        div.className="item"; div.id="it-"+id;
+        const cn = it.cn ? `<span class="cn">${esc(it.cn)}</span>` : "";
+        let head, body, rv;
+        if(part.type==="choice"){
+          head = `<p class="q"><span class="n">${i+1}.</span>${esc(it.s)}${cn}<span class="badge" id="bd-${id}"></span></p>`;
+          body = `<div class="opts" id="op-${id}">` + it.opts.map((o,k)=>
+                   `<button class="opt" data-act="pick" data-id="${id}" data-k="${k}">${String.fromCharCode(65+k)}. ${esc(o)}</button>`).join("") + `</div>`;
+          rv = `<b>${esc(it.opts[it.a])}</b><span class="why">${esc(it.why)}</span>`;
+        }else if(part.type==="blank"){
+          const segs = it.tpl.split("___");
+          let h=""; segs.forEach((sg,k)=>{ h+=esc(sg); if(k<segs.length-1) h+=`<input class="blank" id="in-${id}-${k}" autocomplete="off" spellcheck="false">`; });
+          head = `<p class="q"><span class="n">${i+1}.</span>${cn}<span class="badge" id="bd-${id}"></span></p>`;
+          body = `<div class="tplrow">${h}</div>`;
+          rv = it.tpl.split("___").map((s,k)=> esc(s)+(k<it.a.length?"<b>"+it.a[k][0]+"</b>":"")).join("") + `<span class="why">${esc(it.why)}</span>`;
+        }else{ // fix
+          head = `<p class="q"><span class="n">${i+1}.</span>${mark(it.s)}${cn}<span class="badge" id="bd-${id}"></span></p>`;
+          body = `<div class="tplrow">改成 → <input class="blank" id="in-${id}-0" autocomplete="off" spellcheck="false"></div>`;
+          rv = `<b>${esc(it.a[0])}</b>${it.a.length>1?"（或 "+it.a.slice(1).map(esc).join(" / ")+"）":""}<span class="why">${esc(it.why)}</span>`;
+        }
+        div.innerHTML = head + body + `
+          <div class="row">
+            <button data-act="one" data-id="${id}">检查</button>
+            <button data-act="ans" data-id="${id}">答案</button>
+            <button class="flag" data-act="flag" data-id="${id}" title="标记这道题，之后要复习">🚩</button>
+          </div>
+          <div class="fb" id="fb-${id}"></div>
+          <div class="reveal" id="rv-${id}"><b>参考答案：</b>${rv}</div>`;
+        sec.appendChild(div);
+      });
+    });
+    app.appendChild(sec);
+  });
+  const inputs = saved.inputs || {};
+  Object.keys(inputs).forEach(k=>{ const el=document.getElementById("in-"+k); if(el) el.value=inputs[k]; });
+  Object.keys(picked).forEach(id=>{
+    const b = document.querySelector(`button.opt[data-id="${id}"][data-k="${picked[id]}"]`);
+    if(b) b.classList.add("pick");
+  });
+  correct.forEach(id=>{
+    const r = INDEX[id]; if(!r) return;
+    if(r.type==="choice"){ const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${r.item.a}"]`); if(b) b.classList.replace("pick","good")||b.classList.add("good"); }
+    else { const n = r.type==="blank"?r.item.a.length:1;
+      for(let k=0;k<n;k++){ const e=document.getElementById(`in-${id}-${k}`); if(e) e.classList.add("good"); } }
+  });
+  DATA.forEach(s=>updateSetScore(s.id));
+  updateTotal(); Object.keys(INDEX).forEach(updateMarks); renderMistakes();
+}
+function save(){
+  const inputs={};
+  document.querySelectorAll("input.blank").forEach(el=>{ if(el.value.trim()) inputs[el.id.slice(3)]=el.value; });
+  localStorage.setItem(KEY, JSON.stringify({inputs, picked, correct:[...correct],
+    wrong:[...wrong], fixed:[...fixedS], flag:[...flag]}));
+}
+function checkOne(id){
+  const r = INDEX[id]; if(!r) return;
+  const it=r.item, fb=document.getElementById("fb-"+id);
+  let res=null;
+  fb.className="fb show";
+  if(r.type==="choice"){
+    const sel = picked[id];
+    if(sel===undefined){ fb.innerHTML='<span class="note">先选一个答案～</span>'; correct.delete(id); }
+    else{
+      document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach((b,k)=>{
+        b.classList.remove("pick","good","bad");
+        if(k===it.a) b.classList.add("good");
+        else if(k===sel) b.classList.add("bad");
+      });
+      if(sel===it.a){ correct.add(id); res=true; fb.innerHTML='<span class="good">✓ 正确！</span> <span class="why">'+esc(it.why)+'</span>'; }
+      else{ correct.delete(id); res=false; fb.innerHTML='<span class="bad">✗ 错了，正确答案是 '+esc(it.opts[it.a])+'</span> <span class="why">'+esc(it.why)+'</span>'; }
+    }
+  }else{
+    const alts = r.type==="blank" ? it.a : [it.a];
+    let all=true, empty=true;
+    alts.forEach((opt,k)=>{
+      const el=document.getElementById(`in-${id}-${k}`), v=word(el.value);
+      if(v) empty=false;
+      const ok = opt.some(x=>word(x)===v);
+      el.className = "blank " + (v ? (ok?"good":"bad") : "");
+      if(!ok) all=false;
+    });
+    if(empty){ fb.innerHTML='<span class="note">还没写哦～</span>'; correct.delete(id); }
+    else if(all){ correct.add(id); res=true; fb.innerHTML='<span class="good">✓ 正确！</span> <span class="why">'+esc(it.why)+'</span>'; }
+    else{ correct.delete(id); res=false; fb.innerHTML='<span class="bad">✗ 红色的空再想想。</span> <span class="why">💡 '+esc(it.why)+'</span>'; }
+  }
+  if(res===false){ wrong.add(id); fixedS.delete(id); }
+  else if(res===true && wrong.has(id)){ wrong.delete(id); fixedS.add(id); fb.innerHTML+=' <span class="note">👏 错题订正成功！</span>'; }
+  updateMarks(id); renderMistakes(); updateSetScore(r.setId); updateTotal(); save();
+}
+function updateMarks(id){
+  const el=document.getElementById("it-"+id), bd=document.getElementById("bd-"+id);
+  if(!el) return;
+  el.classList.toggle("wrong", wrong.has(id));
+  el.classList.toggle("fixed", fixedS.has(id)&&!wrong.has(id));
+  el.classList.toggle("flagged", flag.has(id)&&!wrong.has(id)&&!fixedS.has(id));
+  const fbtn=document.querySelector(`button.flag[data-id="${id}"]`); if(fbtn) fbtn.classList.toggle("on", flag.has(id));
+  if(wrong.has(id)) bd.className="badge wrong", bd.textContent="✗ 错题";
+  else if(fixedS.has(id)) bd.className="badge fixed", bd.textContent="✓ 已订正";
+  else if(correct.has(id)) bd.className="badge ok", bd.textContent="✓";
+  else if(flag.has(id)) bd.className="badge", bd.textContent="🚩";
+  else bd.className="badge", bd.textContent="";
+}
+function renderMistakes(){
+  const order=Object.keys(INDEX);
+  const ids=order.filter(id=>wrong.has(id)||flag.has(id));
+  document.getElementById("msum").textContent=`📕 错题本（${wrong.size} 道待订正${flag.size?"，🚩 "+flag.size+" 道待复习":""}）`;
+  const box=document.getElementById("mlist");
+  box.innerHTML = !ids.length
+    ? '<p class="empty">还没有错题 👍 做错的题会自动收进这里，点题目可以跳回去订正。</p>'
+    : '<ol class="mlist">'+ids.map(id=>{const r=INDEX[id];
+        return `<li>${wrong.has(id)?"✗":"🚩"} <a href="#it-${id}" data-go="${id}">${mark(qText(r.item))}</a>
+        <span class="where">（${r.setTitle} · ${r.part} 第 ${r.num} 题）</span></li>`;}).join("")+'</ol>';
+  document.getElementById("markStat").textContent=`错题 ${wrong.size} 道 · 已订正 ${fixedS.size} 道 · 标记 ${flag.size} 道`;
+  DATA.forEach(s=>{ let has=false; eachId(s.id,id=>{ if(wrong.has(id)||flag.has(id)) has=true; });
+    document.getElementById(s.id).classList.toggle("nowrong", !has); });
+}
+function eachId(setId, fn){
+  const set=DATA.find(s=>s.id===setId);
+  set.parts.forEach((p,pi)=>p.items.forEach((it,i)=>fn(`${setId}-${pi}-${i}`, it, p.type)));
+}
+function updateSetScore(setId){
+  let n=0; eachId(setId,id=>{ if(correct.has(id)) n++; });
+  const t=SET_TOTAL[setId];
+  document.getElementById("sc-"+setId).textContent=`本节：${n} / ${t}`+(n===t?"  🎉 全对！":"");
+}
+function updateTotal(){
+  document.getElementById("totalTxt").textContent=`${correct.size} / ${TOTAL} 题答对`;
+  document.getElementById("totalBar").style.width=(correct.size/TOTAL*100)+"%";
+}
+function clearItem(id){
+  const r=INDEX[id];
+  if(r.type==="choice"){ delete picked[id];
+    document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach(b=>b.className="opt"); }
+  else{ const n=r.type==="blank"?r.item.a.length:1;
+    for(let k=0;k<n;k++){ const e=document.getElementById(`in-${id}-${k}`); if(e){e.value="";e.className="blank";} } }
+  document.getElementById("fb-"+id).className="fb";
+  document.getElementById("rv-"+id).classList.remove("show");
+  correct.delete(id);
+}
+function flash(id){
+  const el=document.getElementById("it-"+id); if(!el) return;
+  document.body.classList.remove("only-wrong");
+  document.getElementById("btnOnlyWrong").textContent="只看错题 🔍";
+  el.scrollIntoView({behavior:"smooth",block:"center"});
+  el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),1200);
+  const f=el.querySelector("input"); if(f) setTimeout(()=>f.focus(),400);
+}
+document.addEventListener("click", e=>{
+  const go=e.target.closest("a[data-go]"); if(go){ flash(go.dataset.go); return; }
+  const b=e.target.closest("button"); if(!b) return;
+  const act=b.dataset.act;
+  if(act==="pick"){
+    const id=b.dataset.id;
+    picked[id]=+b.dataset.k;
+    document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach(x=>x.className="opt");
+    b.classList.add("pick");
+    save(); checkOne(id);
+  }
+  if(act==="one") checkOne(b.dataset.id);
+  if(act==="ans") document.getElementById("rv-"+b.dataset.id).classList.toggle("show");
+  if(act==="flag"){ const id=b.dataset.id; flag.has(id)?flag.delete(id):flag.add(id); updateMarks(id); renderMistakes(); save(); }
+  if(act==="check") eachId(b.dataset.set, id=>checkOne(id));
+  if(act==="reveal"){
+    const on=b.textContent.indexOf("显示")>-1;
+    eachId(b.dataset.set, id=>document.getElementById("rv-"+id).classList.toggle("show", on));
+    b.textContent = on?"隐藏本节答案":"显示本节答案";
+  }
+  if(act==="clear"){
+    eachId(b.dataset.set, id=>{ clearItem(id); updateMarks(id); });
+    updateSetScore(b.dataset.set); updateTotal(); renderMistakes(); save();
+  }
+});
+document.addEventListener("keydown", e=>{
+  if(e.key==="Enter" && e.target.classList.contains("blank"))
+    checkOne(e.target.id.slice(3, e.target.id.lastIndexOf("-")));
+});
+document.addEventListener("input", e=>{ if(e.target.classList.contains("blank")) save(); });
+document.getElementById("btnOnlyWrong").addEventListener("click", function(){
+  const on=document.body.classList.toggle("only-wrong");
+  this.textContent = on?"显示全部题目 ↩":"只看错题 🔍";
+  if(on) document.getElementById("mbox").open=false;
+});
+document.getElementById("btnRedo").addEventListener("click", ()=>{
+  const ids=[...wrong];
+  if(!ids.length){ alert("现在没有错题，太棒了 🎉"); return; }
+  ids.forEach(id=>{ clearItem(id); updateMarks(id); });
+  DATA.forEach(s=>updateSetScore(s.id)); updateTotal(); renderMistakes(); save(); flash(ids[0]);
+});
+document.getElementById("btnClearMarks").addEventListener("click", ()=>{
+  if(!confirm("清除所有错题记录和🚩标记？（已填的答案会保留）")) return;
+  [...wrong,...fixedS,...flag].forEach(id=>{ wrong.delete(id); fixedS.delete(id); flag.delete(id); updateMarks(id); });
+  renderMistakes(); save();
+});
+render();
+</script>
+</body>
+</html>

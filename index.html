@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>专项练习 · 导航</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#fff; --ink:#1f2430; --muted:#6b7280;
+    --line:#e5e7eb; --brand:#0e8a6e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.65;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 16px 60px}
+  header.top{background:linear-gradient(135deg,#0e8a6e,#28b394);color:#fff;
+    border-radius:16px;padding:22px 24px;margin-bottom:20px}
+  header.top h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  header.top p{margin:0;opacity:.93;font-size:14px}
+
+  h2.g{font-size:15px;color:var(--muted);margin:22px 0 10px;font-weight:600}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  a.card{display:block;text-decoration:none;color:inherit;background:var(--card);
+    border:1px solid var(--line);border-left:5px solid var(--c,#0e8a6e);
+    border-radius:14px;padding:16px 18px;transition:transform .15s,box-shadow .15s}
+  a.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.07)}
+  a.card .t{font-size:17px;font-weight:600;margin-bottom:4px}
+  a.card .d{font-size:13px;color:var(--muted);line-height:1.7}
+  a.card .n{display:inline-block;font-size:12px;color:var(--c,#0e8a6e);
+    background:#f3f5f9;border-radius:99px;padding:2px 10px;margin-top:8px}
+
+  .qr{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;margin-top:26px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .qr .pic{width:160px;height:160px;flex:none}
+  .qr .pic svg{width:100%;height:100%;display:block}
+  .qr .txt{flex:1;min-width:200px;font-size:14px;color:var(--muted);line-height:1.9}
+  .qr .txt b{color:var(--ink)}
+  .qr .url{font-family:Consolas,monospace;font-size:13px;color:var(--brand);
+    word-break:break-all;background:#f3f5f9;border-radius:6px;padding:4px 8px;display:inline-block;margin-top:4px}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:20px 10px 0}
+
+  @media (max-width:640px){
+    .wrap{padding:12px 10px 50px}
+    header.top{padding:16px 14px;border-radius:12px;margin-bottom:16px}
+    header.top h1{font-size:20px}
+    header.top p{font-size:13px}
+    .cards{grid-template-columns:1fr;gap:10px}
+    a.card{padding:13px 14px;border-radius:12px}
+    a.card .t{font-size:16px}
+    .qr{padding:14px;gap:14px;justify-content:center}
+    .qr .pic{width:150px;height:150px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>📚 专项练习 · 导航</h1>
+  <p>四年级 · 数学 2 份 + 英语 2 份 · 每份都能逐题批改、自动记错题<br>
+  进度存在各自设备的浏览器里，换设备不同步</p>
+</header>
+
+<h2 class="g">数学</h2>
+<div class="cards">
+  <a class="card" style="--c:#0e8a6e" href="递等式计算专项练习.html">
+    <div class="t">递等式计算</div>
+    <div class="d">运算顺序、带括号的混合运算、书写格式、找错步</div>
+    <div class="n">68 题 · 打基础</div>
+  </a>
+  <a class="card" style="--c:#2563a8" href="递等式巧算专项练习.html">
+    <div class="t">递等式巧算</div>
+    <div class="d">凑整拆数、五大运算定律、简便计算、巧算陷阱</div>
+    <div class="n">68 题 · 进阶</div>
+  </a>
+</div>
+
+<h2 class="g">英语</h2>
+<div class="cards">
+  <a class="card" style="--c:#2f6df6" href="划线部分提问专项练习.html">
+    <div class="t">划线部分提问</div>
+    <div class="d">对划线部分提问的疑问词选择与句型转换</div>
+    <div class="n">专项训练</div>
+  </a>
+  <a class="card" style="--c:#7a4de0" href="介词专项练习.html">
+    <div class="t">介词</div>
+    <div class="d">in / on / at 等介词的用法辨析与填空</div>
+    <div class="n">专项训练</div>
+  </a>
+</div>
+
+<div class="qr">
+  <div class="pic" id="qrpic"><!--QR-START--><svg width="132" height="132" class="segno"><path transform="scale(4)" class="qrline" stroke="#1f2430" d="M2 2.5h7m2 0h1m3 0h1m1 0h1m2 0h2m2 0h7m-29 1h1m5 0h1m1 0h1m2 0h1m1 0h1m1 0h1m2 0h2m2 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m5 0h1m6 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m8 0h1m2 0h1m3 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h2m1 0h3m1 0h4m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h1m1 0h2m1 0h4m1 0h1m2 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-20 1h1m2 0h7m-19 1h1m1 0h1m1 0h1m1 0h1m2 0h1m4 0h1m2 0h1m6 0h1m2 0h1m-28 1h2m2 0h2m2 0h1m1 0h2m1 0h1m2 0h3m1 0h3m2 0h1m2 0h1m-28 1h2m1 0h3m1 0h4m2 0h1m1 0h1m7 0h1m1 0h3m-29 1h2m1 0h3m1 0h2m1 0h4m1 0h3m1 0h3m1 0h1m3 0h1m-27 1h3m2 0h2m2 0h2m2 0h1m2 0h1m2 0h4m1 0h1m1 0h2m-27 1h2m1 0h1m1 0h1m1 0h2m1 0h1m3 0h1m3 0h3m2 0h1m2 0h1m-29 1h1m1 0h2m2 0h1m2 0h1m3 0h1m4 0h1m1 0h1m2 0h3m1 0h2m-29 1h1m2 0h2m3 0h1m8 0h1m1 0h2m2 0h1m1 0h1m1 0h1m-28 1h2m1 0h4m2 0h1m1 0h1m5 0h1m2 0h3m2 0h1m1 0h2m-27 1h1m1 0h2m2 0h2m2 0h2m2 0h3m1 0h3m2 0h2m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h3m1 0h1m7 0h1m4 0h2m-28 1h3m1 0h1m1 0h1m2 0h1m1 0h3m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m-28 1h1m1 0h2m2 0h1m4 0h1m2 0h4m1 0h6m-17 1h1m1 0h2m2 0h1m2 0h1m1 0h2m3 0h1m1 0h3m-29 1h7m2 0h1m3 0h1m3 0h4m1 0h1m1 0h2m1 0h2m-29 1h1m5 0h1m2 0h3m4 0h2m2 0h1m3 0h2m1 0h2m-29 1h1m1 0h3m1 0h1m1 0h3m1 0h1m2 0h4m1 0h5m2 0h2m-29 1h1m1 0h3m1 0h1m4 0h1m1 0h1m2 0h1m3 0h1m3 0h1m1 0h3m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h2m2 0h1m2 0h1m2 0h2m1 0h3m2 0h1m-29 1h1m5 0h1m3 0h1m4 0h1m1 0h1m1 0h3m2 0h1m2 0h1m-28 1h7m1 0h2m1 0h2m1 0h4m1 0h3m1 0h2m2 0h2"/></svg><!--QR-END--></div>
+  <div class="txt">
+    <b>📱 手机 / iPad 扫这个码</b><br>
+    用相机或微信扫一扫，就能在手机上做题。<br>
+    建议在 Safari / Chrome 里打开后<b>「添加到主屏幕」</b>，以后像 App 一样一点就进。
+    <div class="url" id="qrurl">https://graphicscoder.github.io/study/</div>
+  </div>
+</div>
+
+<footer>做错的题会自动进错题本 · 电脑上 Ctrl+P 可打印成卷子（自动显示答案）</footer>
+</div>
+</body>
+</html>

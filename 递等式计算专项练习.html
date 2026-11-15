@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数学专项训练 · 递等式计算（四年级）</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#fff; --ink:#1f2430; --muted:#6b7280;
+    --line:#e5e7eb; --brand:#0e8a6e; --brand-soft:#e4f5f0;
+    --ok:#15803d; --ok-soft:#e8f6ed; --no:#c2410c; --no-soft:#fdeee6;
+    --warn:#92400e; --warn-soft:#fef6e7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.65;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 16px 80px}
+  header.top{background:linear-gradient(135deg,#0e8a6e,#28b394);color:#fff;
+    border-radius:16px;padding:22px 24px;margin-bottom:18px}
+  header.top h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  header.top p{margin:0;opacity:.93;font-size:14px}
+  header.top a{color:#fff}
+  .score-bar{display:flex;align-items:center;gap:12px;margin-top:14px;
+    background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px}
+  .bar{flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:#fff;transition:width .35s}
+
+  details.guide{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.guide summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px}
+  details.guide summary::marker{color:var(--brand)}
+  details.guide h4{margin:14px 0 6px;font-size:15px;color:#0b6b56}
+  .rule{background:var(--brand-soft);border-radius:10px;padding:10px 14px;margin:8px 0 14px;font-size:15px;line-height:1.9}
+  .pitfall{background:var(--warn-soft);border-left:4px solid #e9a23b;border-radius:8px;padding:10px 14px;margin:8px 0 14px;font-size:14px}
+  .demo{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0 14px}
+  .demo div{flex:1;min-width:230px;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+  .demo .t{font-weight:600;font-size:14px;margin-bottom:6px}
+  .demo .r{color:var(--ok)} .demo .w{color:var(--no)}
+  .mono{font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:16px;line-height:1.9;white-space:pre}
+  table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 14px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  th{background:#f3f5f9;font-weight:600}
+  td b{color:var(--brand)}
+
+  nav.jump{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  nav.jump a{font-size:13px;text-decoration:none;color:var(--brand);background:#fff;
+    border:1px solid var(--line);border-radius:99px;padding:6px 12px}
+  nav.jump a:hover{background:var(--brand-soft)}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .tools .pill{font-size:13px;color:var(--muted);margin-left:auto}
+  details.mistakes{background:var(--card);border:1px solid #f0b48e;border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.mistakes summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px;color:var(--no)}
+  ol.mlist{margin:0 0 14px;padding-left:22px;font-size:14.5px}
+  ol.mlist li{margin:7px 0}
+  ol.mlist a{color:var(--brand);text-decoration:none;font-family:"Cascadia Mono",Consolas,monospace}
+  ol.mlist a:hover{text-decoration:underline}
+  ol.mlist .where{color:var(--muted);font-size:12.5px;margin-left:6px;font-family:inherit}
+  .empty{color:var(--muted);font-size:14px;padding:4px 0 14px}
+
+  section.set{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px 20px;margin-bottom:20px;scroll-margin-top:12px}
+  section.set h2{margin:0 0 4px;font-size:19px}
+  h3.part{font-size:15px;margin:18px 0 2px;padding:6px 12px;border-radius:8px;background:var(--brand-soft);color:#0b6b56}
+  .tip{font-size:13.5px;color:var(--muted);margin:0 0 14px}
+  .setbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .setbar .sc{font-size:13px;color:var(--muted);margin-left:auto}
+
+  .item{border-top:1px dashed var(--line);padding:14px 0;border-left:3px solid transparent;scroll-margin-top:16px;transition:background .3s}
+  .item.wrong{border-left-color:var(--no);background:#fff8f4;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.fixed{border-left-color:#86d7a5;background:#f7fcf9;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flagged{border-left-color:#e9a23b;background:var(--warn-soft);padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flash{background:#fff3cd}
+  .q{font-size:16px;margin:0 0 6px}
+  .q .n{display:inline-block;min-width:28px;color:var(--muted);font-size:14px}
+  .expr{font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:17px;font-weight:600}
+  .cn{color:var(--muted);font-size:14px;margin-left:6px}
+  .badge{font-size:12px;border-radius:99px;padding:2px 9px;margin-left:8px;vertical-align:2px;white-space:nowrap}
+  .badge.wrong{background:var(--no-soft);color:var(--no);border:1px solid #f0b48e}
+  .badge.fixed{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+  .badge.ok{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+
+  .steps{margin:4px 0 6px 28px;font-family:"Cascadia Mono",Consolas,"Courier New",monospace;font-size:17px;line-height:2.5}
+  .steps .eq{display:inline-block;width:22px;color:var(--brand);font-weight:700}
+  .steps .orig{padding-left:22px}
+  .wrongsol{margin:4px 0 8px 28px;font-family:"Cascadia Mono",Consolas,"Courier New",monospace;
+    font-size:16px;line-height:2.1;background:#fff6f2;border:1px dashed #f0b48e;border-radius:10px;padding:8px 14px}
+  .wrongsol .sn{color:var(--no);font-size:12px;font-family:inherit;margin-right:6px}
+  input.blank{width:84px;padding:3px 6px;font-size:17px;font-family:inherit;text-align:center;
+    border:0;border-bottom:2px solid #c9ced8;background:#fcfcfd}
+  input.blank:focus{outline:none;border-bottom-color:var(--brand);background:#fff}
+  input.blank.good{border-bottom-color:#2f9e5f;background:var(--ok-soft);color:var(--ok)}
+  input.blank.bad{border-bottom-color:#e07a3f;background:var(--no-soft);color:var(--no)}
+  .opts{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px 28px}
+  button.opt{font-family:"Cascadia Mono",Consolas,monospace;font-size:15px;padding:7px 14px;border-radius:10px;
+    cursor:pointer;border:1px solid var(--line);background:#fff}
+  button.opt:hover{background:var(--brand-soft)}
+  button.opt.pick{border-color:var(--brand);background:var(--brand-soft);font-weight:600}
+  button.opt.good{border-color:#86d7a5;background:var(--ok-soft);color:var(--ok);font-weight:600}
+  button.opt.bad{border-color:#f0b48e;background:var(--no-soft);color:var(--no)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:28px}
+  button{font-family:inherit;font-size:13.5px;padding:8px 13px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink)}
+  button:hover{background:#f3f5f9}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.primary:hover{filter:brightness(1.07)}
+  button.flag{padding:7px 10px;line-height:1}
+  button.flag.on{background:var(--warn-soft);border-color:#e9a23b}
+  .fb{margin:8px 0 0 28px;font-size:14px;display:none}
+  .fb.show{display:block}
+  .fb .good{color:var(--ok)} .fb .bad{color:var(--no)} .fb .note{color:var(--warn)}
+  .reveal{display:none;margin:8px 0 0 28px;font-size:15px;background:var(--ok-soft);
+    border-left:4px solid #86d7a5;border-radius:8px;padding:8px 14px}
+  .reveal.show{display:block}
+  .reveal .mono{font-size:15px;color:#13603f}
+  .why{display:block;color:#4a5568;font-size:13.5px;margin-top:4px;font-family:inherit;white-space:normal}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:10px}
+
+  body.only-wrong .item:not(.wrong):not(.flagged){display:none}
+  body.only-wrong section.set.nowrong{display:none}
+  body.only-wrong details.guide{display:none}
+
+  /* ---------- 手机 / 小屏适配 ---------- */
+  @media (max-width:640px){
+    .wrap{padding:12px 10px 60px}
+    header.top{padding:16px 14px;border-radius:12px;margin-bottom:14px}
+    header.top h1{font-size:20px}
+    header.top p{font-size:13px;line-height:1.8}
+    .score-bar{font-size:12.5px;padding:7px 10px;gap:8px}
+
+    details.guide,details.mistakes{padding:2px 12px;border-radius:12px}
+    details.guide summary,details.mistakes summary{font-size:15px}
+    .rule{font-size:14px;line-height:1.95;padding:10px 11px}
+    .pitfall{font-size:13px;padding:10px 11px}
+    .demo{gap:10px}
+    .demo div{min-width:100%}
+    .mono{font-size:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    table{font-size:12.5px}
+    th,td{padding:5px 6px}
+
+    nav.jump{gap:6px}
+    nav.jump a{font-size:12.5px;padding:5px 10px}
+    .tools{gap:6px}
+    .tools .pill{margin-left:0;width:100%;font-size:12.5px}
+
+    section.set{padding:14px 12px;border-radius:12px;margin-bottom:14px}
+    section.set h2{font-size:17px}
+    h3.part{font-size:14px;padding:6px 10px}
+    .tip{font-size:13px}
+    .setbar .sc{margin-left:0;width:100%}
+
+    .q{font-size:15px}
+    .q .n{min-width:20px}
+    .expr{font-size:15.5px}
+    .steps{margin-left:6px;font-size:15.5px;line-height:2.3}
+    .steps .eq{width:18px}
+    .steps .orig{padding-left:18px}
+    .wrongsol{margin-left:6px;font-size:14.5px;line-height:2;padding:8px 10px}
+    .opts,.row{margin-left:6px;gap:6px}
+    .fb,.reveal{margin-left:6px}
+    .reveal{padding:8px 10px;font-size:14px}
+    .fb{font-size:13.5px}
+    .why{font-size:13px}
+
+    /* 选项长的自己占一整行，短的仍并排；文字可换行 */
+    button.opt{font-size:14px;padding:9px 12px;max-width:100%;white-space:normal;text-align:left;line-height:1.5}
+    button{font-size:13px;padding:9px 11px}
+    button.flag{padding:9px 10px}
+    /* 字号必须 ≥16px，否则 iOS 点输入框会自动放大页面 */
+    input.blank{font-size:16px;max-width:38vw}
+  }
+  @media print{
+    body{background:#fff}
+    nav.jump,.tools,.setbar button,.row button,header.top .score-bar,details.mistakes{display:none}
+    .reveal{display:block !important}
+    section.set{break-inside:avoid;border:0;padding:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>递等式计算 · 专项训练</h1>
+  <p>四年级 · 6 个专项 · 分步填空 + 找错步 + 简便计算 · 每一步单独批改，错在哪一步一目了然<br>
+  英语练习：<a href="划线部分提问专项练习.html">划线提问</a> · <a href="介词专项练习.html">介词</a><br>
+  进阶：<a href="递等式巧算专项练习.html">递等式巧算（简便计算）</a></p>
+  <div class="score-bar">
+    <span>总进度</span><span class="bar"><i id="totalBar"></i></span>
+    <span id="totalTxt">0 / 0 题答对</span>
+  </div>
+</header>
+
+<details class="guide" open>
+  <summary>📐 递等式的规矩（先看这里）</summary>
+
+  <h4>① 运算顺序三句话</h4>
+  <div class="rule">
+    1. 有括号，<b>先算括号里</b>的 —— 先小括号 <b>( )</b>，再中括号 <b>[ ]</b>；<br>
+    2. 没括号，<b>先乘除，后加减</b>；<br>
+    3. 只有同一级（只有加减，或只有乘除），<b>从左往右</b>依次算。
+  </div>
+
+  <h4>② 书写格式（最容易扣分的地方）</h4>
+  <div class="demo">
+    <div>
+      <div class="t r">✅ 正确</div>
+      <div class="mono r">  36 + 24 ÷ 6
+= 36 + 4
+= 40</div>
+      <div class="why">等号写在<b>每行开头</b>，上下对齐；没轮到算的部分<b>原样抄下来</b>。</div>
+    </div>
+    <div>
+      <div class="t w">❌ 常见错误</div>
+      <div class="mono w">36 + 24 ÷ 6 = 4
+= 36 + 4 = 40</div>
+      <div class="why">等号写到行尾、一行挤两个等号、把没算的部分丢掉，都要扣分。</div>
+    </div>
+  </div>
+  <div class="rule">
+    ✔ 第一行<b>原式照抄</b>，不写等号；<br>
+    ✔ 从第二行起，<b>每行开头写一个"="</b>，一行只写一个等号；<br>
+    ✔ 一步<b>只算一处</b>（左右两边互不影响时，可以同时算两处）；<br>
+    ✔ 没算到的数字、符号、括号<b>一个都不能漏抄</b>；<br>
+    ✔ 最后的得数后面<b>不再写等号</b>。
+  </div>
+
+  <h4>③ 简便计算五个定律</h4>
+  <table>
+    <tr><th>名称</th><th>公式</th><th>例子</th></tr>
+    <tr><td>加法交换 / 结合</td><td><b>a+b+c = a+(b+c)</b></td><td>45+78+55 = (45+55)+78</td></tr>
+    <tr><td>乘法交换 / 结合</td><td><b>a×b×c = a×(b×c)</b></td><td>25×17×4 = 25×4×17</td></tr>
+    <tr><td>乘法分配律</td><td><b>(a+b)×c = a×c + b×c</b></td><td>102×45 = 100×45 + 2×45</td></tr>
+    <tr><td>减法的性质</td><td><b>a−b−c = a−(b+c)</b></td><td>500−136−64 = 500−(136+64)</td></tr>
+    <tr><td>除法的性质</td><td><b>a÷b÷c = a÷(b×c)</b></td><td>1000÷25÷4 = 1000÷(25×4)</td></tr>
+  </table>
+
+  <div class="pitfall">
+    <b>六大易错点</b><br>
+    ① <span class="mono">36+24÷6</span> 先算 <b>24÷6</b>，不是 36+24；<br>
+    ② <span class="mono">48÷8×3</span> 同级要<b>从左往右</b>，不能先算 8×3；<br>
+    ③ <span class="mono">72−36+14</span> 同级从左往右，不能先算 36+14；<br>
+    ④ 去括号：<span class="mono">a−(b+c)=a−b−c</span>，括号前是减号，<b>里面的符号要全变</b>；<br>
+    ⑤ 分配律别漏乘：<span class="mono">(a+b)×c</span> 两个都要乘 c；<br>
+    ⑥ <b>抄错数</b>是最冤的错 —— 写完每一步，回头对一眼原题。
+  </div>
+</details>
+
+<nav class="jump" id="jump"></nav>
+<div class="tools">
+  <button id="btnOnlyWrong">只看错题 🔍</button>
+  <button id="btnRedo">重做所有错题</button>
+  <button id="btnClearMarks">清除错题记录</button>
+  <span class="pill" id="markStat"></span>
+</div>
+<details class="mistakes" id="mbox">
+  <summary id="msum">📕 错题本（0）</summary>
+  <div id="mlist"></div>
+</details>
+
+<div id="app"></div>
+<footer>每个空单独批改 · 做错自动进错题本 · 🚩 手动标记要复习的题 · 记录保存在本机浏览器 · Ctrl+P 打印自动显示答案</footer>
+</div>
+
+<script>
+/* 题型：
+   order = 选择「先算哪一步」
+   calc  = 递等式分步填空（lines 里 【x】 是要填的空）
+   fix   = 找出错在第几步 + 写出正确得数
+*/
+const DATA = [
+{
+  id:"m1", title:"专项一 · 运算顺序打基础（不带括号）",
+  tip:"口诀：先乘除，后加减；只有同级从左往右。",
+  parts:[
+  {label:"A · 先算哪一步？", type:"order", items:[
+    {e:"36 + 24 ÷ 6", opts:["36 + 24","24 ÷ 6"], a:1, why:"有乘除有加减，先算除法 24÷6。"},
+    {e:"100 − 5 × 8", opts:["100 − 5","5 × 8"], a:1, why:"先乘后减。"},
+    {e:"48 ÷ 8 × 3", opts:["48 ÷ 8","8 × 3"], a:0, why:"只有乘除，同一级，从左往右先算 48÷8。"},
+    {e:"72 − 36 + 14", opts:["72 − 36","36 + 14"], a:0, why:"只有加减，同一级，从左往右先算 72−36。"},
+    {e:"15 + 45 ÷ 9 × 2", opts:["15 + 45","45 ÷ 9","9 × 2"], a:1, why:"先算乘除；乘除之间从左往右，所以先 45÷9。"},
+    {e:"200 ÷ 5 ÷ 8", opts:["200 ÷ 5","5 ÷ 8"], a:0, why:"同级从左往右。"}
+  ]},
+  {label:"B · 填出每一步", type:"calc", items:[
+    {e:"36 + 24 ÷ 6", lines:["36 + 【4】","【40】"], why:"先算 24÷6=4，36 原样抄下来。"},
+    {e:"100 − 5 × 8", lines:["100 − 【40】","【60】"], why:"先算 5×8=40。"},
+    {e:"48 ÷ 8 × 3", lines:["【6】 × 3","【18】"], why:"从左往右，先 48÷8=6。"},
+    {e:"72 − 36 + 14", lines:["【36】 + 14","【50】"], why:"从左往右，先 72−36=36。"},
+    {e:"5 × 6 + 8 × 7", lines:["【30】 + 【56】","【86】"], why:"左右两个乘法互不影响，可以在同一步算完。"},
+    {e:"240 ÷ 6 − 12 × 3", lines:["【40】 − 【36】","【4】"], why:"两个乘除同时算，再做减法。"},
+    {e:"15 + 45 ÷ 9 × 2", lines:["15 + 【5】 × 2","15 + 【10】","【25】"], why:"先 45÷9=5，再 5×2=10，最后加 15。一步只算一处。"},
+    {e:"900 ÷ 9 ÷ 5", lines:["【100】 ÷ 5","【20】"], why:"同级从左往右。"}
+  ]}]
+},
+{
+  id:"m2", title:"专项二 · 带括号的混合运算",
+  tip:"先小括号 ( )，再中括号 [ ]，最后括号外面。括号算完就可以去掉。",
+  parts:[
+  {label:"A · 先算哪一步？", type:"order", items:[
+    {e:"(36 + 24) ÷ 6", opts:["36 + 24","24 ÷ 6"], a:0, why:"有括号先算括号里。"},
+    {e:"100 − (5 + 8) × 4", opts:["100 − 5","5 + 8","8 × 4"], a:1, why:"先括号，再乘，最后减。"},
+    {e:"360 ÷ [ (12 − 4) × 5 ]", opts:["12 − 4","360 ÷ 12","4 × 5"], a:0, why:"小括号最优先，再中括号，最后括号外。"},
+    {e:"[ 100 − (25 + 15) ] ÷ 6", opts:["100 − 25","25 + 15","100 ÷ 6"], a:1, why:"最里层的小括号先算。"}
+  ]},
+  {label:"B · 填出每一步", type:"calc", items:[
+    {e:"(36 + 24) ÷ 6", lines:["【60】 ÷ 6","【10】"], why:"括号算完，括号就去掉了。"},
+    {e:"100 − (5 + 8) × 4", lines:["100 − 【13】 × 4","100 − 【52】","【48】"], why:"括号 → 乘法 → 减法，三步。"},
+    {e:"240 ÷ (6 × 4)", lines:["240 ÷ 【24】","【10】"], why:"先算括号里的乘法。"},
+    {e:"(125 + 75) × 8", lines:["【200】 × 8","【1600】"], why:"括号里凑整，后面好算。"},
+    {e:"(85 − 25) × (12 + 8)", lines:["【60】 × 【20】","【1200】"], why:"两个括号互不影响，可以同一步算完。"},
+    {e:"360 ÷ [ (12 − 4) × 5 ]", lines:["360 ÷ [ 【8】 × 5 ]","360 ÷ 【40】","【9】"], why:"小括号 → 中括号 → 括号外。中括号这一步要照抄。"},
+    {e:"[ 100 − (25 + 15) ] ÷ 6", lines:["[ 100 − 【40】 ] ÷ 6","【60】 ÷ 6","【10】"], why:"由里到外，一层一层算。"},
+    {e:"480 ÷ [ 80 ÷ (10 − 6) ]", lines:["480 ÷ [ 80 ÷ 【4】 ]","480 ÷ 【20】","【24】"], why:"注意中括号里还是除法，别抄漏。"}
+  ]}]
+},
+{
+  id:"m3", title:"专项三 · 简便计算（运算定律）",
+  tip:"看到 25×4、125×8、凑整 100，就想简便算法。",
+  parts:[
+  {label:"A · 填出每一步", type:"calc", items:[
+    {e:"25 × 17 × 4", lines:["25 × 4 × 17","【100】 × 17","【1700】"], why:"乘法交换律：把 25 和 4 凑成 100。"},
+    {e:"125 × 32", lines:["125 × 8 × 4","【1000】 × 4","【4000】"], why:"把 32 拆成 8×4，125×8=1000。"},
+    {e:"36 × 99 + 36", lines:["36 × (99 + 1)","36 × 【100】","【3600】"], why:"后面的 36 就是 36×1，提取公因数 36。"},
+    {e:"68 × 25 + 32 × 25", lines:["(68 + 32) × 25","【100】 × 25","【2500】"], why:"分配律反着用，两个都有 ×25。"},
+    {e:"45 + 78 + 55 + 22", lines:["(45 + 55) + (78 + 22)","【100】 + 【100】","【200】"], why:"加法交换结合律，凑整百。"},
+    {e:"125 × 88", lines:["125 × 8 × 11","【1000】 × 11","【11000】"], why:"88 = 8 × 11。"}
+  ]},
+  {label:"B · 乘法分配律专练", type:"calc", items:[
+    {e:"102 × 45", lines:["(100 + 2) × 45","100 × 45 + 2 × 45","【4500】 + 【90】","【4590】"], why:"把 102 拆成 100+2，两个都要乘 45，不能漏。"},
+    {e:"99 × 28", lines:["(100 − 1) × 28","100 × 28 − 1 × 28","【2800】 − 【28】","【2772】"], why:"99 = 100−1，括号前是乘号，里面是减号，结果也用减。"},
+    {e:"25 × (40 + 4)", lines:["25 × 40 + 25 × 4","【1000】 + 【100】","【1100】"], why:"括号外的 25 要分别乘括号里的每一个数。"},
+    {e:"38 × 101", lines:["38 × (100 + 1)","38 × 100 + 38 × 1","【3800】 + 【38】","【3838】"], why:"×101 就是 ×100 再加一个它本身。"}
+  ]}]
+},
+{
+  id:"m4", title:"专项四 · 减法、除法的性质（去括号）",
+  tip:"a−(b+c)=a−b−c ；a÷(b×c)=a÷b÷c。括号前是减号或除号，去掉括号里面的符号要变！",
+  parts:[
+  {label:"A · 填出每一步", type:"calc", items:[
+    {e:"500 − 136 − 64", lines:["500 − (136 + 64)","500 − 【200】","【300】"], why:"连续减两个数 = 减去它们的和。"},
+    {e:"268 − (68 + 32)", lines:["268 − 68 − 32","【200】 − 32","【168】"], why:"去掉括号，减号后面的加号要变成减号。"},
+    {e:"1000 ÷ 25 ÷ 4", lines:["1000 ÷ (25 × 4)","1000 ÷ 【100】","【10】"], why:"连续除以两个数 = 除以它们的积。"},
+    {e:"900 ÷ (9 × 5)", lines:["900 ÷ 9 ÷ 5","【100】 ÷ 5","【20】"], why:"除号后面的括号去掉，乘号要变成除号。"},
+    {e:"375 − (175 + 48)", lines:["375 − 175 − 48","【200】 − 48","【152】"], why:"先减 175 能凑整，更好算。"},
+    {e:"256 − 58 − 42", lines:["256 − (58 + 42)","256 − 【100】","【156】"], why:"58+42=100 正好凑整。"},
+    {e:"720 ÷ 5 ÷ 2", lines:["720 ÷ (5 × 2)","720 ÷ 【10】","【72】"], why:"5×2=10，除以 10 最好算。"},
+    {e:"480 ÷ (48 × 2)", lines:["480 ÷ 48 ÷ 2","【10】 ÷ 2","【5】"], why:"去括号后变成连续除。"}
+  ]}]
+},
+{
+  id:"m5", title:"专项五 · 火眼金睛找错步 ★",
+  tip:"下面是别人的解答，每题都有一步算错了。先找出错在第几步，再写出正确的得数。",
+  parts:[
+  {label:"A · 错在第几步？正确答案是多少？", type:"fix", items:[
+    {e:"36 + 24 ÷ 6", sol:["60 ÷ 6","10"], bad:0, a:"40",
+     why:"第①步就错了：有加有除，必须先算 24÷6=4，不能先算 36+24。正确：36+4=40。"},
+    {e:"100 − 5 × 8", sol:["95 × 8","760"], bad:0, a:"60",
+     why:"第①步错：先乘后减，应先算 5×8=40。正确：100−40=60。"},
+    {e:"48 ÷ 8 × 3", sol:["48 ÷ 24","2"], bad:0, a:"18",
+     why:"第①步错：只有乘除要从左往右，应先算 48÷8=6。正确：6×3=18。"},
+    {e:"72 − 36 + 14", sol:["72 − 50","22"], bad:0, a:"50",
+     why:"第①步错：加减同级从左往右，应先算 72−36=36。正确：36+14=50。"},
+    {e:"125 × (8 + 4)", sol:["125 × 8 + 4","1000 + 4","1004"], bad:0, a:"1500",
+     why:"第①步错：括号里能直接算就先算 8+4=12；要是用分配律，4 也得乘 125。正确：125×12=1500。"},
+    {e:"268 − 68 − 32", sol:["268 − (68 − 32)","268 − 36","232"], bad:0, a:"168",
+     why:"第①步错：a−b−c = a−(b+c)，括号里应该是 68+32。正确：268−100=168。"},
+    {e:"36 × 99 + 36", sol:["36 × (99 + 36)","36 × 135","4860"], bad:0, a:"3600",
+     why:"第①步错：提取公因数 36 后，括号里应是 99+1。正确：36×100=3600。"},
+    {e:"(25 + 5) × 4", sol:["30 × 4","130"], bad:1, a:"120",
+     why:"第①步对，第②步算错了：30×4=120，不是 130。"},
+    {e:"240 ÷ 6 − 12 × 3", sol:["40 − 12 × 3","28 × 3","84"], bad:1, a:"4",
+     why:"第①步对；第②步错：40−12 不能先算，必须先算 12×3=36。正确：40−36=4。"},
+    {e:"102 × 45", sol:["(100 + 2) × 45","100 × 45 + 2","4500 + 2","4502"], bad:1, a:"4590",
+     why:"第②步漏乘了：分配律里 2 也要乘 45。正确：4500+90=4590。"}
+  ]}]
+},
+{
+  id:"m6", title:"专项六 · 综合闯关",
+  tip:"三步以上的混合运算和解决问题，考验耐心和细心。",
+  parts:[
+  {label:"A · 递等式计算", type:"calc", items:[
+    {e:"(125 + 75) × (36 ÷ 6)", lines:["【200】 × 【6】","【1200】"], why:"两个括号同时算。"},
+    {e:"450 ÷ [ (28 − 13) × 2 ]", lines:["450 ÷ [ 【15】 × 2 ]","450 ÷ 【30】","【15】"], why:"由里到外三步走。"},
+    {e:"25 × 4 + 160 ÷ 8", lines:["【100】 + 【20】","【120】"], why:"两边的乘除可以同一步算完。"},
+    {e:"99 × 36 + 36", lines:["(99 + 1) × 36","【100】 × 36","【3600】"], why:"提取公因数 36。"},
+    {e:"800 − 125 × 4 ÷ 2", lines:["800 − 【500】 ÷ 2","800 − 【250】","【550】"], why:"先乘除后加减；乘除之间从左往右。"},
+    {e:"(360 − 120) ÷ (15 − 7)", lines:["【240】 ÷ 【8】","【30】"], why:"两个括号先算。"}
+  ]},
+  {label:"B · 解决问题（先列式，再写递等式）", type:"calc", items:[
+    {e:"商店运来 4 箱苹果，每箱 25 千克，卖出 60 千克，还剩多少千克？   列式：4 × 25 − 60", lines:["【100】 − 60","【40】"], why:"先算出一共有多少千克：4×25=100。"},
+    {e:"图书馆有 180 本书，借出 3 次，每次借出 25 本，还剩多少本？   列式：180 − 25 × 3", lines:["180 − 【75】","【105】"], why:"先算借出的总数 25×3=75。"},
+    {e:"一支笔 8 元，一本本子 5 元，买 6 套要多少元？   列式：(8 + 5) × 6", lines:["【13】 × 6","【78】"], why:"先算一套多少钱，再乘 6。"},
+    {e:"果园有桃树 120 棵，梨树的棵数是桃树的 3 倍，两种树一共多少棵？   列式：120 + 120 × 3", lines:["120 + 【360】","【480】"], why:"先算梨树 120×3=360。"}
+  ]}]
+}
+];
+
+/* ===================== 引擎 ===================== */
+const TOTAL = DATA.reduce((n,s)=>n+s.parts.reduce((m,p)=>m+p.items.length,0),0);
+const SET_TOTAL={}; DATA.forEach(s=>SET_TOTAL[s.id]=s.parts.reduce((m,p)=>m+p.items.length,0));
+const KEY="math-tdsjs-v1";
+let saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||"{}"); }catch(e){ saved={}; }
+const correct=new Set(saved.correct||[]), wrong=new Set(saved.wrong||[]),
+      fixedS=new Set(saved.fixed||[]), flag=new Set(saved.flag||[]);
+const picked=saved.picked||{};
+const INDEX={};
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const num=s=>String(s).replace(/[\s,，]/g,"").trim();
+const CN=["①","②","③","④","⑤","⑥"];
+
+function render(){
+  const app=document.getElementById("app"), jump=document.getElementById("jump");
+  DATA.forEach(set=>{
+    jump.insertAdjacentHTML("beforeend",`<a href="#${set.id}">${set.title.split(" · ")[0]}</a>`);
+    const sec=document.createElement("section");
+    sec.className="set"; sec.id=set.id;
+    sec.innerHTML=`<h2>${set.title}</h2><p class="tip">${set.tip}</p>
+      <div class="setbar">
+        <button class="primary" data-act="check" data-set="${set.id}">检查本节</button>
+        <button data-act="reveal" data-set="${set.id}">显示本节答案</button>
+        <button data-act="clear" data-set="${set.id}">清空重做</button>
+        <span class="sc" id="sc-${set.id}"></span>
+      </div>`;
+    set.parts.forEach((part,pi)=>{
+      sec.insertAdjacentHTML("beforeend",`<h3 class="part">${part.label}</h3>`);
+      part.items.forEach((it,i)=>{
+        const id=`${set.id}-${pi}-${i}`;
+        INDEX[id]={item:it,type:part.type,setId:set.id,
+          setTitle:set.title.split(" · ")[0],part:part.label.split(" · ")[0],num:i+1};
+        const div=document.createElement("div");
+        div.className="item"; div.id="it-"+id;
+        const head=`<p class="q"><span class="n">${i+1}.</span><span class="expr">${esc(it.e)}</span><span class="badge" id="bd-${id}"></span></p>`;
+        let body, rv;
+        if(part.type==="order"){
+          body=`<div class="opts" id="op-${id}">`+it.opts.map((o,k)=>
+            `<button class="opt" data-act="pick" data-id="${id}" data-k="${k}">${String.fromCharCode(65+k)}. ${esc(o)}</button>`).join("")+`</div>`;
+          rv=`<b>${esc(it.opts[it.a])}</b><span class="why">${esc(it.why)}</span>`;
+        }else if(part.type==="calc"){
+          let n=0, h=`<div class="steps"><div class="orig">${esc(it.e.split("   列式：").pop())}</div>`;
+          it.lines.forEach(ln=>{
+            let row="";
+            ln.split(/(【.*?】)/).forEach(seg=>{
+              const m=seg.match(/^【(.*?)】$/);
+              if(m){ row+=`<input class="blank" id="in-${id}-${n}" autocomplete="off" inputmode="numeric" style="width:${Math.max(62, m[1].length*16+28)}px">`; n++; }
+              else row+=esc(seg);
+            });
+            h+=`<div><span class="eq">=</span>${row}</div>`;
+          });
+          it._n=n;
+          body=h+`</div>`;
+          rv=`<div class="mono">  ${esc(it.e.split("   列式：").pop())}\n`+
+             it.lines.map(l=>"= "+esc(l.replace(/【(.*?)】/g,"$1"))).join("\n")+`</div><span class="why">${esc(it.why)}</span>`;
+        }else{ // fix
+          let h=`<div class="wrongsol"><div>  ${esc(it.e)}</div>`;
+          it.sol.forEach((l,k)=>h+=`<div><span class="sn">${CN[k]}</span>= ${esc(l)}</div>`);
+          h+=`</div><div class="opts" id="op-${id}">`+it.sol.map((l,k)=>
+            `<button class="opt" data-act="pick" data-id="${id}" data-k="${k}">第 ${CN[k]} 步错</button>`).join("")+`</div>
+            <div class="row" style="margin-bottom:6px">正确的得数是 <input class="blank" id="in-${id}-0" autocomplete="off" inputmode="numeric"></div>`;
+          it._n=1;
+          body=h;
+          rv=`第 <b>${CN[it.bad]}</b> 步开始错，正确得数 <b>${esc(it.a)}</b><span class="why">${esc(it.why)}</span>`;
+        }
+        div.innerHTML=head+body+`
+          <div class="row">
+            <button data-act="one" data-id="${id}">检查</button>
+            <button data-act="ans" data-id="${id}">答案</button>
+            <button class="flag" data-act="flag" data-id="${id}" title="标记这道题，之后要复习">🚩</button>
+          </div>
+          <div class="fb" id="fb-${id}"></div>
+          <div class="reveal" id="rv-${id}"><b>参考答案：</b>${rv}</div>`;
+        sec.appendChild(div);
+      });
+    });
+    app.appendChild(sec);
+  });
+  const inputs=saved.inputs||{};
+  Object.keys(inputs).forEach(k=>{ const el=document.getElementById("in-"+k); if(el) el.value=inputs[k]; });
+  Object.keys(picked).forEach(id=>{
+    const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${picked[id]}"]`);
+    if(b) b.classList.add("pick");
+  });
+  correct.forEach(id=>{ const r=INDEX[id]; if(!r) return;
+    if(r.type==="order"){ const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${r.item.a}"]`); if(b){b.classList.remove("pick");b.classList.add("good");} }
+    else{ if(r.type==="fix"){ const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${r.item.bad}"]`); if(b){b.classList.remove("pick");b.classList.add("good");} }
+      for(let k=0;k<(r.item._n||0);k++){ const e=document.getElementById(`in-${id}-${k}`); if(e) e.classList.add("good"); } }
+  });
+  DATA.forEach(s=>updateSetScore(s.id));
+  updateTotal(); Object.keys(INDEX).forEach(updateMarks); renderMistakes();
+}
+function save(){
+  const inputs={};
+  document.querySelectorAll("input.blank").forEach(el=>{ if(el.value.trim()) inputs[el.id.slice(3)]=el.value; });
+  localStorage.setItem(KEY,JSON.stringify({inputs,picked,correct:[...correct],
+    wrong:[...wrong],fixed:[...fixedS],flag:[...flag]}));
+}
+function blankAnswers(it){
+  const out=[]; it.lines.forEach(l=>{ const m=l.match(/【(.*?)】/g)||[]; m.forEach(x=>out.push(x.slice(1,-1))); });
+  return out;
+}
+function checkOne(id){
+  const r=INDEX[id]; if(!r) return;
+  const it=r.item, fb=document.getElementById("fb-"+id);
+  let res=null; fb.className="fb show";
+  if(r.type==="order"){
+    const sel=picked[id];
+    if(sel===undefined){ fb.innerHTML='<span class="note">先选一个～</span>'; correct.delete(id); }
+    else{
+      document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach((b,k)=>{
+        b.className="opt"+(k===it.a?" good":(k===sel?" bad":""));
+      });
+      if(sel===it.a){ correct.add(id); res=true; fb.innerHTML='<span class="good">✓ 对！</span> <span class="why">'+esc(it.why)+'</span>'; }
+      else{ correct.delete(id); res=false; fb.innerHTML='<span class="bad">✗ 应该先算 '+esc(it.opts[it.a])+'</span> <span class="why">'+esc(it.why)+'</span>'; }
+    }
+  }else if(r.type==="calc"){
+    const ans=blankAnswers(it); let all=true, empty=true, firstBad=-1;
+    ans.forEach((a,k)=>{
+      const el=document.getElementById(`in-${id}-${k}`), v=num(el.value);
+      if(v) empty=false;
+      const ok = v!=="" && num(a)===v;
+      el.className="blank"+(v?(ok?" good":" bad"):"");
+      if(!ok){ all=false; if(firstBad<0) firstBad=k; }
+    });
+    if(empty){ fb.innerHTML='<span class="note">还没算哦～</span>'; correct.delete(id); }
+    else if(all){ correct.add(id); res=true; fb.innerHTML='<span class="good">✓ 每一步都对！</span> <span class="why">'+esc(it.why)+'</span>'; }
+    else{ correct.delete(id); res=false;
+      fb.innerHTML='<span class="bad">✗ 第 '+(firstBad+1)+' 个空开始错了。</span> <span class="why">💡 '+esc(it.why)+'</span>'; }
+  }else{ // fix
+    const sel=picked[id], el=document.getElementById(`in-${id}-0`), v=num(el.value);
+    if(sel===undefined && !v){ fb.innerHTML='<span class="note">先选出错的那一步，再写出正确得数～</span>'; correct.delete(id); }
+    else{
+      const okStep=(sel===it.bad), okNum=(v!=="" && v===num(it.a));
+      document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach((b,k)=>{
+        b.className="opt"+(k===it.bad?" good":(k===sel?" bad":""));
+      });
+      el.className="blank"+(v?(okNum?" good":" bad"):"");
+      if(okStep&&okNum){ correct.add(id); res=true; fb.innerHTML='<span class="good">✓ 全对！</span> <span class="why">'+esc(it.why)+'</span>'; }
+      else{ correct.delete(id); res=false;
+        fb.innerHTML='<span class="bad">✗ '+(okStep?"错的那一步找对了，但得数不对。":"错的是第 "+CN[it.bad]+" 步。")+'</span> <span class="why">'+esc(it.why)+'</span>'; }
+    }
+  }
+  if(res===false){ wrong.add(id); fixedS.delete(id); }
+  else if(res===true && wrong.has(id)){ wrong.delete(id); fixedS.add(id); fb.innerHTML+=' <span class="note">👏 错题订正成功！</span>'; }
+  updateMarks(id); renderMistakes(); updateSetScore(r.setId); updateTotal(); save();
+}
+function updateMarks(id){
+  const el=document.getElementById("it-"+id), bd=document.getElementById("bd-"+id);
+  if(!el) return;
+  el.classList.toggle("wrong",wrong.has(id));
+  el.classList.toggle("fixed",fixedS.has(id)&&!wrong.has(id));
+  el.classList.toggle("flagged",flag.has(id)&&!wrong.has(id)&&!fixedS.has(id));
+  const fb=document.querySelector(`button.flag[data-id="${id}"]`); if(fb) fb.classList.toggle("on",flag.has(id));
+  if(wrong.has(id)) bd.className="badge wrong",bd.textContent="✗ 错题";
+  else if(fixedS.has(id)) bd.className="badge fixed",bd.textContent="✓ 已订正";
+  else if(correct.has(id)) bd.className="badge ok",bd.textContent="✓";
+  else if(flag.has(id)) bd.className="badge",bd.textContent="🚩";
+  else bd.className="badge",bd.textContent="";
+}
+function renderMistakes(){
+  const ids=Object.keys(INDEX).filter(id=>wrong.has(id)||flag.has(id));
+  document.getElementById("msum").textContent=`📕 错题本（${wrong.size} 道待订正${flag.size?"，🚩 "+flag.size+" 道待复习":""}）`;
+  document.getElementById("mlist").innerHTML = !ids.length
+    ? '<p class="empty">还没有错题 👍 做错的题会自动收进这里，点题目可以跳回去订正。</p>'
+    : '<ol class="mlist">'+ids.map(id=>{const r=INDEX[id];
+        return `<li>✗ <a href="#it-${id}" data-go="${id}">${esc(r.item.e)}</a>
+        <span class="where">（${r.setTitle} · ${r.part} 第 ${r.num} 题）</span></li>`;}).join("")+'</ol>';
+  document.getElementById("markStat").textContent=`错题 ${wrong.size} 道 · 已订正 ${fixedS.size} 道 · 标记 ${flag.size} 道`;
+  DATA.forEach(s=>{ let has=false; eachId(s.id,id=>{ if(wrong.has(id)||flag.has(id)) has=true; });
+    document.getElementById(s.id).classList.toggle("nowrong",!has); });
+}
+function eachId(setId,fn){
+  DATA.find(s=>s.id===setId).parts.forEach((p,pi)=>p.items.forEach((it,i)=>fn(`${setId}-${pi}-${i}`,it,p.type)));
+}
+function updateSetScore(setId){
+  let n=0; eachId(setId,id=>{ if(correct.has(id)) n++; });
+  const t=SET_TOTAL[setId];
+  document.getElementById("sc-"+setId).textContent=`本节：${n} / ${t}`+(n===t?"  🎉 全对！":"");
+}
+function updateTotal(){
+  document.getElementById("totalTxt").textContent=`${correct.size} / ${TOTAL} 题答对`;
+  document.getElementById("totalBar").style.width=(correct.size/TOTAL*100)+"%";
+}
+function clearItem(id){
+  const r=INDEX[id];
+  delete picked[id];
+  document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach(b=>b.className="opt");
+  const n = r.type==="calc" ? blankAnswers(r.item).length : (r.type==="fix"?1:0);
+  for(let k=0;k<n;k++){ const e=document.getElementById(`in-${id}-${k}`); if(e){ e.value=""; e.className="blank"; } }
+  document.getElementById("fb-"+id).className="fb";
+  document.getElementById("rv-"+id).classList.remove("show");
+  correct.delete(id);
+}
+function flash(id){
+  const el=document.getElementById("it-"+id); if(!el) return;
+  document.body.classList.remove("only-wrong");
+  document.getElementById("btnOnlyWrong").textContent="只看错题 🔍";
+  el.scrollIntoView({behavior:"smooth",block:"center"});
+  el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),1200);
+  const f=el.querySelector("input"); if(f) setTimeout(()=>f.focus(),400);
+}
+document.addEventListener("click",e=>{
+  const go=e.target.closest("a[data-go]"); if(go){ flash(go.dataset.go); return; }
+  const b=e.target.closest("button"); if(!b) return;
+  const act=b.dataset.act, id=b.dataset.id;
+  if(act==="pick"){
+    picked[id]=+b.dataset.k;
+    document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach(x=>x.className="opt");
+    b.classList.add("pick"); save();
+    if(INDEX[id].type==="order") checkOne(id);
+  }
+  if(act==="one") checkOne(id);
+  if(act==="ans") document.getElementById("rv-"+id).classList.toggle("show");
+  if(act==="flag"){ flag.has(id)?flag.delete(id):flag.add(id); updateMarks(id); renderMistakes(); save(); }
+  if(act==="check") eachId(b.dataset.set,x=>checkOne(x));
+  if(act==="reveal"){
+    const on=b.textContent.indexOf("显示")>-1;
+    eachId(b.dataset.set,x=>document.getElementById("rv-"+x).classList.toggle("show",on));
+    b.textContent=on?"隐藏本节答案":"显示本节答案";
+  }
+  if(act==="clear"){
+    eachId(b.dataset.set,x=>{ clearItem(x); updateMarks(x); });
+    updateSetScore(b.dataset.set); updateTotal(); renderMistakes(); save();
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter"||!e.target.classList.contains("blank")) return;
+  const id=e.target.id.slice(3,e.target.id.lastIndexOf("-"));
+  const k=+e.target.id.slice(e.target.id.lastIndexOf("-")+1);
+  const next=document.getElementById(`in-${id}-${k+1}`);
+  if(next) next.focus(); else checkOne(id);
+});
+document.addEventListener("input",e=>{ if(e.target.classList.contains("blank")) save(); });
+document.getElementById("btnOnlyWrong").addEventListener("click",function(){
+  const on=document.body.classList.toggle("only-wrong");
+  this.textContent=on?"显示全部题目 ↩":"只看错题 🔍";
+  if(on) document.getElementById("mbox").open=false;
+});
+document.getElementById("btnRedo").addEventListener("click",()=>{
+  const ids=[...wrong];
+  if(!ids.length){ alert("现在没有错题，太棒了 🎉"); return; }
+  ids.forEach(id=>{ clearItem(id); updateMarks(id); });
+  DATA.forEach(s=>updateSetScore(s.id)); updateTotal(); renderMistakes(); save(); flash(ids[0]);
+});
+document.getElementById("btnClearMarks").addEventListener("click",()=>{
+  if(!confirm("清除所有错题记录和🚩标记？（已填的答案会保留）")) return;
+  [...wrong,...fixedS,...flag].forEach(id=>{ wrong.delete(id); fixedS.delete(id); flag.delete(id); updateMarks(id); });
+  renderMistakes(); save();
+});
+render();
+</script>
+</body>
+</html>

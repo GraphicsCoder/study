@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>英语专项训练 · 对划线部分提问（四年级）</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#ffffff; --ink:#1f2430; --muted:#6b7280;
+    --line:#e5e7eb; --brand:#2f6df6; --brand-soft:#eaf1ff;
+    --ok:#15803d; --ok-soft:#e8f6ed; --no:#c2410c; --no-soft:#fdeee6;
+    --warn:#92400e; --warn-soft:#fef6e7;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    line-height:1.65;
+    -webkit-text-size-adjust:100%; text-size-adjust:100%;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:24px 16px 80px}
+  header.top{
+    background:linear-gradient(135deg,#2f6df6,#5b8cff);color:#fff;
+    border-radius:16px;padding:22px 24px;margin-bottom:18px;
+  }
+  header.top h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  header.top p{margin:0;opacity:.92;font-size:14px}
+  .score-bar{
+    display:flex;align-items:center;gap:12px;margin-top:14px;
+    background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px;
+  }
+  .bar{flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:#fff;transition:width .35s}
+
+  details.guide{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.guide summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px}
+  details.guide summary::marker{color:var(--brand)}
+  .steps{counter-reset:s;list-style:none;padding:0;margin:4px 0 12px}
+  .steps li{counter-increment:s;position:relative;padding-left:34px;margin:8px 0}
+  .steps li::before{
+    content:counter(s);position:absolute;left:0;top:2px;width:22px;height:22px;border-radius:50%;
+    background:var(--brand-soft);color:var(--brand);font-size:13px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 14px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+  th{background:#f3f5f9;font-weight:600}
+  .pitfall{background:var(--warn-soft);border-left:4px solid #e9a23b;border-radius:8px;padding:10px 14px;margin:8px 0 14px;font-size:14px}
+
+  nav.jump{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+  nav.jump a{
+    font-size:13px;text-decoration:none;color:var(--brand);background:#fff;
+    border:1px solid var(--line);border-radius:99px;padding:6px 12px;
+  }
+  nav.jump a:hover{background:var(--brand-soft)}
+
+  section.set{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:20px;scroll-margin-top:12px}
+  section.set h2{margin:0 0 4px;font-size:19px}
+  h3.part{
+    font-size:15px;margin:18px 0 2px;padding:6px 12px;border-radius:8px;
+    background:var(--brand-soft);color:#24478f;
+  }
+  .tip{font-size:13.5px;color:var(--muted);margin:0 0 14px}
+  .setbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .setbar .sc{font-size:13px;color:var(--muted);margin-left:auto}
+
+  .item{border-top:1px dashed var(--line);padding:13px 0}
+  .q{font-size:16px;margin:0 0 9px}
+  .q .n{display:inline-block;min-width:26px;color:var(--muted);font-size:14px}
+  .ul{text-decoration:underline;text-decoration-color:var(--brand);text-decoration-thickness:2px;text-underline-offset:3px;font-weight:600}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:26px}
+  .tplrow{margin-left:26px;font-size:16px;line-height:2.4;margin-bottom:6px}
+  input.ans{
+    flex:1;min-width:260px;padding:9px 12px;font-size:15px;border:1px solid var(--line);
+    border-radius:10px;font-family:inherit;background:#fcfcfd;
+  }
+  input.blank{
+    width:104px;padding:4px 6px;font-size:15px;font-family:inherit;text-align:center;
+    border:0;border-bottom:2px solid #c9ced8;background:#fcfcfd;margin:0 3px;
+  }
+  input.ans:focus,input.blank:focus{outline:none;border-color:var(--brand);background:#fff}
+  input.ans:focus{box-shadow:0 0 0 3px var(--brand-soft)}
+  input.ans.good{border-color:#86d7a5;background:var(--ok-soft)}
+  input.ans.bad{border-color:#f0b48e;background:var(--no-soft)}
+  input.blank.good{border-bottom-color:#2f9e5f;background:var(--ok-soft);color:var(--ok)}
+  input.blank.bad{border-bottom-color:#e07a3f;background:var(--no-soft);color:var(--no)}
+  button{
+    font-family:inherit;font-size:13.5px;padding:8px 13px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink);
+  }
+  button:hover{background:#f3f5f9}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.primary:hover{filter:brightness(1.07)}
+  .fb{margin:8px 0 0 26px;font-size:14px;display:none}
+  .fb.show{display:block}
+  .fb .good{color:var(--ok)}
+  .fb .bad{color:var(--no)}
+  .fb .note{color:var(--warn)}
+  .reveal{
+    display:none;margin:8px 0 0 26px;font-size:15px;background:var(--ok-soft);
+    border-left:4px solid #86d7a5;border-radius:8px;padding:8px 12px;
+  }
+  .reveal.show{display:block}
+  .reveal b{color:var(--ok)}
+  .hintbox{display:none;margin:8px 0 0 26px;font-size:14px;color:var(--brand);background:var(--brand-soft);border-radius:8px;padding:6px 12px}
+  .hintbox.show{display:block}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:10px}
+
+  /* ===== 错题标记 ===== */
+  .item{border-left:3px solid transparent;padding-left:0;scroll-margin-top:16px;transition:background .3s}
+  .item.wrong{border-left-color:var(--no);background:#fff8f4;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.fixed{border-left-color:#86d7a5;background:#f7fcf9;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flagged{border-left-color:#e9a23b;background:var(--warn-soft);padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flash{background:#fff3cd}
+  .badge{font-size:12px;border-radius:99px;padding:2px 9px;margin-left:8px;vertical-align:2px;white-space:nowrap}
+  .badge.wrong{background:var(--no-soft);color:var(--no);border:1px solid #f0b48e}
+  .badge.fixed{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+  .badge.ok{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+  button.flag{padding:7px 10px;line-height:1}
+  button.flag.on{background:var(--warn-soft);border-color:#e9a23b}
+
+  .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .tools .pill{font-size:13px;color:var(--muted);margin-left:auto}
+  details.mistakes{background:var(--card);border:1px solid #f0b48e;border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.mistakes summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px;color:var(--no)}
+  ol.mlist{margin:0 0 14px;padding-left:22px;font-size:14.5px}
+  ol.mlist li{margin:7px 0}
+  ol.mlist a{color:var(--brand);text-decoration:none}
+  ol.mlist a:hover{text-decoration:underline}
+  ol.mlist .where{color:var(--muted);font-size:12.5px;margin-left:6px}
+  ol.mlist .ul{font-weight:600}
+  .empty{color:var(--muted);font-size:14px;padding:4px 0 14px}
+
+  body.only-wrong .item:not(.wrong):not(.flagged){display:none}
+  body.only-wrong section.set.nowrong{display:none}
+  body.only-wrong details.guide{display:none}
+
+  /* ---------- 手机 / 小屏适配 ---------- */
+  @media (max-width:640px){
+    .wrap{padding:12px 10px 60px}
+    header.top{padding:16px 14px;border-radius:12px;margin-bottom:14px}
+    header.top h1{font-size:20px}
+    header.top p{font-size:13px;line-height:1.8}
+    .score-bar{font-size:12.5px;padding:7px 10px;gap:8px}
+
+    details.guide,details.mistakes{padding:2px 12px;border-radius:12px}
+    details.guide summary,details.mistakes summary{font-size:15px}
+    .steps li{padding-left:28px;margin:7px 0;font-size:14.5px}
+    .steps li::before{width:20px;height:20px;font-size:12px}
+    .pitfall{font-size:13px;padding:10px 11px}
+    table{font-size:12.5px}
+    th,td{padding:5px 6px}
+
+    nav.jump{gap:6px;margin-bottom:14px}
+    nav.jump a{font-size:12.5px;padding:5px 10px}
+    .tools{gap:6px}
+    .tools .pill{margin-left:0;width:100%;font-size:12.5px}
+
+    section.set{padding:14px 12px;border-radius:12px;margin-bottom:14px}
+    section.set h2{font-size:17px}
+    h3.part{font-size:14px;padding:6px 10px}
+    .tip{font-size:13px}
+    .setbar .sc{margin-left:0;width:100%}
+
+    .q{font-size:15px}
+    .q .n{min-width:20px}
+    .row{margin-left:6px;gap:6px}
+    .tplrow{margin-left:6px;font-size:15px;line-height:2.2}
+    .fb,.reveal,.hintbox{margin-left:6px}
+    .reveal{padding:8px 10px;font-size:14px}
+    .fb,.hintbox{font-size:13.5px}
+
+    button{font-size:13px;padding:9px 11px}
+    button.flag{padding:9px 10px}
+    /* 答题框独占一行，按钮排到下面；字号 ≥16px，否则 iOS 点输入框会自动放大页面 */
+    input.ans{flex:1 1 100%;min-width:0;width:100%;font-size:16px;padding:10px 12px}
+    input.blank{font-size:16px;width:96px;max-width:42vw}
+  }
+
+  @media print{
+    body{background:#fff}
+    nav.jump,.setbar button,.row button,header.top .score-bar{display:none}
+    .reveal{display:block !important}
+    section.set{break-inside:avoid;border:0;padding:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>对划线部分提问 · 专项训练</h1>
+  <p>上海四年级 · 7 个专项 · 每个专项先做 <b>A 填空热身</b>，再做 <b>B 完整问句</b> · 点「检查」自动批改，答案点开才显示<br>
+  配套练习：<a href="介词专项练习.html" style="color:#fff">介词 Prepositions</a> · <a href="递等式计算专项练习.html" style="color:#fff">数学 · 递等式计算</a></p>
+  <div class="score-bar">
+    <span>总进度</span>
+    <span class="bar"><i id="totalBar"></i></span>
+    <span id="totalTxt">0 / 0 题答对</span>
+  </div>
+</header>
+
+<details class="guide" open>
+  <summary>📘 方法讲解（先看这里）</summary>
+  <ol class="steps">
+    <li><b>看划线部分是什么</b> → 选对疑问词（见下表）</li>
+    <li><b>把剩下的句子变成一般疑问句</b>：有 be 动词 / can / will 就提到主语前面；只有实义动词就加 <b>do / does / did</b>，动词变回<b>原形</b></li>
+    <li><b>疑问词放句首</b>，划线部分删掉，句号改问号 <b>?</b></li>
+  </ol>
+  <table>
+    <tr><th>划线部分</th><th>疑问词</th><th>划线部分</th><th>疑问词</th></tr>
+    <tr><td>事物</td><td>what</td><td>数量（可数）</td><td>how many + 名词复数</td></tr>
+    <tr><td>人</td><td>who</td><td>价钱 / 不可数量</td><td>how much</td></tr>
+    <tr><td>谁的</td><td>whose</td><td>年龄</td><td>how old</td></tr>
+    <tr><td>地点</td><td>where</td><td>颜色</td><td>what colour</td></tr>
+    <tr><td>时间</td><td>when / what time</td><td>星期</td><td>what day</td></tr>
+    <tr><td>方式</td><td>how</td><td>原因</td><td>why</td></tr>
+    <tr><td>长度 / 时长</td><td>how long</td><td>性质、长相</td><td>What … like?</td></tr>
+  </table>
+  <div class="pitfall">
+    <b>四大易错点</b><br>
+    ① 人称要换：<b>I / we → you</b>，<b>my → your</b>；<br>
+    ② does / did 后面动词一定<b>还原</b>（does he <s>goes</s> → <b>go</b>）；<br>
+    ③ who、what 作<b>主语</b>时不加助动词、语序不变（Who cleans the car?）；<br>
+    ④ there be 句型要把 be 提到 there 前面（There are → <b>Are there</b>）。
+  </div>
+</details>
+
+<nav class="jump" id="jump"></nav>
+
+<div class="tools">
+  <button id="btnOnlyWrong">只看错题 🔍</button>
+  <button id="btnRedo">重做所有错题</button>
+  <button id="btnClearMarks">清除错题记录</button>
+  <span class="pill" id="markStat"></span>
+</div>
+
+<details class="mistakes" id="mbox">
+  <summary id="msum">📕 错题本（0）</summary>
+  <div id="mlist"></div>
+</details>
+
+<div id="app"></div>
+
+<footer>做错的题会自动进「错题本」并标红 ✗，订正对了变成 ✓ 已订正 · 🚩 可手动标记要复习的题 · 记录自动保存在本机浏览器</footer>
+</div>
+
+<script>
+const DATA = [
+{
+  id:"s1", title:"专项一 · be 动词句（am / is / are）",
+  tip:"要点：be 动词直接提到主语前面。注意把 my 换成 your。",
+  parts:[
+  {label:"A · 填空热身（每空一词）", type:"blank", items:[
+    {q:"The cat is 【under the table】.", tpl:"___ ___ the cat?", a:[["where"],["is"]], hint:"Where"},
+    {q:"Those books are 【Peter's】.", tpl:"___ ___ are those?", a:[["whose"],["books"]], hint:"Whose"},
+    {q:"My father is 【forty】 years old.", tpl:"___ ___ ___ your father?", a:[["how"],["old"],["is"]], hint:"How old"},
+    {q:"The leaves are 【green】 in spring.", tpl:"___ ___ ___ the leaves in spring?", a:[["what"],["colour","color"],["are"]], hint:"What colour"},
+    {q:"It is 【Friday】 today.", tpl:"___ ___ ___ it today?", a:[["what"],["day"],["is"]], hint:"What day"}
+  ]},
+  {label:"B · 写出完整问句", type:"full", items:[
+    {q:"The pencil is 【in my schoolbag】.", hint:"Where", a:["where is the pencil"]},
+    {q:"Those are 【Jack's】 gloves.", hint:"Whose", a:["whose gloves are those","whose are those gloves"]},
+    {q:"My new skirt is 【pink】.", hint:"What colour", a:["what colour is your new skirt","what colour is your skirt"]},
+    {q:"The girl in red is 【my classmate】.", hint:"Who", a:["who is the girl in red"]},
+    {q:"It is 【half past six】 now.", hint:"What time", a:["what time is it now","what time is it"]},
+    {q:"Today is 【Tuesday】.", hint:"What day", a:["what day is today","what day is it today"]},
+    {q:"The elephants are 【big and strong】.", hint:"What … like", a:["what are the elephants like"]},
+    {q:"My grandfather is 【seventy】 years old.", hint:"How old", a:["how old is your grandfather"]},
+    {q:"The pears are 【ten yuan a kilo】.", hint:"How much", a:["how much are the pears"]},
+    {q:"Her favourite season is 【winter】.", hint:"What", a:["what is her favourite season"]}
+  ]}]
+},
+{
+  id:"s2", title:"专项二 · There be 句型",
+  tip:"要点：be 和 there 调换位置 → Are there / Is there。问数量用 How many + 名词复数 + are there…？",
+  parts:[
+  {label:"A · 填空热身（每空一词）", type:"blank", items:[
+    {q:"There are 【four】 museums in this city.", tpl:"___ ___ ___ ___ there in this city?", a:[["how"],["many"],["museums"],["are"]], hint:"How many"},
+    {q:"There is 【a bird】 in the tree.", tpl:"___ ___ in the tree?", a:[["what"],["is"]], hint:"What"},
+    {q:"There are some toys 【on the bed】.", tpl:"___ ___ the toys?", a:[["where"],["are"]], hint:"Where"},
+    {q:"There are 【seven】 days in a week.", tpl:"___ ___ days ___ ___ in a week?", a:[["how"],["many"],["are"],["there"]], hint:"How many"},
+    {q:"There is some juice 【in the bottle】.", tpl:"___ ___ the juice?", a:[["where"],["is"]], hint:"Where"}
+  ]},
+  {label:"B · 写出完整问句", type:"full", items:[
+    {q:"There are 【four】 museums in this city.", hint:"How many", a:["how many museums are there in this city"]},
+    {q:"There is 【a cat】 under the chair.", hint:"What", a:["what is under the chair","what is there under the chair"]},
+    {q:"There are some books 【on the desk】.", hint:"Where", a:["where are the books"]},
+    {q:"There are 【twelve】 months in a year.", hint:"How many", a:["how many months are there in a year"]},
+    {q:"There is 【a big park】 near my home.", hint:"What", a:["what is near your home","what is there near your home"]},
+    {q:"There are 【five】 people in Tom's family.", hint:"How many", a:["how many people are there in tom's family"]},
+    {q:"There is some milk 【in the glass】.", hint:"Where", a:["where is the milk"]},
+    {q:"There is 【an English book】 in the bag.", hint:"What", a:["what is in the bag","what is there in the bag"]},
+    {q:"There are 【two】 birds in the tree.", hint:"How many", a:["how many birds are there in the tree"]},
+    {q:"There is a clock 【on the wall】.", hint:"Where", a:["where is the clock"]}
+  ]}]
+},
+{
+  id:"s3", title:"专项三 · 一般现在时（实义动词，要用 do / does）",
+  tip:"要点：主语是 he / she / it / 单数名字 → does；其他 → do。后面的动词一律还原！",
+  parts:[
+  {label:"A · 填空热身（每空一词）", type:"blank", items:[
+    {q:"Tom does his homework 【in the evening】.", tpl:"___ ___ Tom ___ his homework?", a:[["when"],["does"],["do"]], hint:"When"},
+    {q:"They go to school 【by bus】.", tpl:"___ ___ they ___ to school?", a:[["how"],["do"],["go"]], hint:"How"},
+    {q:"I have 【two】 hamburgers for lunch.", tpl:"___ ___ hamburgers ___ you ___ for lunch?", a:[["how"],["many"],["do"],["have"]], hint:"How many（I → you）"},
+    {q:"She likes 【swimming】.", tpl:"___ ___ she ___?", a:[["what"],["does"],["like"]], hint:"What"},
+    {q:"My mother works 【in a hospital】.", tpl:"___ ___ your mother ___?", a:[["where"],["does"],["work"]], hint:"Where"}
+  ]},
+  {label:"B · 写出完整问句", type:"full", items:[
+    {q:"Tom does his homework 【in the evening】.", hint:"When", a:["when does tom do his homework"]},
+    {q:"He goes to school 【by bike】.", hint:"How", a:["how does he go to school"]},
+    {q:"I like 【apples】 very much.", hint:"What（I → you）", a:["what do you like very much"]},
+    {q:"They play football 【on the playground】.", hint:"Where", a:["where do they play football"]},
+    {q:"My sister gets up 【at six thirty】.", hint:"What time（my → your）", a:["what time does your sister get up","when does your sister get up"]},
+    {q:"She has 【two】 cousins.", hint:"How many", a:["how many cousins does she have"]},
+    {q:"We go to the library 【on Saturdays】.", hint:"When（we → you）", a:["when do you go to the library"]},
+    {q:"Peter likes winter 【because he can make snowmen】.", hint:"Why", a:["why does peter like winter"]},
+    {q:"The children have lunch 【at school】.", hint:"Where", a:["where do the children have lunch"]},
+    {q:"Mr Li teaches 【English】.", hint:"What", a:["what does mr li teach"]}
+  ]}]
+},
+{
+  id:"s4", title:"专项四 · 现在进行时（be + V-ing）",
+  tip:"要点：be 动词提前，动词的 -ing 形式留在后面不要动。问「在干什么」用 What … doing?",
+  parts:[
+  {label:"A · 填空热身（每空一词）", type:"blank", items:[
+    {q:"They are playing 【football】.", tpl:"___ ___ they ___?", a:[["what"],["are"],["playing"]], hint:"What"},
+    {q:"Kitty is singing 【in the music room】.", tpl:"___ ___ Kitty ___?", a:[["where"],["is"],["singing"]], hint:"Where"},
+    {q:"The boys are 【running】 on the playground.", tpl:"___ ___ the boys ___ on the playground?", a:[["what"],["are"],["doing"]], hint:"What … doing"},
+    {q:"We are watching 【a film】.", tpl:"___ ___ you ___?", a:[["what"],["are"],["watching"]], hint:"What（we → you）"},
+    {q:"He is talking 【to his teacher】.", tpl:"___ ___ he ___ to?", a:[["who"],["is"],["talking"]], hint:"Who"}
+  ]},
+  {label:"B · 写出完整问句", type:"full", items:[
+    {q:"They are playing 【football】 on the playground.", hint:"What", a:["what are they playing on the playground","what are they playing"]},
+    {q:"Kitty is reading a book 【in the living room】.", hint:"Where", a:["where is kitty reading a book","where is kitty reading"]},
+    {q:"The boys are 【swimming】 now.", hint:"What … doing", a:["what are the boys doing now","what are the boys doing"]},
+    {q:"【Alice】 is drawing a picture.", hint:"Who（主语）", a:["who is drawing a picture"]},
+    {q:"My mother is cooking 【in the kitchen】.", hint:"Where（my → your）", a:["where is your mother cooking"]},
+    {q:"He is writing 【an e-mail】.", hint:"What", a:["what is he writing"]},
+    {q:"The cat is sleeping 【under the bed】.", hint:"Where", a:["where is the cat sleeping"]},
+    {q:"We are singing 【an English song】.", hint:"What（we → you）", a:["what are you singing"]},
+    {q:"Ben is flying a kite 【with his father】. ★", hint:"Who … with", a:["who is ben flying a kite with","with whom is ben flying a kite"]},
+    {q:"They are 【cleaning the classroom】.", hint:"What … doing", a:["what are they doing"]}
+  ]}]
+},
+{
+  id:"s5", title:"专项五 · 划线的是主语（★最容易错）",
+  tip:"要点：划线部分就是句子的主语时，用 who / what 直接替换它，后面语序完全不变，也不加 do / does！",
+  parts:[
+  {label:"A · 填空热身（每空一词）", type:"blank", items:[
+    {q:"【My father】 cleans the car on Sundays.", tpl:"___ ___ the car on Sundays?", a:[["who"],["cleans"]], hint:"Who（动词保留三单）"},
+    {q:"【A cat】 is under the chair.", tpl:"___ ___ under the chair?", a:[["what"],["is"]], hint:"What"},
+    {q:"【Alice】 likes drawing.", tpl:"___ ___ drawing?", a:[["who"],["likes"]], hint:"Who"},
+    {q:"【Jim and Tom】 are in the playground.", tpl:"___ ___ in the playground?", a:[["who"],["is","are"]], hint:"Who"},
+    {q:"【The dog】 is running fast.", tpl:"___ ___ running fast?", a:[["what"],["is"]], hint:"What"}
+  ]},
+  {label:"B · 写出完整问句", type:"full", items:[
+    {q:"【My father】 cleans the car on Sundays.", hint:"Who（动词保留三单 cleans）", a:["who cleans the car on sundays"]},
+    {q:"【Kitty and Alice】 are in the music room.", hint:"Who", a:["who is in the music room","who are in the music room"]},
+    {q:"【A pen】 is on the desk.", hint:"What", a:["what is on the desk"]},
+    {q:"【Tom】 likes playing basketball.", hint:"Who", a:["who likes playing basketball"]},
+    {q:"【The little boy】 is crying.", hint:"Who", a:["who is crying"]},
+    {q:"【Jim's mother】 works in a hospital.", hint:"Who", a:["who works in a hospital"]},
+    {q:"【Some apples】 are in the basket.", hint:"What", a:["what is in the basket","what are in the basket"]},
+    {q:"【My brother】 can swim very fast.", hint:"Who", a:["who can swim very fast"]},
+    {q:"【Peter】 went to the park yesterday.", hint:"Who（went 不变）", a:["who went to the park yesterday"]},
+    {q:"【The dog】 is running after the ball.", hint:"What", a:["what is running after the ball"]}
+  ]}]
+},
+{
+  id:"s6", title:"专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）",
+  tip:"要点：how many 后跟可数名词复数；how much 问价钱或不可数；how old 年龄；how long 长度或时长。",
+  parts:[
+  {label:"A · 填空热身（每空一词）", type:"blank", items:[
+    {q:"There are 【thirty】 students in my class.", tpl:"___ ___ students ___ ___ in your class?", a:[["how"],["many"],["are"],["there"]], hint:"How many"},
+    {q:"The book is 【twenty yuan】.", tpl:"___ ___ ___ the book?", a:[["how"],["much"],["is"]], hint:"How much"},
+    {q:"My sister is 【nine】 years old.", tpl:"___ ___ ___ your sister?", a:[["how"],["old"],["is"]], hint:"How old"},
+    {q:"School starts 【at eight o'clock】.", tpl:"___ ___ ___ school ___?", a:[["what"],["time"],["does"],["start"]], hint:"What time"},
+    {q:"The rope is 【two metres】 long.", tpl:"___ ___ ___ the rope?", a:[["how"],["long"],["is"]], hint:"How long"}
+  ]},
+  {label:"B · 写出完整问句", type:"full", items:[
+    {q:"There are 【thirty-five】 students in my class.", hint:"How many（my → your）", a:["how many students are there in your class"]},
+    {q:"The toy car is 【ninety-nine yuan】.", hint:"How much", a:["how much is the toy car"]},
+    {q:"My cousin is 【eleven】 years old.", hint:"How old", a:["how old is your cousin"]},
+    {q:"School starts 【at eight o'clock】.", hint:"What time", a:["what time does school start","when does school start"]},
+    {q:"I have 【three】 story books.", hint:"How many（I → you）", a:["how many story books do you have"]},
+    {q:"There is 【some】 water in the bottle.", hint:"How much（不可数）", a:["how much water is there in the bottle","how much water is in the bottle"]},
+    {q:"The ruler is 【twenty centimetres】 long.", hint:"How long", a:["how long is the ruler"]},
+    {q:"She buys 【four】 kilos of apples.", hint:"How many", a:["how many kilos of apples does she buy"]},
+    {q:"The bananas are 【eight yuan】.", hint:"How much", a:["how much are the bananas"]},
+    {q:"He watches TV 【for an hour】 every day. ★", hint:"How long", a:["how long does he watch tv every day"]}
+  ]}]
+},
+{
+  id:"s7", title:"专项七 · can / be going to / 一般过去时（综合提高）",
+  tip:"要点：can、was / were、be going to 里的 be 都直接提前；过去时的实义动词用 did + 动词原形。",
+  parts:[
+  {label:"A · 填空热身（每空一词）", type:"blank", items:[
+    {q:"He can play 【the guitar】.", tpl:"___ ___ he ___?", a:[["what"],["can"],["play"]], hint:"What"},
+    {q:"We are going to the park 【tomorrow】.", tpl:"___ ___ you ___ to the park?", a:[["when"],["are"],["going"]], hint:"When（we → you）"},
+    {q:"They went to Beijing 【last summer】.", tpl:"___ ___ they ___ to Beijing?", a:[["when"],["did"],["go"]], hint:"When（went → go）"},
+    {q:"I was 【at home】 yesterday.", tpl:"___ ___ you yesterday?", a:[["where"],["were"]], hint:"Where（I → you）"},
+    {q:"Tom bought 【a new bag】 last week.", tpl:"___ ___ Tom ___ last week?", a:[["what"],["did"],["buy"]], hint:"What（bought → buy）"}
+  ]},
+  {label:"B · 写出完整问句", type:"full", items:[
+    {q:"He can play 【the piano】.", hint:"What", a:["what can he play"]},
+    {q:"We are going to the zoo 【tomorrow】.", hint:"When（we → you）", a:["when are you going to the zoo"]},
+    {q:"They are going to plant trees 【in the park】.", hint:"Where", a:["where are they going to plant trees"]},
+    {q:"She can swim 【very well】.", hint:"How", a:["how can she swim"]},
+    {q:"I was 【at home】 yesterday.", hint:"Where（I → you, was → were）", a:["where were you yesterday"]},
+    {q:"They went to Beijing 【last summer】.", hint:"When（went → go）", a:["when did they go to beijing"]},
+    {q:"Tom bought 【a new bag】 yesterday.", hint:"What（bought → buy）", a:["what did tom buy yesterday"]},
+    {q:"The film was 【very interesting】.", hint:"How", a:["how was the film"]},
+    {q:"We are going to have 【a picnic】 this Sunday.", hint:"What（we → you）", a:["what are you going to have this sunday"]},
+    {q:"She did her homework 【at home】 last night.", hint:"Where", a:["where did she do her homework last night"]}
+  ]}]
+}
+];
+
+const TOTAL = DATA.reduce((n,s)=>n + s.parts.reduce((m,p)=>m+p.items.length,0), 0);
+const SET_TOTAL = {}; DATA.forEach(s=>SET_TOTAL[s.id]=s.parts.reduce((m,p)=>m+p.items.length,0));
+const KEY = "ul-question-practice-v2";
+let saved = {}; try{ saved = JSON.parse(localStorage.getItem(KEY) || "{}"); }catch(e){ saved = {}; }
+const correct = new Set(saved.correct || []);
+const wrong   = new Set(saved.wrong   || []);   // 做错过、还没订正
+const fixed   = new Set(saved.fixed   || []);   // 做错过、已经订正
+const flag    = new Set(saved.flag    || []);   // 手动标记「要复习」
+const INDEX = {};   // id -> {item, type, setId, setTitle, part, num}
+
+function norm(s){
+  return s.toLowerCase()
+    .replace(/[‘’´]/g,"'")
+    .replace(/[?.!,;:]+$/g,"")
+    .replace(/\s+/g," ").trim()
+    .replace(/\bwhat's\b/g,"what is").replace(/\bwho's\b/g,"who is")
+    .replace(/\bwhere's\b/g,"where is").replace(/\bwhen's\b/g,"when is")
+    .replace(/\bhow's\b/g,"how is").replace(/\bit's\b/g,"it is")
+    .replace(/\bthere's\b/g,"there is").replace(/\bthey're\b/g,"they are")
+    .replace(/\byou're\b/g,"you are").replace(/\bcolor\b/g,"colour")
+    .replace(/\bmr\.\b/g,"mr").replace(/\bmrs\.\b/g,"mrs")
+    .replace(/\s+/g," ").trim();
+}
+const word = s => s.toLowerCase().replace(/[^a-z']/g,"").trim();
+const pretty = a => a.charAt(0).toUpperCase() + a.slice(1) + "?";
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const mark = q => esc(q).replace(/【(.+?)】/g, '<span class="ul">$1</span>');
+
+function render(){
+  const app = document.getElementById("app"), jump = document.getElementById("jump");
+  DATA.forEach(set=>{
+    jump.insertAdjacentHTML("beforeend", `<a href="#${set.id}">${set.title.split(" · ")[0]}</a>`);
+    const sec = document.createElement("section");
+    sec.className = "set"; sec.id = set.id;
+    sec.innerHTML = `<h2>${set.title}</h2><p class="tip">${set.tip}</p>
+      <div class="setbar">
+        <button class="primary" data-act="check" data-set="${set.id}">检查本节</button>
+        <button data-act="reveal" data-set="${set.id}">显示本节答案</button>
+        <button data-act="clear" data-set="${set.id}">清空重做</button>
+        <span class="sc" id="sc-${set.id}"></span>
+      </div>`;
+    set.parts.forEach((part,pi)=>{
+      sec.insertAdjacentHTML("beforeend", `<h3 class="part">${part.label}</h3>`);
+      part.items.forEach((it,i)=>{
+        const id = `${set.id}-${pi}-${i}`;
+        INDEX[id] = {item:it, type:part.type, setId:set.id,
+                     setTitle:set.title.split(" · ")[0], part:part.label.split(" · ")[0], num:i+1};
+        const div = document.createElement("div");
+        div.className = "item";
+        let body;
+        if(part.type === "blank"){
+          const segs = it.tpl.split("___");
+          let html = "";
+          segs.forEach((seg,k)=>{
+            html += esc(seg);
+            if(k < segs.length-1) html += `<input class="blank" id="in-${id}-${k}" autocomplete="off" spellcheck="false">`;
+          });
+          body = `<div class="tplrow">${html}</div>
+            <div class="row">
+              <button data-act="one" data-id="${id}">检查</button>
+              <button data-act="hint" data-id="${id}">提示</button>
+              <button data-act="ans" data-id="${id}">答案</button>
+              <button class="flag" data-act="flag" data-id="${id}" title="标记这道题，之后要复习">🚩</button>
+            </div>`;
+        }else{
+          body = `<div class="row">
+              <input class="ans" id="in-${id}" placeholder="在这里写出完整的问句…" autocomplete="off" spellcheck="false">
+              <button data-act="one" data-id="${id}">检查</button>
+              <button data-act="hint" data-id="${id}">提示</button>
+              <button data-act="ans" data-id="${id}">答案</button>
+              <button class="flag" data-act="flag" data-id="${id}" title="标记这道题，之后要复习">🚩</button>
+            </div>`;
+        }
+        const rv = part.type === "blank"
+          ? it.tpl.split("___").map((s,k)=> esc(s) + (k < it.a.length ? "<b>"+it.a[k][0]+"</b>" : "")).join("")
+          : it.a.map(pretty).join(" &nbsp;/&nbsp; ");
+        div.id = "it-" + id;
+        div.innerHTML = `<p class="q"><span class="n">${i+1}.</span>${mark(it.q)}<span class="badge" id="bd-${id}"></span></p>${body}
+          <div class="hintbox" id="hint-${id}">💡 用 <b>${it.hint}</b> 开头</div>
+          <div class="fb" id="fb-${id}"></div>
+          <div class="reveal" id="rv-${id}"><b>参考答案：</b>${rv}</div>`;
+        sec.appendChild(div);
+      });
+    });
+    app.appendChild(sec);
+  });
+  const inputs = saved.inputs || {};
+  Object.keys(inputs).forEach(k=>{ const el=document.getElementById("in-"+k); if(el) el.value = inputs[k]; });
+  correct.forEach(id=>{
+    const rec = INDEX[id]; if(!rec) return;
+    if(rec.type==="blank") rec.item.a.forEach((x,k)=>{const e=document.getElementById(`in-${id}-${k}`); if(e) e.classList.add("good");});
+    else { const e=document.getElementById("in-"+id); if(e) e.classList.add("good"); }
+  });
+  DATA.forEach(s=>updateSetScore(s.id));
+  updateTotal();
+  Object.keys(INDEX).forEach(updateMarks);
+  renderMistakes();
+}
+/* ===== 错题标记 ===== */
+function updateMarks(id){
+  const el = document.getElementById("it-"+id), bd = document.getElementById("bd-"+id);
+  if(!el) return;
+  el.classList.toggle("wrong", wrong.has(id));
+  el.classList.toggle("fixed", fixed.has(id) && !wrong.has(id));
+  el.classList.toggle("flagged", flag.has(id) && !wrong.has(id) && !fixed.has(id));
+  const fb = document.querySelector(`button.flag[data-id="${id}"]`);
+  if(fb) fb.classList.toggle("on", flag.has(id));
+  if(wrong.has(id))      bd.className="badge wrong", bd.textContent="✗ 错题";
+  else if(fixed.has(id)) bd.className="badge fixed", bd.textContent="✓ 已订正";
+  else if(correct.has(id)) bd.className="badge ok", bd.textContent="✓";
+  else bd.className="badge", bd.textContent="";
+  if(flag.has(id) && bd.textContent==="") bd.className="badge", bd.textContent="🚩";
+}
+function renderMistakes(){
+  const ids = Object.keys(INDEX).filter(id=>wrong.has(id)||flag.has(id))
+    .sort((a,b)=>Object.keys(INDEX).indexOf(a)-Object.keys(INDEX).indexOf(b));
+  const box = document.getElementById("mlist");
+  document.getElementById("msum").textContent = `📕 错题本（${wrong.size} 道待订正${flag.size?"，🚩 "+flag.size+" 道待复习":""}）`;
+  if(!ids.length){
+    box.innerHTML = '<p class="empty">还没有错题 👍 做错的题会自动收进这里，点题目可以跳回去订正。</p>';
+  }else{
+    box.innerHTML = '<ol class="mlist">' + ids.map(id=>{
+      const r = INDEX[id];
+      const tag = wrong.has(id) ? "✗" : "🚩";
+      return `<li>${tag} <a href="#it-${id}" data-go="${id}">${mark(r.item.q)}</a>
+        <span class="where">（${r.setTitle} · ${r.part} 第 ${r.num} 题 · 考点 ${esc(r.item.hint)}）</span></li>`;
+    }).join("") + "</ol>";
+  }
+  const done = fixed.size;
+  document.getElementById("markStat").textContent =
+    `错题 ${wrong.size} 道 · 已订正 ${done} 道 · 标记 ${flag.size} 道`;
+  DATA.forEach(s=>{
+    let has = false; eachId(s.id, id=>{ if(wrong.has(id)||flag.has(id)) has = true; });
+    document.getElementById(s.id).classList.toggle("nowrong", !has);
+  });
+}
+function save(){
+  const inputs = {};
+  document.querySelectorAll("input.ans, input.blank").forEach(el=>{
+    if(el.value.trim()) inputs[el.id.slice(3)] = el.value;
+  });
+  localStorage.setItem(KEY, JSON.stringify({inputs, correct:[...correct],
+    wrong:[...wrong], fixed:[...fixed], flag:[...flag]}));
+}
+function checkOne(id){
+  const rec = INDEX[id]; if(!rec) return;
+  const it = rec.item, fb = document.getElementById("fb-"+id);
+  let result = null;   // true=对 false=错 null=没作答
+  fb.className = "fb show";
+  if(rec.type === "blank"){
+    let allRight = true, empty = true;
+    it.a.forEach((alts,k)=>{
+      const el = document.getElementById(`in-${id}-${k}`), v = word(el.value);
+      if(v) empty = false;
+      const ok = alts.some(x=>word(x)===v);
+      el.className = "blank " + (v ? (ok ? "good" : "bad") : "");
+      if(!ok) allRight = false;
+    });
+    if(empty){ fb.innerHTML = '<span class="note">还没写哦～每空只填一个单词。</span>'; correct.delete(id); }
+    else if(allRight){ fb.innerHTML = '<span class="good">✓ 全对！</span>'; correct.add(id); result = true; }
+    else { fb.innerHTML = '<span class="bad">✗ 红色的空再想想：</span> 疑问词用 <b>'+it.hint+'</b>；检查助动词（do / does / did / is / are）和动词形式。'; correct.delete(id); result = false; }
+  }else{
+    const el = document.getElementById("in-"+id), raw = el.value.trim();
+    if(!raw){ fb.innerHTML = '<span class="note">还没写哦～</span>'; el.className="ans"; correct.delete(id); }
+    else if(it.a.some(a=>norm(a)===norm(raw))){
+      el.className = "ans good"; correct.add(id); result = true;
+      let note = "";
+      if(!raw.endsWith("?")) note += " 别忘了句末的问号 <b>?</b>！";
+      if(raw[0] !== raw[0].toUpperCase()) note += " 句首字母要大写。";
+      fb.innerHTML = '<span class="good">✓ 正确！</span>' + (note ? '<span class="note">'+note+'</span>' : "");
+    }else{
+      el.className = "ans bad"; correct.delete(id); result = false;
+      fb.innerHTML = '<span class="bad">✗ 再想想：</span> 疑问词用 <b>'+it.hint+'</b>，然后检查①助动词 ②动词形式 ③人称（I/we→you, my→your）。';
+    }
+  }
+  if(result === false){ wrong.add(id); fixed.delete(id); }
+  else if(result === true && wrong.has(id)){ wrong.delete(id); fixed.add(id);
+    fb.innerHTML += ' <span class="note">👏 错题订正成功！</span>'; }
+  updateMarks(id); renderMistakes();
+  updateSetScore(rec.setId); updateTotal(); save();
+}
+function eachId(setId, fn){
+  const set = DATA.find(s=>s.id===setId);
+  set.parts.forEach((p,pi)=>p.items.forEach((it,i)=>fn(`${setId}-${pi}-${i}`, it, p.type)));
+}
+function updateSetScore(setId){
+  let n = 0; eachId(setId, id=>{ if(correct.has(id)) n++; });
+  const t = SET_TOTAL[setId];
+  document.getElementById("sc-"+setId).textContent = `本节：${n} / ${t}` + (n===t ? "  🎉 全对！" : "");
+}
+function updateTotal(){
+  const n = correct.size;
+  document.getElementById("totalTxt").textContent = `${n} / ${TOTAL} 题答对`;
+  document.getElementById("totalBar").style.width = (n/TOTAL*100) + "%";
+}
+document.addEventListener("click", e=>{
+  const go = e.target.closest("a[data-go]");
+  if(go){ flash(go.dataset.go); return; }
+  const b = e.target.closest("button"); if(!b) return;
+  const act = b.dataset.act;
+  if(act==="one") checkOne(b.dataset.id);
+  if(act==="hint") document.getElementById("hint-"+b.dataset.id).classList.toggle("show");
+  if(act==="ans") document.getElementById("rv-"+b.dataset.id).classList.toggle("show");
+  if(act==="flag"){
+    const id = b.dataset.id;
+    flag.has(id) ? flag.delete(id) : flag.add(id);
+    updateMarks(id); renderMistakes(); save();
+  }
+  if(act==="check") eachId(b.dataset.set, id=>checkOne(id));
+  if(act==="reveal"){
+    const on = b.textContent.indexOf("显示") > -1;
+    eachId(b.dataset.set, id=>document.getElementById("rv-"+id).classList.toggle("show", on));
+    b.textContent = on ? "隐藏本节答案" : "显示本节答案";
+  }
+  if(act==="clear"){
+    eachId(b.dataset.set, (id, it, type)=>{
+      if(type==="blank") it.a.forEach((x,k)=>{const el=document.getElementById(`in-${id}-${k}`); el.value=""; el.className="blank";});
+      else { const el=document.getElementById("in-"+id); el.value=""; el.className="ans"; }
+      document.getElementById("fb-"+id).className="fb";
+      document.getElementById("rv-"+id).classList.remove("show");
+      document.getElementById("hint-"+id).classList.remove("show");
+      correct.delete(id); updateMarks(id);
+    });
+    updateSetScore(b.dataset.set); updateTotal(); renderMistakes(); save();
+  }
+});
+/* ===== 错题本工具条 ===== */
+function flash(id){
+  const el = document.getElementById("it-"+id); if(!el) return;
+  document.body.classList.remove("only-wrong");
+  document.getElementById("btnOnlyWrong").textContent = "只看错题 🔍";
+  el.scrollIntoView({behavior:"smooth", block:"center"});
+  el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"), 1200);
+  const first = el.querySelector("input"); if(first) setTimeout(()=>first.focus(), 400);
+}
+function clearItem(id){
+  const r = INDEX[id];
+  if(r.type==="blank") r.item.a.forEach((x,k)=>{const el=document.getElementById(`in-${id}-${k}`); el.value=""; el.className="blank";});
+  else { const el=document.getElementById("in-"+id); el.value=""; el.className="ans"; }
+  document.getElementById("fb-"+id).className="fb";
+  document.getElementById("rv-"+id).classList.remove("show");
+  correct.delete(id);
+}
+document.getElementById("btnOnlyWrong").addEventListener("click", function(){
+  const on = document.body.classList.toggle("only-wrong");
+  this.textContent = on ? "显示全部题目 ↩" : "只看错题 🔍";
+  if(on) document.getElementById("mbox").open = false;
+});
+document.getElementById("btnRedo").addEventListener("click", ()=>{
+  const ids = [...wrong];
+  if(!ids.length){ alert("现在没有错题，太棒了 🎉"); return; }
+  ids.forEach(id=>{ clearItem(id); updateMarks(id); });
+  DATA.forEach(s=>updateSetScore(s.id)); updateTotal(); renderMistakes(); save();
+  flash(ids[0]);
+});
+document.getElementById("btnClearMarks").addEventListener("click", ()=>{
+  if(!confirm("清除所有错题记录和🚩标记？（已填的答案会保留）")) return;
+  [...wrong,...fixed,...flag].forEach(id=>{ wrong.delete(id); fixed.delete(id); flag.delete(id); updateMarks(id); });
+  renderMistakes(); save();
+});
+document.addEventListener("keydown", e=>{
+  const el = e.target;
+  if(e.key!=="Enter") return;
+  if(el.classList.contains("ans")) checkOne(el.id.slice(3));
+  else if(el.classList.contains("blank")) checkOne(el.id.slice(3, el.id.lastIndexOf("-")));
+});
+document.addEventListener("input", e=>{
+  if(e.target.classList.contains("ans") || e.target.classList.contains("blank")) save();
+});
+render();
+</script>
+</body>
+</html>
