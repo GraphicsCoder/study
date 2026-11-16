@@ -1,4 +1,6 @@
-/* 复现：自动弹出 → 点「以后再说」→ 再点右下角小圆点，还能不能打开登录框 */
+/* 交互测试：真的把按钮点下去，看面板的开关和状态流转对不对
+   （第一版测试里 querySelector 每次返回新桩件，点击路径根本没覆盖到，
+     「以后再说」之后打不开登录框的问题就是这么漏掉的） */
 const fs = require("fs");
 const vm = require("vm");
 const SRC = fs.readFileSync("同步.js", "utf8");
@@ -14,9 +16,9 @@ function makeDoc() {
       get innerHTML() { return this._html; },
       set innerHTML(h) {
         this._html = h;
-        // 把 id="xxx" 解析出来登记，供 querySelector 查找
-        const ids = [...h.matchAll(/id="([^"]+)"/g)].map((m) => m[1]);
-        for (const id of ids) { const c = el("div"); c.id = id; byId[id] = c; }
+        for (const m of h.matchAll(/id="([^"]+)"/g)) {
+          const c = el("div"); c.id = m[1]; byId[m[1]] = c;
+        }
       },
       appendChild(c) { this.children.push(c); if (c.id) byId[c.id] = c; return c; },
       addEventListener(t, fn) { (this._ev ||= {})[t] = fn; },
@@ -31,74 +33,114 @@ function makeDoc() {
     return e;
   }
   const doc = {
-    _byId: byId,
-    head: el("head"), body: el("body"),
-    createElement: el,
-    addEventListener() {},
+    _byId: byId, head: el("head"), body: el("body"),
+    createElement: el, addEventListener() {},
     currentScript: { dataset: { key: "math-tdsjs-v1" } },
   };
-  // chip 是第 2 个被创建的元素（第 1 个是 style）
   let n = 0;
   const orig = doc.createElement;
-  doc.createElement = (t) => { const e = orig(t); if (++n === 2) { e.id = "syncchip"; byId.syncchip = e; } return e; };
+  doc.createElement = (t) => {
+    const e = orig(t);
+    if (++n === 2) { e.id = "syncchip"; byId.syncchip = e; }
+    if (t === "div" && n === 3) { e.id = "syncmask"; byId.syncmask = e; }
+    return e;
+  };
   return doc;
 }
 
-const store = {};
-const ls = {
-  getItem: (k) => (k in store ? store[k] : null),
-  setItem: (k, v) => { store[k] = String(v); },
-  removeItem: (k) => { delete store[k]; },
-};
-
-const doc = makeDoc();
-let autoPopFn = null;
-const ctx = {
-  document: doc,
-  window: { addEventListener() {} },
-  localStorage: ls,
-  sessionStorage: { getItem: () => null, setItem() {} },
-  navigator: {}, location: { reload() {} }, console,
-  setTimeout: (fn, ms) => { if (ms === 600) autoPopFn = fn; else fn(); return 0; },
-  clearTimeout: () => {},
-  fetch: () => Promise.resolve({ json: () => Promise.resolve({ ok: true, blob: {} }) }),
-};
-vm.createContext(ctx);
-vm.runInContext(SRC, ctx);
-
-const mask = doc.body.children.find((c) => c.id === "syncmask") || doc._byId.syncmask;
-const chip = doc._byId.syncchip;
-const shown = () => mask.classList.contains("show");
+function launch({ store = {}, failFetch = false } = {}) {
+  const s = { ...store };
+  const ls = {
+    getItem: (k) => (k in s ? s[k] : null),
+    setItem: (k, v) => { s[k] = String(v); },
+    removeItem: (k) => { delete s[k]; },
+  };
+  const doc = makeDoc();
+  let autoPop = null;
+  const ctx = {
+    document: doc,
+    window: { addEventListener() {} },
+    localStorage: ls,
+    sessionStorage: { getItem: () => null, setItem() {} },
+    navigator: {}, location: { reload() {} }, console,
+    confirm: () => true,
+    setTimeout: (fn, ms) => { if (ms === 600) autoPop = fn; else fn(); return 0; },
+    clearTimeout: () => {},
+    fetch: () => failFetch
+      ? Promise.reject(new TypeError("Failed to fetch"))
+      : Promise.resolve({ json: () => Promise.resolve({ ok: true, blob: {} }) }),
+  };
+  vm.createContext(ctx);
+  vm.runInContext(SRC, ctx);
+  return {
+    store: s, doc,
+    chip: doc._byId.syncchip,
+    mask: doc._byId.syncmask,
+    shown: () => doc._byId.syncmask.classList.contains("show"),
+    pop: () => autoPop && autoPop(),
+    hasAutoPop: () => !!autoPop,
+    $: (id) => doc._byId[id],
+  };
+}
 
 const out = [];
-function ok(name, cond) { out.push((cond ? "✓ " : "✗ ") + name); return cond; }
+const ok = (n, c) => { out.push((c ? "✓ " : "✗ ") + n); return c; };
+const tick = () => new Promise((r) => setImmediate(() => setImmediate(r)));
 
-setImmediate(() => {
-  ok("未登录时安排了自动弹框", !!autoPopFn);
-  autoPopFn && autoPopFn();
-  ok("自动弹框已显示", shown());
+(async () => {
+  /* 场景一：自动弹出 → 以后再说 → 还能从小圆点进来登录 */
+  let a = launch();
+  await tick();
+  ok("未登录时安排了自动弹框", a.hasAutoPop());
+  a.pop();
+  ok("自动弹框已显示", a.shown());
+  a.$("synclater").onclick();
+  ok("关掉后弹框隐藏", !a.shown());
+  ok("记下了「以后再说」的时间", Math.abs(Date.now() - +a.store.__sync_skip_login__) < 5000);
 
-  // 点「以后再说」
-  const later = doc._byId.synclater;
-  ok("能拿到「以后再说」按钮", !!later);
-  later && later.onclick && later.onclick();
-  ok("关掉后弹框隐藏", !shown());
-  ok("记下了「以后再说」的时间", Math.abs(Date.now() - +store.__sync_skip_login__) < 5000);
-
-  // 关键：再点右下角小圆点，应该还能打开登录框
-  chip.onclick && chip.onclick();
-  const reopened = ok("点小圆点能重新打开登录框", shown());
-  if (reopened) {
-    const input = doc._byId.synccode;
-    ok("登录框里有输入框", !!input);
-    if (input) {
-      input.value = "family123";
-      doc._byId.syncok.onclick();
-      ok("能成功登录", store.__sync_code__ === "family123");
-      ok("登录后清掉「以后再说」标记", !store.__sync_skip_login__);
-    }
+  a.chip.onclick();
+  if (ok("点小圆点能重新打开登录框", a.shown())) {
+    a.$("synccode").value = "lisa2016";
+    a.$("syncok").onclick();
+    ok("能成功登录", a.store.__sync_code__ === "lisa2016");
+    ok("登录后清掉「以后再说」标记", !a.store.__sync_skip_login__);
   }
 
+  /* 场景二：登录名太短要拦住 */
+  let b = launch();
+  await tick();
+  b.pop();
+  b.$("synccode").value = "lisa";
+  b.$("syncok").onclick();
+  ok("登录名太短不放行", !b.store.__sync_code__);
+  ok("太短时弹框不关闭", b.shown());
+
+  /* 场景三：同步失败时，点小圆点要看得到原因，而不是只有 tooltip */
+  let c = launch({ store: { __sync_code__: "lisa2016" }, failFetch: true });
+  await tick();
+  ok("失败时小圆点显示失败", c.chip.textContent.includes("失败"));
+  c.chip.onclick();
+  ok("点开是失败面板", c.shown() && !!c.$("syncretry"));
+  const html = c.mask.children[0]._html;
+  ok("面板里有服务器原话", /Failed to fetch/.test(html));
+  ok("面板里给了排查方向", /workers\.dev/.test(html) && /手机流量/.test(html));
+  ok("面板里写了不影响做题", /不影响做题/.test(html));
+  ok("有重试按钮", !!c.$("syncretry"));
+  ok("有换登录名按钮", !!c.$("syncrelogin"));
+  c.$("syncrelogin").onclick();
+  ok("能从失败面板切到登录框", !!c.$("synccode"));
+
+  /* 场景四：已登录且正常 → 点开是状态面板，能退出 */
+  let d = launch({ store: { __sync_code__: "lisa2016" } });
+  await tick();
+  ok("正常时显示已同步", d.chip.textContent.includes("已同步"));
+  d.chip.onclick();
+  ok("点开是状态面板", !!d.$("syncout"));
+  d.$("syncout").onclick();
+  ok("能退出登录", !d.store.__sync_code__);
+
   console.log(out.join("\n"));
-  process.exit(out.some((l) => l.startsWith("✗")) ? 1 : 0);
-});
+  const bad = out.filter((l) => l.startsWith("✗")).length;
+  console.log(bad ? `\n${bad} 项未通过` : `\n全部 ${out.length} 项通过`);
+  process.exit(bad ? 1 : 0);
+})();
