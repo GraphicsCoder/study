@@ -29,7 +29,13 @@
   // ↓↓↓ 部署完 Cloudflare Worker 后，把这里换成你自己的地址 ↓↓↓
   // 必须带 https:// 开头，结尾不要斜杠。少了协议头的话浏览器会当成相对路径，
   // 实际去请求 你的网站域名/study-sync.xxx.workers.dev，必然失败。
-  var API = "https://study-sync.eden-meng.workers.dev";
+  // 也可以不改代码：在页面上点小圆点 →「服务器设置」直接填，存在这台设备上。
+  var API_DEFAULT = "https://study-sync.eden-meng.workers.dev";
+
+  var ASET = "__sync_api__";              // 界面上填的地址，优先于上面的默认值
+  function api(){
+    return String(localStorage.getItem(ASET) || API_DEFAULT).trim().replace(/\/+$/, "");
+  }
 
   var me = document.currentScript;
   var KEY = (me && me.dataset && me.dataset.key) || "";   // 导航页没有，属正常
@@ -96,6 +102,9 @@
       '#syncbox .more:hover{color:#1f2430}' +
       '#syncbox .raw{margin-top:8px}' +
       '#syncbox .err{color:#c2410c;font-size:13px;margin:10px 0 0;display:none}' +
+      '#syncbox .err.show,#syncbox .good.show{display:block}' +
+      '#syncbox .good{color:#15803d;font-size:13px;margin:10px 0 0;line-height:1.8}' +
+      '#syncbox .err{line-height:1.8}' +
       '#syncbox .err.show{display:block}' +
       '#syncbox .who{background:#e8f6ed;color:#15803d;border-radius:10px;padding:10px 12px;' +
       'font-size:13.5px;margin:0 0 14px;word-break:break-all}' +
@@ -162,6 +171,69 @@
     localStorage.getItem(CODE) ? panelLogged() : panelLogin();
   }
 
+  /* 服务器设置：地址能直接在界面上改并当场测通，不用改代码再发一次版。
+     「填完只能试试看」是这套东西最熬人的地方，测一下就知道卡在哪一步。 */
+  function panelServer(back) {
+    box.innerHTML =
+      '<h3>⚙️ 服务器设置</h3>' +
+      '<p>同步要先有一个自己的小服务器（Cloudflare Worker，免费）。' +
+      '把部署后拿到的地址填在这里，点「测试连接」就知道通没通。</p>' +
+      '<label for="syncapi">服务器地址</label>' +
+      '<input id="syncapi" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
+      'placeholder="https://study-sync.xxx.workers.dev">' +
+      '<p class="hint">要以 <code>https://</code> 开头，结尾不要斜杠。' +
+      '留空则用代码里的默认地址。部署步骤见 <b>同步说明.md</b>。</p>' +
+      '<div id="synctest"></div>' +
+      '<div class="btns">' +
+        '<button class="primary" id="syncping">测试连接</button>' +
+        '<button id="syncsave">保存</button>' +
+        '<button class="ghost" id="syncback">返回</button>' +
+      '</div>';
+
+    var input = box.querySelector("#syncapi");
+    var slot  = box.querySelector("#synctest");
+    input.value = localStorage.getItem(ASET) || API_DEFAULT;
+
+    function say(cls, html){ slot.innerHTML = '<p class="' + cls + ' show">' + html + '</p>'; }
+
+    box.querySelector("#syncping").onclick = function () {
+      var url = input.value.trim().replace(/\/+$/, "");
+      if (!/^https?:\/\//.test(url)) { say("err", "地址要以 https:// 开头。"); return; }
+      say("hint", "正在连…");
+      ping(url, function (r) { say(r.ok ? "good" : "err", r.msg); });
+    };
+    box.querySelector("#syncsave").onclick = function () {
+      var url = input.value.trim().replace(/\/+$/, "");
+      if (url && !/^https?:\/\//.test(url)) { say("err", "地址要以 https:// 开头。"); return; }
+      if (url && url !== API_DEFAULT) rawSet(ASET, url); else localStorage.removeItem(ASET);
+      lastErr = "";
+      close(); boot();
+    };
+    box.querySelector("#syncback").onclick = function () { (back || open)(); };
+    mask.classList.add("show");
+  }
+
+  /* 探一下服务器：分清「没部署」「KV 没绑定」「正常」三种情况 */
+  function ping(url, cb) {
+    var done = false;
+    var fin = function (r) { if (!done) { done = true; cb(r); } };
+    setTimeout(function () { fin({ ok:false, msg:"连了 15 秒没反应，多半是地址不对或 Worker 没部署。" }); }, 15000);
+    fetch(url + "/?k=selftest123", { cache: "no-store" })
+      .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+      .then(function (o) {
+        if (o.j && o.j.ok) { fin({ ok:true, msg:"✓ 连接正常，服务器已就绪，可以登录了。" }); return; }
+        var e = (o.j && o.j.err) || ("HTTP " + o.s);
+        if (/STUDY/.test(e)) {
+          fin({ ok:false, msg:"地址是对的，但 <b>KV 还没绑定</b>。到这个 Worker 的 Settings 里添加 KV 绑定，变量名必须正好是 <code>STUDY</code>（说明第 4 步）。" });
+        } else {
+          fin({ ok:false, msg:"服务器返回：" + esc(e) });
+        }
+      })
+      .catch(function () {
+        fin({ ok:false, msg:"<b>连不上。</b>最常见的原因是这个地址上<b>没有部署 Worker</b>——把地址直接粘到浏览器里打开看看，如果是 Cloudflare 的报错页，就说明还没部署成功。也可能是地址打错了。" });
+      });
+  }
+
   /* 同步失败：对家长和孩子只说人话。
      服务端原话、接口地址这些只在点开「详情」后才出现——平时摊在屏幕上
      既看不懂，也没必要把后台细节露给每个用过这台设备的人。 */
@@ -175,6 +247,7 @@
       '比如把手机的 WiFi 关掉、用流量打开。</p>' +
       '<div class="btns">' +
         '<button class="primary" id="syncretry">重试</button>' +
+        '<button id="syncserver">服务器设置</button>' +
         '<button id="syncrelogin">换登录名</button>' +
         '<button class="ghost" id="syncclose">关闭</button>' +
       '</div>' +
@@ -182,13 +255,14 @@
       '<div class="raw" id="syncraw"></div>';
 
     box.querySelector("#syncretry").onclick = function () { close(); lastErr = ""; boot(); };
+    box.querySelector("#syncserver").onclick = function () { panelServer(panelError); };
     box.querySelector("#syncrelogin").onclick = function () { lastErr = ""; panelLogin(); };
     box.querySelector("#syncclose").onclick = close;
     box.querySelector("#syncmore").onclick = function () {
       this.style.display = "none";
       box.querySelector("#syncraw").innerHTML =
         '<div class="bad">' + esc(e) + '</div>' +
-        '<p class="hint">接口：<code>' + esc(API) + '</code></p>';
+        '<p class="hint">接口：<code>' + esc(api()) + '</code></p>';
     };
     mask.classList.add("show");
   }
@@ -208,12 +282,14 @@
       '<div class="btns">' +
         '<button class="primary" id="syncok">登录</button>' +
         '<button class="ghost" id="synclater">' + (autoPopped ? "以后再说" : "取消") + '</button>' +
-      '</div>';
+      '</div>' +
+      '<p class="hint"><span class="more" id="syncsrv">⚙️ 服务器设置 / 测试连接 ›</span></p>';
 
     var input = box.querySelector("#synccode");
     var err = box.querySelector("#syncerr");
     input.value = localStorage.getItem(CODE) || "";
 
+    box.querySelector("#syncsrv").onclick = function () { panelServer(panelLogin); };
     box.querySelector("#synclater").onclick = function () {
       // 记下时间：过几天再问一次。永久静音的话，家长就再也等不到提示了
       if (autoPopped) rawSet(SKIP, String(Date.now()));
@@ -250,9 +326,11 @@
         '<button class="primary" id="syncnow">立即同步</button>' +
         '<button class="danger" id="syncout">退出登录</button>' +
         '<button class="ghost" id="syncclose">关闭</button>' +
-      '</div>';
+      '</div>' +
+      '<p class="hint"><span class="more" id="syncsrv2">⚙️ 服务器设置 / 测试连接 ›</span></p>';
 
     box.querySelector("#syncnow").onclick = function () { close(); boot(); };
+    box.querySelector("#syncsrv2").onclick = function () { panelServer(panelLogged); };
     box.querySelector("#syncclose").onclick = close;
     box.querySelector("#syncout").onclick = function () {
       if (!confirm("退出后这台设备不再同步，已经做过的题目记录仍然留在本机。确定吗？")) return;
@@ -296,13 +374,13 @@
       }
       return;
     }
-    if (API.indexOf("请改成") > -1) {
-      paint("err", "同步.js 里的 API 地址还没填，见 同步说明.md");
+    if (!/^https?:\/\//.test(api())) {
+      paint("err", "服务器地址没填或格式不对，点小圆点进「服务器设置」");
       return;
     }
 
     paint("busy");
-    fetch(API + "/?k=" + encodeURIComponent(code), { cache: "no-store" })
+    fetch(api() + "/?k=" + encodeURIComponent(code), { cache: "no-store" })
       .then(function (r) { return r.json(); })
       .then(function (j) {
         if (!j || !j.ok) throw new Error((j && j.err) || "服务端拒绝了请求");
@@ -350,7 +428,7 @@
     busy = true;
     lastPush = Date.now();
     paint("busy");
-    fetch(API + "/?k=" + encodeURIComponent(code), {
+    fetch(api() + "/?k=" + encodeURIComponent(code), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: body,
@@ -393,7 +471,7 @@
       if (!code || !body || !navigator.sendBeacon) return;
       try {
         navigator.sendBeacon(
-          API + "/?k=" + encodeURIComponent(code),
+          api() + "/?k=" + encodeURIComponent(code),
           new Blob([body], { type: "application/json" })
         );
       } catch (e) {}
