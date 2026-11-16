@@ -673,8 +673,7 @@ function render(){
       const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${picked[id]}"]`);
       if(b) b.classList.add("pick");
     }else if(r.item.t==="open"){
-      document.getElementById("sb-"+id).classList.add("show");
-      document.getElementById("rv-"+id).classList.add("show");
+      setShow(id,true);   // 上次已经自评过，答案保持展开，按钮文字也要跟着对
       const b=document.querySelector(`button.self[data-id="${id}"][data-v="${picked[id]}"]`);
       if(b) b.classList.add("pick");
     }
@@ -787,6 +786,16 @@ function updateTotal(){
   document.getElementById("totalTxt").textContent=`${correct.size} / ${TOTAL} 题答对`;
   document.getElementById("totalBar").style.width=(correct.size/TOTAL*100)+"%";
 }
+/* 开放题的「对照参考答案」是可以收起的：孩子手滑点开，或者想再想一想
+   自己重答一遍，都能把答案盖回去。参考答案、自评按钮、按钮文字一起切换。 */
+function setShow(id,on){
+  const rv=document.getElementById("rv-"+id), sb=document.getElementById("sb-"+id);
+  if(!rv) return;
+  rv.classList.toggle("show",on);
+  if(sb) sb.classList.toggle("show",on);
+  const b=document.querySelector(`button[data-act="show"][data-id="${id}"]`);
+  if(b) b.textContent = on ? "收起参考答案" : "对照参考答案";
+}
 function clearItem(id){
   const r=INDEX[id], it=r.item;
   delete picked[id];
@@ -794,9 +803,9 @@ function clearItem(id){
     .forEach(b=>b.className=b.classList.contains("self")?"self":"opt");
   for(let k=0;k<(it._n||0);k++){ const e=document.getElementById(`in-${id}-${k}`); if(e){ e.value=""; e.className="blank"; } }
   const tx=document.getElementById("tx-"+id); if(tx) tx.value="";
-  const sb=document.getElementById("sb-"+id); if(sb) sb.classList.remove("show");
   document.getElementById("fb-"+id).className="fb";
-  document.getElementById("rv-"+id).classList.remove("show");
+  if(it.t==="open") setShow(id,false);
+  else document.getElementById("rv-"+id).classList.remove("show");
   correct.delete(id); half.delete(id);
 }
 function flash(id){
@@ -821,19 +830,16 @@ document.addEventListener("click",e=>{
     document.querySelectorAll(`button.self[data-id="${id}"]`).forEach(x=>x.className="self");
     b.classList.add("pick"); save(); checkOne(id);
   }
-  if(act==="show"){
-    document.getElementById("rv-"+id).classList.add("show");
-    document.getElementById("sb-"+id).classList.add("show");
-  }
+  if(act==="show") setShow(id, !document.getElementById("rv-"+id).classList.contains("show"));
   if(act==="one") checkOne(id);
   if(act==="ans") document.getElementById("rv-"+id).classList.toggle("show");
   if(act==="flag"){ flag.has(id)?flag.delete(id):flag.add(id); updateMarks(id); renderMistakes(); save(); }
   if(act==="check") eachId(b.dataset.set,x=>checkOne(x));
   if(act==="reveal"){
     const on=b.textContent.indexOf("显示")>-1;
-    eachId(b.dataset.set,x=>{
-      document.getElementById("rv-"+x).classList.toggle("show",on);
-      const sb=document.getElementById("sb-"+x); if(sb&&on) sb.classList.add("show");
+    eachId(b.dataset.set,(x,it)=>{
+      if(it.t==="open") setShow(x,on);
+      else document.getElementById("rv-"+x).classList.toggle("show",on);
     });
     b.textContent=on?"隐藏本节答案":"显示本节答案";
   }
@@ -871,6 +877,6 @@ document.getElementById("btnClearMarks").addEventListener("click",()=>{
 });
 render();
 </script>
-<script src="同步.js?v=202611162213" data-key="reading-practice-v1"></script>
+<script src="同步.js?v=202611162219" data-key="reading-practice-v1"></script>
 </body>
 </html>
