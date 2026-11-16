@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>语文专项训练 · 阅读理解（四年级）</title>
+<style>
+  :root{
+    --bg:#f7f6f4; --card:#fff; --ink:#1f2430; --muted:#6b7280;
+    --line:#e7e3dd; --brand:#a8432a; --brand-soft:#fbeee9;
+    --ok:#15803d; --ok-soft:#e8f6ed; --no:#c2410c; --no-soft:#fdeee6;
+    --warn:#92400e; --warn-soft:#fef6e7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.65;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 16px 80px}
+  header.top{background:linear-gradient(135deg,#a8432a,#c9704f);color:#fff;
+    border-radius:16px;padding:22px 24px;margin-bottom:18px}
+  header.top h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  header.top p{margin:0;opacity:.93;font-size:14px}
+  header.top a{color:#fff}
+  .score-bar{display:flex;align-items:center;gap:12px;margin-top:14px;
+    background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px}
+  .bar{flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:#fff;transition:width .35s}
+
+  details.guide{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.guide summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px}
+  details.guide summary::marker{color:var(--brand)}
+  details.guide h4{margin:14px 0 6px;font-size:15px;color:#8a3522}
+  .rule{background:var(--brand-soft);border-radius:10px;padding:10px 14px;margin:8px 0 14px;font-size:15px;line-height:1.95}
+  .pitfall{background:var(--warn-soft);border-left:4px solid #e9a23b;border-radius:8px;padding:10px 14px;margin:8px 0 14px;font-size:14px}
+  .steps4{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
+  .steps4 div{flex:1;min-width:150px;background:var(--brand-soft);border-radius:10px;padding:10px 14px;font-size:14px}
+  .steps4 .k{font-size:20px;font-weight:700;color:#8a3522;line-height:1.3}
+  table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 14px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:#f3f1ed;font-weight:600}
+  td b{color:var(--brand)}
+
+  nav.jump{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  nav.jump a{font-size:13px;text-decoration:none;color:var(--brand);background:#fff;
+    border:1px solid var(--line);border-radius:99px;padding:6px 12px}
+  nav.jump a:hover{background:var(--brand-soft)}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .tools .pill{font-size:13px;color:var(--muted);margin-left:auto}
+  details.mistakes{background:var(--card);border:1px solid #f0b48e;border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.mistakes summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px;color:var(--no)}
+  ol.mlist{margin:0 0 14px;padding-left:22px;font-size:14.5px}
+  ol.mlist li{margin:7px 0}
+  ol.mlist a{color:var(--brand);text-decoration:none}
+  ol.mlist a:hover{text-decoration:underline}
+  ol.mlist .where{color:var(--muted);font-size:12.5px;margin-left:6px}
+  .empty{color:var(--muted);font-size:14px;padding:4px 0 14px}
+
+  section.set{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px 20px;margin-bottom:20px;scroll-margin-top:12px}
+  section.set h2{margin:0 0 4px;font-size:19px}
+  .tip{font-size:13.5px;color:var(--muted);margin:0 0 14px}
+  .setbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .setbar .sc{font-size:13px;color:var(--muted);margin-left:auto}
+
+  /* 阅读材料 */
+  .passage{background:#fdfcfa;border:1px solid var(--line);border-left:4px solid var(--brand);
+    border-radius:10px;padding:16px 18px;margin:10px 0 18px;font-size:16px;line-height:2.05}
+  .passage h3{margin:0 0 2px;font-size:18px;text-align:center;letter-spacing:1px}
+  .passage .by{text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px}
+  .passage p{margin:0 0 10px;text-indent:2em}
+  .passage .pn{color:var(--brand);font-weight:700;margin-right:2px}
+  .passage .mat{font-weight:600;color:#8a3522;text-indent:0;margin:14px 0 4px}
+  .passage table{margin:4px 0 10px;font-size:14px}
+  .passage ol{margin:4px 0 10px;padding-left:24px}
+  .passage ol li{margin:4px 0}
+
+  .item{border-top:1px dashed var(--line);padding:14px 0;border-left:3px solid transparent;scroll-margin-top:16px;transition:background .3s}
+  .item.wrong{border-left-color:var(--no);background:#fff8f4;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.half{border-left-color:#e9a23b;background:var(--warn-soft);padding-left:12px;border-radius:0 8px 8px 0}
+  .item.fixed{border-left-color:#86d7a5;background:#f7fcf9;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flagged{border-left-color:#e9a23b;background:var(--warn-soft);padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flash{background:#fff3cd}
+  .q{font-size:16px;margin:0 0 9px;line-height:1.9}
+  .q .n{display:inline-block;min-width:26px;color:var(--muted);font-size:14px}
+  .q .tag{font-size:12px;border-radius:99px;padding:2px 8px;margin-right:6px;
+    background:var(--brand-soft);color:#8a3522;vertical-align:1px;white-space:nowrap}
+  .badge{font-size:12px;border-radius:99px;padding:2px 9px;margin-left:8px;vertical-align:2px;white-space:nowrap}
+  .badge.wrong{background:var(--no-soft);color:var(--no);border:1px solid #f0b48e}
+  .badge.half{background:var(--warn-soft);color:var(--warn);border:1px solid #e9a23b}
+  .badge.fixed{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+  .badge.ok{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+
+  .opts{display:flex;flex-direction:column;gap:7px;margin:0 0 8px 26px}
+  button.opt{font-family:inherit;font-size:15px;padding:9px 14px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;text-align:left;line-height:1.6}
+  button.opt:hover{background:var(--brand-soft)}
+  button.opt.pick{border-color:var(--brand);background:var(--brand-soft);font-weight:600}
+  button.opt.good{border-color:#86d7a5;background:var(--ok-soft);color:var(--ok);font-weight:600}
+  button.opt.bad{border-color:#f0b48e;background:var(--no-soft);color:var(--no)}
+  input.blank{width:120px;padding:4px 7px;font-size:16px;font-family:inherit;text-align:center;
+    border:0;border-bottom:2px solid #c9ced8;background:#fcfcfd;margin:0 3px}
+  input.blank:focus{outline:none;border-bottom-color:var(--brand);background:#fff}
+  input.blank.good{border-bottom-color:#2f9e5f;background:var(--ok-soft);color:var(--ok)}
+  input.blank.bad{border-bottom-color:#e07a3f;background:var(--no-soft);color:var(--no)}
+  textarea.ans{display:block;width:calc(100% - 26px);margin:0 0 8px 26px;min-height:76px;
+    padding:10px 12px;font-size:16px;font-family:inherit;line-height:1.9;
+    border:1px solid var(--line);border-radius:10px;background:#fcfcfd;resize:vertical}
+  textarea.ans:focus{outline:none;border-color:var(--brand);background:#fff}
+  .selfbar{display:none;gap:8px;flex-wrap:wrap;margin:0 0 8px 26px;align-items:center}
+  .selfbar.show{display:flex}
+  .selfbar .lab{font-size:13.5px;color:var(--muted)}
+  button.self{font-size:13.5px;padding:7px 12px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;font-family:inherit}
+  button.self.pick[data-v="1"]{border-color:#86d7a5;background:var(--ok-soft);color:var(--ok);font-weight:600}
+  button.self.pick[data-v="0.5"]{border-color:#e9a23b;background:var(--warn-soft);color:var(--warn);font-weight:600}
+  button.self.pick[data-v="0"]{border-color:#f0b48e;background:var(--no-soft);color:var(--no);font-weight:600}
+
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:26px}
+  button{font-family:inherit;font-size:13.5px;padding:8px 13px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink)}
+  button:hover{background:#f3f1ed}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.primary:hover{filter:brightness(1.07)}
+  button.flag{padding:7px 10px;line-height:1}
+  button.flag.on{background:var(--warn-soft);border-color:#e9a23b}
+  .fb{margin:8px 0 0 26px;font-size:14px;display:none}
+  .fb.show{display:block}
+  .fb .good{color:var(--ok)} .fb .bad{color:var(--no)} .fb .note{color:var(--warn)}
+  .reveal{display:none;margin:8px 0 0 26px;font-size:15px;background:var(--ok-soft);
+    border-left:4px solid #86d7a5;border-radius:8px;padding:10px 14px;line-height:1.9}
+  .reveal.show{display:block}
+  .reveal b{color:#13603f}
+  .reveal ul{margin:6px 0 0;padding-left:22px}
+  .reveal li{margin:3px 0}
+  .why{display:block;color:#4a5568;font-size:13.5px;margin-top:5px}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:10px}
+
+  body.only-wrong .item:not(.wrong):not(.half):not(.flagged){display:none}
+  body.only-wrong section.set.nowrong{display:none}
+  body.only-wrong details.guide{display:none}
+
+  /* ---------- 手机 / 小屏适配 ---------- */
+  @media (max-width:640px){
+    .wrap{padding:12px 10px 60px}
+    header.top{padding:16px 14px;border-radius:12px;margin-bottom:14px}
+    header.top h1{font-size:20px}
+    header.top p{font-size:13px;line-height:1.8}
+    .score-bar{font-size:12.5px;padding:7px 10px;gap:8px}
+    details.guide,details.mistakes{padding:2px 12px;border-radius:12px}
+    details.guide summary,details.mistakes summary{font-size:15px}
+    .rule{font-size:14px;padding:10px 11px}
+    .pitfall{font-size:13px;padding:10px 11px}
+    .steps4 div{min-width:100%}
+    table{font-size:12.5px}
+    th,td{padding:5px 6px}
+    nav.jump{gap:6px}
+    nav.jump a{font-size:12.5px;padding:5px 10px}
+    .tools{gap:6px}
+    .tools .pill{margin-left:0;width:100%;font-size:12.5px}
+    section.set{padding:14px 12px;border-radius:12px;margin-bottom:14px}
+    section.set h2{font-size:17px}
+    .tip{font-size:13px}
+    .setbar .sc{margin-left:0;width:100%}
+    .passage{padding:13px 14px;font-size:15.5px;line-height:1.95}
+    .passage h3{font-size:17px}
+    .q{font-size:15px}
+    .q .n{min-width:20px}
+    .opts,.row,.selfbar{margin-left:6px}
+    .fb,.reveal{margin-left:6px}
+    .reveal{padding:9px 11px;font-size:14px}
+    textarea.ans{width:calc(100% - 6px);margin-left:6px}
+    button.opt{font-size:14px;padding:9px 11px}
+    button{font-size:13px;padding:9px 11px}
+    button.flag{padding:9px 10px}
+    input.blank{font-size:16px;width:100px;max-width:42vw}
+  }
+  @media print{
+    body{background:#fff}
+    nav.jump,.tools,.setbar button,.row button,.selfbar,header.top .score-bar,details.mistakes{display:none}
+    .reveal{display:block !important}
+    section.set{break-inside:avoid;border:0;padding:0}
+    .passage{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>阅读理解 · 专项训练</h1>
+  <p>四年级语文 · 6 篇短文 · 40 题 · 记事 / 写人 / 写景 / 说明文 / 非连续性文本 / 寓言<br>
+  <a href="index.html">🏠 全部练习</a> ｜ 数学：<a href="递等式计算专项练习.html">递等式计算</a> · <a href="递等式巧算专项练习.html">递等式巧算</a> ｜ 英语：<a href="划线部分提问专项练习.html">划线提问</a> · <a href="介词专项练习.html">介词</a></p>
+  <div class="score-bar">
+    <span>总进度</span><span class="bar"><i id="totalBar"></i></span>
+    <span id="totalTxt">0 / 0 题答对</span>
+  </div>
+</header>
+
+<details class="guide" open>
+  <summary>📖 阅读理解怎么做（先看这里）</summary>
+
+  <h4>① 四步法：别一上来就看题</h4>
+  <div class="steps4">
+    <div><div class="k">一读</div>先把短文<b>从头到尾读一遍</b>，知道写的是谁、什么事、什么顺序。不懂的词先跳过。</div>
+    <div><div class="k">二审</div>再看题目，<b>圈出题干里的关键词</b>：第几段、哪个词、"为什么"、"怎样"、"用了什么方法"。</div>
+    <div><div class="k">三找</div>带着问题<b>回到原文定位</b>，把相关的句子<b>画出来</b>。答案十有八九就藏在附近。</div>
+    <div><div class="k">四答</div>照着题目问的<b>格式作答</b>，能用原文词语的就用原文的，<b>问什么答什么</b>。</div>
+  </div>
+
+  <h4>② 常见题型的答题套路</h4>
+  <table>
+    <tr><th>题目这样问</th><th>就这样答</th></tr>
+    <tr><td>概括<b>主要内容</b></td><td><b>谁</b> + <b>在什么情况下</b> + <b>做了什么</b> + <b>结果怎样</b>。一两句话，别复述全文。</td></tr>
+    <tr><td>概括<b>段意</b></td><td>找<b>中心句</b>（常在段首或段尾）；没有就把这段几句话的意思合起来说。</td></tr>
+    <tr><td>词语<b>什么意思</b></td><td>先看<b>这个词前后的句子</b>，再用自己的话说；别去背词典。</td></tr>
+    <tr><td>句子<b>好在哪里</b></td><td>用了什么<b>修辞 / 描写</b> + 写出了<b>什么</b> + 表达了<b>什么感情</b>。</td></tr>
+    <tr><td>人物是<b>怎样的人</b></td><td>从他<b>做的事、说的话、动作神态</b>里找，用<b>品质词</b>回答（认真负责、善良……）。</td></tr>
+    <tr><td><b>为什么</b>这样写</td><td>答<b>作用</b>：写得更具体 / 更生动 / 为下文做铺垫 / 突出人物特点。</td></tr>
+    <tr><td><b>题目</b>的好处</td><td>点明写作对象 + 概括内容 + 吸引读者 + 常是全文线索。</td></tr>
+    <tr><td>读完有什么<b>体会</b></td><td>先说<b>文中的事</b>，再说<b>明白的道理</b>，最后联系<b>自己</b>。三句话。</td></tr>
+  </table>
+
+  <h4>③ 修辞手法（看到就要认出来）</h4>
+  <div class="rule">
+    <b>比喻</b>——把甲说成乙，常有"像、好像、仿佛、是"。例：阳光筛成<u>细碎的金点</u>。<br>
+    <b>拟人</b>——把东西当人写，会笑、会说、会招手。例：叶子<u>在给我们鼓掌</u>。<br>
+    <b>排比</b>——三个或三个以上结构相似的句子连用。<br>
+    <b>夸张</b>——故意说大或说小。例：<u>一粒米也要分成两半</u>。<br>
+    <b>反问</b>——明知故问，答案就在问句里，<b>不用回答</b>。例：这难道不是奇迹吗？
+  </div>
+
+  <h4>④ 说明方法（说明文专用，别和修辞混了）</h4>
+  <table>
+    <tr><th>方法</th><th>标志</th><th>作用</th></tr>
+    <tr><td><b>举例子</b></td><td>比如、例如、拿……来说</td><td>把道理说得具体，让人信服</td></tr>
+    <tr><td><b>列数字</b></td><td>出现具体数目</td><td>准确、有说服力</td></tr>
+    <tr><td><b>作比较</b></td><td>比……、和……相比</td><td>突出被说明事物的特点</td></tr>
+    <tr><td><b>打比方</b></td><td>像、好像（但用在说明文里）</td><td>把抽象的东西说得通俗易懂</td></tr>
+  </table>
+  <div class="rule">
+    ⚠ <b>"打比方"和"比喻"长得一样</b>，区别只看文体：<b>说明文</b>里叫打比方，<b>记叙文</b>里叫比喻。
+  </div>
+
+  <div class="pitfall">
+    <b>五个最常丢分的地方</b><br>
+    ① <b>不读原文就答</b> —— 凭印象瞎猜，十题错七题；<br>
+    ② <b>问什么不答什么</b> —— 问"为什么"却在抄原句，问"怎样的人"却在复述事情；<br>
+    ③ <b>开放题只写一句</b> —— "我很感动"不是答案，要说清<b>被什么感动</b>、<b>明白了什么</b>；<br>
+    ④ <b>该用原文的不用</b> —— 填空题、找词题，答案基本都在原文里，照抄最保险；<br>
+    ⑤ <b>说明文语言题答"能删"</b> —— "大约""以上""左右"这类词<b>一律不能删</b>，删了就不准确了。
+  </div>
+</details>
+
+<nav class="jump" id="jump"></nav>
+<div class="tools">
+  <button id="btnOnlyWrong">只看错题 🔍</button>
+  <button id="btnRedo">重做所有错题</button>
+  <button id="btnClearMarks">清除错题记录</button>
+  <span class="pill" id="markStat"></span>
+</div>
+<details class="mistakes" id="mbox">
+  <summary id="msum">📕 错题本（0）</summary>
+  <div id="mlist"></div>
+</details>
+
+<div id="app"></div>
+<footer>选择题和填空题自动批改 · 开放题对照参考答案后自评 · 做错自动进错题本 · 记录保存在本机浏览器 · Ctrl+P 打印自动显示答案</footer>
+</div>
+
+<script>
+/* 题型：
+   choice = 单选题，自动批改
+   fill   = 填空题（q 里的 【】 是空），自动批改，as 里给可接受的多种说法
+   open   = 开放题，写完对照参考答案后自评（对 / 不全 / 不对）
+*/
+const DATA = [
+{
+  id:"r1", title:"专项一 · 读懂词句，抓住主要内容",
+  tip:"记事类短文。重点练：联系上下文理解词语、体会心情、用一句话概括全文。",
+  passage:{ title:"第一次煮饭", paras:[
+    `妈妈出差了，爸爸加班，中午只剩我一个人。肚子咕咕叫的时候，我盯着厨房里那口电饭锅，心里忽然冒出一个念头：自己煮一次饭吧。`,
+    `说干就干。我搬来小凳子，踩上去取米。米袋比我想的沉，一不留神，哗啦一下，白花花的米撒了一地。我蹲在地上，一粒一粒地捡，手忙脚乱，额头上渗出了汗。`,
+    `淘米的时候，我又犯了难：到底要加多少水？我想起奶奶说过“水没过米一节手指”，就把食指伸进锅里比了比。水面刚好到第一个指节，我这才松了一口气。`,
+    `按下开关，我搬了把椅子坐在锅边等。锅里先是没有动静，过了一会儿，“滋滋”的声音越来越响，白汽从锅盖的小孔里钻出来，整个厨房都飘着米香。那一刻，我觉得这声音比动画片还好听。`,
+    `“咔嗒”一声，开关跳了起来。我小心地掀开锅盖，米饭白白胖胖，颗颗分明。我盛了一碗，烫得直换手，却一口也舍不得放下。`,
+    `爸爸回来，看见桌上那碗饭，愣了一下，又笑了。他尝了一口说：“有点硬。”我正要难过，他又补了一句：“可这是我今年吃过最香的一碗饭。”`
+  ]},
+  items:[
+    {t:"choice", q:`第②段中“手忙脚乱”的意思是：`, opts:[
+      `手和脚一起乱动`,
+      `做事有条有理，很熟练`,
+      `做事慌乱，没有次序`,
+      `动作非常快`],
+     a:2, why:`联系上下文：米撒了一地、蹲在地上一粒一粒捡、额头渗出汗——都在写慌乱。理解词语要看它前后的句子，不是去背词典。`},
+
+    {t:"fill", q:`第③段中，“我”犯难是因为不知道【　　】；最后是靠【　　】说过的办法解决的。`,
+     as:[[`加多少水`,`放多少水`,`要加多少水`,`该加多少水`,`水加多少`,`加多少水合适`],
+         [`奶奶`,`奶奶说的话`,`奶奶教的`,`奶奶说过的办法`]],
+     why:`答案都在原文里：“到底要加多少水”“我想起奶奶说过……”。填空题优先照抄原文词语。`},
+
+    {t:"choice", q:`第④段写“我觉得这声音比动画片还好听”，是因为：`, opts:[
+      `这个声音真的很动听`,
+      `米饭快熟了，“我”心里充满期待和成就感`,
+      `“我”不喜欢看动画片`,
+      `厨房里太安静了`],
+     a:1, why:`把煮饭的声音说成比最爱看的动画片还好听，是用对比写出“我”等待时的兴奋和自豪。`},
+
+    {t:"choice", q:`爸爸先说“有点硬”，又说“这是我今年吃过最香的一碗饭”，这样写是因为：`, opts:[
+      `爸爸前后矛盾，不知道该说什么`,
+      `爸爸觉得饭不好吃，只好说句客气话`,
+      `爸爸既实话实说，又在肯定“我”第一次动手的努力`,
+      `爸爸想让“我”以后别再煮饭了`],
+     a:2, why:`“有点硬”是真话，“最香”是因为这碗饭里有孩子的第一次尝试。两句话合起来，才是一个既诚实又懂得鼓励的父亲。`},
+
+    {t:"fill", q:`这篇短文是按【　　】的顺序写的（填“事情发展”或“地点变换”）。`,
+     as:[[`事情发展`,`事情发展的`,`时间`,`时间先后`]],
+     why:`从“冒出念头”到“取米、淘米、按开关、等待、开锅、爸爸回来”，是一件事从头到尾的过程，属于事情发展顺序。`},
+
+    {t:"open", q:`用一两句话概括这篇短文的主要内容。`,
+     ref:`“我”趁家里没人，第一次独自煮饭，中间撒了米、拿不准水量，但都想办法解决了，最后煮出一锅饭，得到了爸爸的肯定。`,
+     points:[`写清是“我”（谁）`,`写出“第一次独自煮饭”（做什么）`,`提到中间遇到的困难`,`写出结果：煮成了、得到爸爸肯定`],
+     why:`概括主要内容的公式：谁 + 在什么情况下 + 做了什么 + 结果怎样。不要把每一段都复述一遍。`},
+
+    {t:"open", q:`第⑤段“烫得直换手，却一口也舍不得放下”，让你体会到“我”怎样的心情？`,
+     ref:`虽然烫，但这是自己亲手煮出来的第一碗饭，“我”心里充满了自豪和满足，舍不得放下。`,
+     points:[`说出“烫”和“舍不得”的矛盾`,`点出自豪、满足、珍惜的心情`,`能联系“第一次自己煮”来说`],
+     why:`体会心情要抓住那些“反常”的细节——烫还不放手，恰恰说明心里有多宝贝这碗饭。`}
+  ]
+},
+{
+  id:"r2", title:"专项二 · 写人：从事情里读出品质",
+  tip:"写人类短文。重点练：细节描写的作用、人物品质、含义深刻的句子。",
+  passage:{ title:"巷口的张爷爷", paras:[
+    `我家楼下的巷口，有一个修车摊。摊主姓张，头发花白，大家都叫他张爷爷。`,
+    `张爷爷的摊子很简单：一把旧伞，一只工具箱，一个打气筒。伞面补过好几处，颜色早就褪成了灰白。可那只工具箱，他擦得发亮，扳手、螺丝刀、补胎片，一样一样码得整整齐齐。`,
+    `去年冬天，我的自行车链条掉了。我推着车跑过去，张爷爷正低头修一辆三轮车。他抬头看了我一眼，说：“等五分钟。”说完又低下头去。那五分钟里，他没有抬过一次头。`,
+    `轮到我了。他蹲下来，双手一托一按，链条“咔”地回到了齿轮上。他又转了转脚踏板，侧着耳朵听了听，皱起眉头，从箱子里拿出油壶，在链条上滴了几滴油，再转，声音果然顺了。`,
+    `我掏出五元钱。他摆摆手：“挂个链子，不要钱。”我说油也上了呀。他笑了：“那是我自己要上的，听着不舒服。”`,
+    `后来我才知道，张爷爷的摊子三十年没挪过地方。巷子里的人说，车到了他手里，他总要多看两眼、多听一声，像是跟车过不去，其实是跟自己过不去。`
+  ]},
+  items:[
+    {t:"choice", q:`第②段写伞面“褪成了灰白”，工具箱却“擦得发亮”，这样对比着写是为了：`, opts:[
+      `说明张爷爷很穷，买不起新伞`,
+      `说明张爷爷不爱干净，只顾擦工具箱`,
+      `突出张爷爷对自己将就，对手艺和工具却十分讲究`,
+      `为了把摊子写得更清楚`],
+     a:2, why:`一个“旧”一个“亮”，对比之下，人物的讲究用在哪里就一目了然了。看到对比，先想它在突出什么。`},
+
+    {t:"choice", q:`第③段“那五分钟里，他没有抬过一次头”写出了张爷爷：`, opts:[
+      `不爱理人，脾气古怪`,
+      `干活时非常专注投入`,
+      `没有听见“我”说话`,
+      `故意让“我”多等一会儿`],
+     a:1, why:`前面已经答应“等五分钟”，说明不是不理人；“没有抬过一次头”写的是做事时的专注。`},
+
+    {t:"fill", q:`第④段连用“蹲、托、按、转、听、滴”等词，这些词都是描写人物的【　　】，这样写的好处是把修车的过程写得很【　　】。`,
+     as:[[`动作`,`动作描写`,`一连串动作`],[`具体`,`清楚`,`细致`,`具体清楚`,`真实`]],
+     why:`一连串动词是典型的动作描写。写人时多用动词，过程就“看得见”了。`},
+
+    {t:"choice", q:`张爷爷说“那是我自己要上的，听着不舒服”，这句话说明：`, opts:[
+      `他嫌“我”的车太吵`,
+      `他想多收一点钱`,
+      `他对自己的活儿有要求，不合格自己心里过不去`,
+      `他不喜欢别人给他钱`],
+     a:2, why:`“听着不舒服”的是他自己——标准是给自己定的，不是给顾客看的。这正是手艺人的较真。`},
+
+    {t:"open", q:`第⑥段说张爷爷“像是跟车过不去，其实是跟自己过不去”，你怎么理解这句话？`,
+     ref:`表面上看，他反复检查、挑毛病，好像在为难那辆车；其实是他对自己的手艺要求高，修得不够好自己就不放心、不甘心。`,
+     points:[`解释“跟车过不去”：反复查看、不肯马虎`,`解释“跟自己过不去”：对自己要求高、不肯将就`,`点出这是认真负责的表现`],
+     why:`理解含义深刻的句子，先把表面意思说清楚，再说它真正想表达什么。`},
+
+    {t:"fill", q:`短文通过【　　】这一件事来写人，表现了张爷爷【　　】的品质。`,
+     as:[[`修车`,`给我修车`,`修自行车`,`挂链条`,`修链条`,`给“我”修车`],
+         [`认真负责`,`认真`,`负责`,`朴实`,`善良`,`热心`,`认真负责、朴实`]],
+     why:`写人文章常常“一事见一人”。品质词要从他做的事里提炼，不能凭空安。`},
+
+    {t:"open", q:`如果给这篇短文换一个题目，你会取什么？简单说说理由。`,
+     ref:`示例：《不要钱的那几滴油》——这几滴油是张爷爷主动加的、不收钱的，最能体现他的认真和厚道，用它做题目也能引起读者好奇。`,
+     points:[`题目要和短文内容有关`,`理由要扣住人物品质或关键情节`,`语句通顺`],
+     why:`取题目有三个方向：写对象（《张爷爷》）、写关键物（《那几滴油》）、写感受（《三十年的摊子》）。说清理由比题目取得巧更重要。`}
+  ]
+},
+{
+  id:"r3", title:"专项三 · 写景：顺序、修辞和感情",
+  tip:"写景状物类短文。重点练：写作顺序、修辞手法、借景抒情。",
+  passage:{ title:"校园里的三棵银杏", paras:[
+    `校园东边有三棵银杏树，不知是谁种的，比教学楼还老。`,
+    `春天，它们醒得慢。别的树都绿了，它们才慢吞吞地抽出一点嫩芽，小扇子似的，黄中带绿，摊在枝头，像怕冷似的缩着。`,
+    `夏天就不一样了。叶子密密层层地挤在一起，把阳光筛成细碎的金点，洒在地上。中午做完操，我们挤在树荫里，风一吹，头顶的叶子哗哗地响，像在给我们鼓掌。`,
+    `秋天是它们最神气的时候。几乎是一夜之间，三棵树全黄了，黄得那样彻底，连一点杂色都不留。风一来，叶子打着旋儿落下来，铺了满地。低年级的小朋友蹲在地上捡叶子，捡着捡着就笑起来。`,
+    `冬天，叶子落光了，枝丫伸向天空，像三幅铁线画。可我们知道，它们不是死了，是在攒劲儿。`,
+    `三棵树站在那里，看着一届又一届的学生进来、出去。它们不说话，我们却觉得它们什么都知道。`
+  ]},
+  items:[
+    {t:"fill", q:`这篇短文是按【　　】的顺序写三棵银杏的。`,
+     as:[[`时间`,`四季`,`季节`,`春夏秋冬`,`四季变化`,`时间（四季）`]],
+     why:`每段开头的“春天、夏天、秋天、冬天”就是最明显的提示。写景文常见顺序有：时间顺序、方位顺序（从远到近、从上到下）。`},
+
+    {t:"choice", q:`“把阳光筛成细碎的金点”这句话用的修辞手法是：`, opts:[
+      `拟人`, `比喻`, `夸张`, `排比`],
+     a:1, why:`把透过叶缝的阳光说成“细碎的金点”，是把甲说成乙，属于比喻。注意这里没有“像”字，但仍然是比喻。`},
+
+    {t:"fill", q:`“风一吹，头顶的叶子哗哗地响，像在给我们鼓掌”，这句把叶子当作人来写，用的修辞手法是【　　】。`,
+     as:[[`拟人`,`拟人手法`,`拟人的手法`]],
+     why:`会“鼓掌”的只有人，把物当人写就是拟人。判断窍门：看这个动作是不是只有人才做得出来。`},
+
+    {t:"choice", q:`第②段用“慢吞吞”“像怕冷似的缩着”来写银杏发芽，好处是：`, opts:[
+      `说明银杏树长得不好，缺少营养`,
+      `写出银杏发芽比别的树晚，同时把它写得像个怕冷的孩子，很可爱`,
+      `表达作者对银杏树的不满`,
+      `为了凑足字数`],
+     a:1, why:`既写出了特点（发芽晚），又带上了感情（觉得它可爱）。写景题要同时答“写出什么”和“表达什么”。`},
+
+    {t:"choice", q:`下面对第④段理解正确的一项是：`, opts:[
+      `秋天银杏落叶，作者感到难过`,
+      `“黄得那样彻底”写出银杏秋天颜色纯净，是它最美的时候`,
+      `低年级小朋友捡叶子，说明校园卫生没人管`,
+      `作者认为秋天的银杏不如夏天好看`],
+     a:1, why:`“最神气”“黄得彻底”“连一点杂色都不留”全是赞美。后面孩子们的笑，更说明这是快乐的场景。`},
+
+    {t:"open", q:`第⑤段说“它们不是死了，是在攒劲儿”，你怎么理解“攒劲儿”？`,
+     ref:`冬天银杏落光了叶子，看上去像枯死了，其实是在积蓄力量，等春天一到就重新发芽生长。`,
+     points:[`说出冬天的表象：叶落光、像枯死`,`说出实质：在积蓄力量、休养`,`能联系到来年春天重新发芽`],
+     why:`“攒劲儿”是口语，意思是积蓄力量。这句话也透出作者对银杏的了解和喜爱。`},
+
+    {t:"fill", q:`短文结尾说“它们不说话，我们却觉得它们什么都知道”，全文表达了作者对三棵银杏的【　　】之情。`,
+     as:[[`喜爱`,`喜爱和赞美`,`赞美`,`喜爱、赞美`,`热爱`,`喜欢`]],
+     why:`写景的文章，景里都藏着情。最后一段往往就是作者感情的落脚点。`}
+  ]
+},
+{
+  id:"r4", title:"专项四 · 说明文：说明方法和准确的语言",
+  tip:"说明文。重点练：判断说明方法、体会说明文语言的准确性、提取要点。",
+  passage:{ title:"会“喝水”的马路", paras:[
+    `下大雨的时候，你有没有见过这样的情景：马路上积起一片水，汽车开过去，溅起老高的水花。`,
+    `为什么水排不掉？因为我们平常走的水泥路、柏油路，表面是密实的，水钻不进去，只能顺着地面往低处流。一旦雨下得太急，下水道来不及收，水就积在了路上。`,
+    `现在，有一种“会喝水”的马路正在一些城市铺开，它叫透水混凝土。和普通混凝土相比，它的内部留着许多细小的孔隙，就像一块海绵。雨水落下来，可以直接从这些孔隙渗下去，流进地下的管道或者土壤里。`,
+    `这种路到底能“喝”多少水？实验显示，每平方米的透水路面，一小时可以渗下两百升以上的水。`,
+    `它还有一个好处：夏天不那么烫。渗进去的水在太阳底下慢慢蒸发，会带走一部分热量，路面温度比普通马路低好几摄氏度。`,
+    `当然，它也不是十全十美。孔隙用得久了会被灰尘、落叶堵住，需要定期用高压水冲洗。`
+  ]},
+  items:[
+    {t:"fill", q:`这篇短文主要说明的事物是【　　】。`,
+     as:[[`透水混凝土`,`会喝水的马路`,`透水路面`,`会“喝水”的马路`]],
+     why:`抓说明对象，看题目和第③段的“它叫透水混凝土”。`},
+
+    {t:"choice", q:`第③段“就像一块海绵”运用的说明方法是：`, opts:[
+      `举例子`, `列数字`, `打比方`, `作比较`],
+     a:2, why:`用熟悉的海绵来说明陌生的透水混凝土，让人一下子就懂了。记住：说明文里叫“打比方”，记叙文里才叫“比喻”。`},
+
+    {t:"choice", q:`“每平方米的透水路面，一小时可以渗下两百升以上的水”运用的说明方法是：`, opts:[
+      `列数字`, `打比方`, `举例子`, `分类别`],
+     a:0, why:`出现具体数目就是列数字，作用是让说明更准确、更有说服力。`},
+
+    {t:"choice", q:`第③段“和普通混凝土相比，它的内部留着许多细小的孔隙”，这里用的说明方法是：`, opts:[
+      `打比方`, `作比较`, `举例子`, `列数字`],
+     a:1, why:`“和……相比”是作比较的标志，作用是突出透水混凝土“有孔隙”这个特点。`},
+
+    {t:"open", q:`“一小时可以渗下两百升以上的水”中的“以上”能不能去掉？为什么？`,
+     ref:`不能去掉。“以上”说明两百升是最少的量，实际可能更多；去掉以后就变成正好两百升，与事实不符，体现不出说明文语言的准确性。`,
+     points:[`明确回答“不能去掉”`,`解释“以上”的意思：至少、还可能更多`,`说明去掉后会变成确数、不准确`,`点出说明文语言的准确性`],
+     why:`这是说明文的固定题型。“大约”“左右”“可能”“以上”这类词一律不能删，答题四步：不能删 → 这个词什么意思 → 删了会怎样 → 体现语言准确。`},
+
+    {t:"open", q:`透水混凝土有哪些好处？请分点写出来。`,
+     ref:`①内部有孔隙，能让雨水直接渗下去，减少路面积水；②渗进去的水蒸发时带走热量，夏天路面温度比普通马路低好几摄氏度。`,
+     points:[`写出“能渗水、减少积水”`,`写出“夏天路面温度更低”`,`分点写，条理清楚`],
+     why:`题干说“分点”，就一定要标①②分开写。答案分别在第③段和第⑤段，提取要点时按段找最稳妥。`},
+
+    {t:"choice", q:`最后一段写它“不是十全十美”，会被堵住、要定期冲洗，这样写：`, opts:[
+      `是多余的，削弱了文章的说服力`,
+      `说明作者不喜欢透水混凝土`,
+      `使说明更全面、客观，让人对它有完整的了解`,
+      `是为了凑够段落`],
+     a:2, why:`好的说明文既说优点也说不足。承认局限，反而让人更信得过。`}
+  ]
+},
+{
+  id:"r5", title:"专项五 · 非连续性文本：从材料里找答案",
+  tip:"由通知、表格、规则组成的生活类材料。重点练：快速定位信息、比对条件、简单推算。",
+  passage:{ title:"社区少儿图书馆", html:
+    `<p class="mat">【材料一】开放时间</p>` +
+    `<table><tr><th>星期</th><th>开放时间</th></tr>` +
+    `<tr><td>周一</td><td>闭馆整理，不对外开放</td></tr>` +
+    `<tr><td>周二 ~ 周五</td><td>15:00 — 19:00</td></tr>` +
+    `<tr><td>周六、周日</td><td>9:00 — 17:00</td></tr></table>` +
+    `<p class="mat">【材料二】借阅规则</p>` +
+    `<ol>` +
+    `<li>一张借书证最多借 5 本，其中绘本不超过 2 本。</li>` +
+    `<li>借期 21 天；可续借 1 次，续借 14 天。</li>` +
+    `<li>逾期未还，每本每天收取 0.2 元。</li>` +
+    `<li>工具书、报纸杂志只能在馆内阅读，不外借。</li>` +
+    `</ol>` +
+    `<p class="mat">【材料三】通知</p>` +
+    `<p>国庆期间 10 月 1 日至 10 月 3 日闭馆，10 月 4 日起恢复正常开放。“周末故事会”每周六上午 10:00 在二楼活动室举行，无需报名。</p>`
+  },
+  items:[
+    {t:"choice", q:`小明周一下午 4 点想去借书，结果会是：`, opts:[
+      `正常借到书`,
+      `吃闭门羹，因为周一闭馆整理`,
+      `只能在馆内看，不能借走`,
+      `要等到 15:00 才开门`],
+     a:1, why:`材料一第一行写明周一闭馆。做这类题，先按题干里的“周一”去表格里定位。`},
+
+    {t:"fill", q:`一张借书证最多可以借【　　】本书，其中绘本最多【　　】本。`,
+     as:[[`5`,`五`,`5本`],[`2`,`二`,`2本`]],
+     why:`答案在材料二第 1 条。注意题目问了两个数，别只答一个。`},
+
+    {t:"choice", q:`小红 9 月 20 日借了一本书，如果不续借，最迟应该在哪天归还？（9 月有 30 天）`, opts:[
+      `10 月 1 日`, `10 月 11 日`, `10 月 20 日`, `9 月 30 日`],
+     a:1, why:`借期 21 天：9 月 20 日往后 10 天到 9 月 30 日，再往后 11 天就是 10 月 11 日。这类题要动笔算，别估。`},
+
+    {t:"fill", q:`小刚有 3 本书都逾期了 5 天，他一共要交【　　】元。`,
+     as:[[`3`,`3元`,`3.0`,`三`]],
+     why:`每本每天 0.2 元 → 3 本 × 5 天 × 0.2 元 = 3 元。先算清“几本、几天、每天多少”，再相乘。`},
+
+    {t:"choice", q:`想参加“周末故事会”，应该什么时候去？`, opts:[
+      `每周日上午 10:00，需要先报名`,
+      `每周六上午 10:00，不用报名`,
+      `每周六下午 3:00，需要先报名`,
+      `每天上午 10:00 都有`],
+     a:1, why:`材料三写明“每周六上午 10:00”“无需报名”。选项里把时间、星期、是否报名都改了一点，必须逐项比对。`},
+
+    {t:"open", q:`小丽想借一本字典回家做作业用，图书馆能满足她吗？请说明理由。`,
+     ref:`不能。根据材料二第 4 条，工具书只能在馆内阅读，不外借，而字典属于工具书，所以她只能在图书馆里查，不能借回家。`,
+     points:[`明确回答“不能”`,`引用规则：工具书不外借`,`指出字典属于工具书`,`语句通顺完整`],
+     why:`这类题要“先表态，再找依据”。依据要落到材料的具体条款上，不能只说“规定不让”。`}
+  ]
+},
+{
+  id:"r6", title:"专项六 · 寓言：读懂故事背后的道理",
+  tip:"寓言故事。重点练：分析原因、理解含义深刻的句子、概括道理。",
+  passage:{ title:"两只水桶", paras:[
+    `井台上放着两只水桶，一只是新的，一只用了很多年。`,
+    `新桶很神气，它的铁箍亮得能照出人影。它看不起旧桶：“你看你，坑坑洼洼，还掉了漆，留着你有什么用？”`,
+    `旧桶不作声。`,
+    `那天挑水的老人来了，他先提起新桶。新桶下到井里，咣当一声撞在井壁上，然后横着浮在水面上，怎么也沉不下去。老人提上来又放下去，试了几次，摇摇头。`,
+    `轮到旧桶。它一下去就侧过身子，悄悄地沉了下去，装得满满的，稳稳地上来了。`,
+    `新桶不服气：“凭什么？”老人一边挑水一边说：“你太新，太轻，身子太直，所以沉不下去。它跟水打了十年交道，知道什么时候该低头。”`
+  ]},
+  items:[
+    {t:"choice", q:`新桶打不上水的原因是：`, opts:[
+      `井里的水太少了`,
+      `老人不会用新桶`,
+      `它太轻、身子太直，不会侧身下沉`,
+      `它的铁箍太亮，晃得人睁不开眼`],
+     a:2, why:`最后一段老人的话就是答案：“你太新，太轻，身子太直”。找原因，先看文中有没有人直接说出来。`},
+
+    {t:"fill", q:`第③段只有“旧桶不作声”五个字，却写出了旧桶【　　】的特点。`,
+     as:[[`谦虚`,`沉稳`,`不争辩`,`谦虚沉稳`,`不与人争`,`低调`,`稳重`]],
+     why:`面对嘲笑不回嘴，靠本事说话——这是沉稳谦虚。短短一句话单独成段，往往是作者特意强调。`},
+
+    {t:"fill", q:`短文把水桶当作人来写，它们会说话、会生气，用的是【　　】的手法。`,
+     as:[[`拟人`,`拟人手法`,`拟人的手法`]],
+     why:`寓言几乎都用拟人，把动物或物品写成人，道理才好借它们的口说出来。`},
+
+    {t:"open", q:`老人说旧桶“知道什么时候该低头”，这里的“低头”是什么意思？`,
+     ref:`表面上是指旧桶打水时会侧身、把桶口沉下去；实际上是说它懂得谦虚、肯放下架子，所以才能把事情做成。`,
+     points:[`说出表面意思：打水时侧身、桶口向下`,`说出深层意思：谦虚、放下架子、不逞强`,`能把两层意思连起来`],
+     why:`寓言里的关键词往往一语双关。答这类题要“先说表面，再说背后”，两层都答到才完整。`},
+
+    {t:"choice", q:`这个故事告诉我们的道理是：`, opts:[
+      `新的东西一定不如旧的东西好用`,
+      `光有好看的外表没有用，谦虚和经验才能把事情做成`,
+      `做人要像新桶一样自信`,
+      `旧东西不能随便扔掉`],
+     a:1, why:`寓意要从“新桶失败、旧桶成功”的对比中提炼。注意 A 把道理说绝对了——故事没有说新桶永远不行，而是说它还不懂得低头。`},
+
+    {t:"open", q:`你更欣赏哪一只桶？结合短文内容说说你的理由。`,
+     ref:`示例：我更欣赏旧桶。它被新桶嘲笑时不争辩，而是用打满一桶水证明了自己；它跟水打了十年交道，懂得侧身低头，说明它既有经验又谦虚。（答新桶也可以，但要言之有理，比如欣赏它敢于当面问清楚。）`,
+     points:[`明确说出欣赏哪一只`,`至少用一处短文中的具体内容作依据`,`理由和所选的桶对得上`,`语句通顺`],
+     why:`开放题不是“想怎么答都行”：观点可以不同，但一定要从原文里找得到依据。只写“我喜欢旧桶，因为它好”是拿不到分的。`}
+  ]
+}
+];
+
+/* ===================== 引擎 ===================== */
+const TOTAL = DATA.reduce((n,s)=>n+s.items.length,0);
+const SET_TOTAL={}; DATA.forEach(s=>SET_TOTAL[s.id]=s.items.length);
+const KEY="reading-practice-v1";
+let saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||"{}"); }catch(e){ saved={}; }
+const correct=new Set(saved.correct||[]), wrong=new Set(saved.wrong||[]),
+      half=new Set(saved.half||[]), fixedS=new Set(saved.fixed||[]), flag=new Set(saved.flag||[]);
+const picked=saved.picked||{};
+const INDEX={};
+const CN=["①","②","③","④","⑤","⑥","⑦","⑧"];
+const TAG={choice:"选择",fill:"填空",open:"简答"};
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+// 批改填空：去掉空格和常见标点再比，避免因为一个句号判错
+const norm=s=>String(s).replace(/[\s，,。．.、；;：:！!？?"'“”‘’（）()《》【】]/g,"").trim();
+
+function render(){
+  const app=document.getElementById("app"), jump=document.getElementById("jump");
+  DATA.forEach(set=>{
+    jump.insertAdjacentHTML("beforeend",`<a href="#${set.id}">${set.title.split(" · ")[0]}</a>`);
+    const sec=document.createElement("section");
+    sec.className="set"; sec.id=set.id;
+
+    const p=set.passage;
+    const body = p.html ? p.html
+      : p.paras.map((t,i)=>`<p><span class="pn">${CN[i]}</span>${esc(t)}</p>`).join("");
+    sec.innerHTML=`<h2>${set.title}</h2><p class="tip">${set.tip}</p>
+      <div class="setbar">
+        <button class="primary" data-act="check" data-set="${set.id}">检查本节</button>
+        <button data-act="reveal" data-set="${set.id}">显示本节答案</button>
+        <button data-act="clear" data-set="${set.id}">清空重做</button>
+        <span class="sc" id="sc-${set.id}"></span>
+      </div>
+      <div class="passage"><h3>${esc(p.title)}</h3>${p.by?`<div class="by">${esc(p.by)}</div>`:""}${body}</div>`;
+
+    set.items.forEach((it,i)=>{
+      const id=`${set.id}-${i}`;
+      INDEX[id]={item:it,setId:set.id,setTitle:set.title.split(" · ")[0],num:i+1};
+      const div=document.createElement("div");
+      div.className="item"; div.id="it-"+id;
+
+      // 题干：fill 的 【　　】 换成输入框
+      let n=0, qh="";
+      if(it.t==="fill"){
+        it.q.split(/(【.*?】)/).forEach(seg=>{
+          if(/^【.*?】$/.test(seg)){ qh+=`<input class="blank" id="in-${id}-${n}" autocomplete="off">`; n++; }
+          else qh+=esc(seg);
+        });
+        it._n=n;
+      } else qh=esc(it.q);
+
+      const head=`<p class="q"><span class="n">${i+1}.</span><span class="tag">${TAG[it.t]}</span>${qh}<span class="badge" id="bd-${id}"></span></p>`;
+
+      let body2="", rv="";
+      if(it.t==="choice"){
+        body2=`<div class="opts" id="op-${id}">`+it.opts.map((o,k)=>
+          `<button class="opt" data-act="pick" data-id="${id}" data-k="${k}">${String.fromCharCode(65+k)}. ${esc(o)}</button>`).join("")+`</div>`;
+        rv=`<b>${String.fromCharCode(65+it.a)}. ${esc(it.opts[it.a])}</b><span class="why">${esc(it.why)}</span>`;
+      }else if(it.t==="fill"){
+        rv=`<b>${it.as.map(a=>esc(a[0])).join("　|　")}</b>`+
+           `<span class="why">（意思对即可）${esc(it.why)}</span>`;
+      }else{
+        body2=`<textarea class="ans" id="tx-${id}" placeholder="写在这里……想好了再写，写完点下面的「对照参考答案」"></textarea>
+          <div class="selfbar" id="sb-${id}"><span class="lab">对照之后，自己评一下：</span>
+            <button class="self" data-act="self" data-id="${id}" data-v="1">✓ 答对了</button>
+            <button class="self" data-act="self" data-id="${id}" data-v="0.5">◐ 答得不全</button>
+            <button class="self" data-act="self" data-id="${id}" data-v="0">✗ 没答对</button>
+          </div>`;
+        rv=`<b>参考答案：</b>${esc(it.ref)}<ul>`+
+           it.points.map(x=>`<li>${esc(x)}</li>`).join("")+`</ul>`+
+           `<span class="why">${esc(it.why)}</span>`;
+      }
+
+      const mainBtn = it.t==="open"
+        ? `<button class="primary" data-act="show" data-id="${id}">对照参考答案</button>`
+        : `<button data-act="one" data-id="${id}">检查</button>
+           <button data-act="ans" data-id="${id}">答案</button>`;
+
+      div.innerHTML=head+body2+`
+        <div class="row">
+          ${mainBtn}
+          <button class="flag" data-act="flag" data-id="${id}" title="标记这道题，之后要复习">🚩</button>
+        </div>
+        <div class="fb" id="fb-${id}"></div>
+        <div class="reveal" id="rv-${id}">${it.t==="open"?"":"<b>参考答案：</b>"}${rv}</div>`;
+      sec.appendChild(div);
+    });
+    app.appendChild(sec);
+  });
+
+  // 回填上次做的内容
+  const inputs=saved.inputs||{};
+  Object.keys(inputs).forEach(k=>{ const el=document.getElementById("in-"+k); if(el) el.value=inputs[k]; });
+  const texts=saved.texts||{};
+  Object.keys(texts).forEach(k=>{ const el=document.getElementById("tx-"+k); if(el) el.value=texts[k]; });
+  Object.keys(picked).forEach(id=>{
+    const r=INDEX[id]; if(!r) return;
+    if(r.item.t==="choice"){
+      const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${picked[id]}"]`);
+      if(b) b.classList.add("pick");
+    }else if(r.item.t==="open"){
+      document.getElementById("sb-"+id).classList.add("show");
+      document.getElementById("rv-"+id).classList.add("show");
+      const b=document.querySelector(`button.self[data-id="${id}"][data-v="${picked[id]}"]`);
+      if(b) b.classList.add("pick");
+    }
+  });
+  correct.forEach(id=>{ const r=INDEX[id]; if(!r) return;
+    if(r.item.t==="choice"){ const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${r.item.a}"]`); if(b){b.classList.remove("pick");b.classList.add("good");} }
+    else if(r.item.t==="fill"){ for(let k=0;k<(r.item._n||0);k++){ const e=document.getElementById(`in-${id}-${k}`); if(e) e.classList.add("good"); } }
+  });
+  DATA.forEach(s=>updateSetScore(s.id));
+  updateTotal(); Object.keys(INDEX).forEach(updateMarks); renderMistakes();
+}
+
+function save(){
+  const inputs={}, texts={};
+  document.querySelectorAll("input.blank").forEach(el=>{ if(el.value.trim()) inputs[el.id.slice(3)]=el.value; });
+  document.querySelectorAll("textarea.ans").forEach(el=>{ if(el.value.trim()) texts[el.id.slice(3)]=el.value; });
+  localStorage.setItem(KEY,JSON.stringify({inputs,texts,picked,correct:[...correct],
+    wrong:[...wrong],half:[...half],fixed:[...fixedS],flag:[...flag]}));
+}
+
+function checkOne(id){
+  const r=INDEX[id]; if(!r) return;
+  const it=r.item, fb=document.getElementById("fb-"+id);
+  let res=null; fb.className="fb show";
+
+  if(it.t==="choice"){
+    const sel=picked[id];
+    if(sel===undefined){ fb.innerHTML='<span class="note">先选一个～</span>'; correct.delete(id); }
+    else{
+      document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach((b,k)=>{
+        b.className="opt"+(k===it.a?" good":(k===sel?" bad":""));
+      });
+      if(sel===it.a){ correct.add(id); res=true; fb.innerHTML='<span class="good">✓ 对！</span> <span class="why">'+esc(it.why)+'</span>'; }
+      else{ correct.delete(id); res=false;
+        fb.innerHTML='<span class="bad">✗ 应该选 '+String.fromCharCode(65+it.a)+'</span> <span class="why">'+esc(it.why)+'</span>'; }
+    }
+  }else if(it.t==="fill"){
+    let all=true, empty=true, firstBad=-1;
+    it.as.forEach((acc,k)=>{
+      const el=document.getElementById(`in-${id}-${k}`), v=norm(el.value);
+      if(v) empty=false;
+      const good = v!=="" && acc.some(a=>norm(a)===v);
+      el.className="blank"+(v?(good?" good":" bad"):"");
+      if(!good){ all=false; if(firstBad<0) firstBad=k; }
+    });
+    if(empty){ fb.innerHTML='<span class="note">还没写哦～</span>'; correct.delete(id); }
+    else if(all){ correct.add(id); res=true; fb.innerHTML='<span class="good">✓ 对！</span> <span class="why">'+esc(it.why)+'</span>'; }
+    else{ correct.delete(id); res=false;
+      fb.innerHTML='<span class="bad">✗ 第 '+(firstBad+1)+' 个空还不对。</span>'+
+        ' <span class="note">（意思对但写法不同，可以点「答案」自己判断）</span> <span class="why">💡 '+esc(it.why)+'</span>'; }
+  }else{
+    // 开放题：按自评结果计分
+    const v=picked[id];
+    if(v===undefined){ fb.innerHTML='<span class="note">先点「对照参考答案」，再自己评一下～</span>'; correct.delete(id); }
+    else if(v==="1"){ correct.add(id); half.delete(id); res=true; fb.innerHTML='<span class="good">✓ 自评：答对了</span>'; }
+    else if(v==="0.5"){ correct.delete(id); res=false; half.add(id);
+      fb.innerHTML='<span class="note">◐ 自评：答得不全 —— 对照上面的要点，把漏掉的补上。</span>'; }
+    else{ correct.delete(id); half.delete(id); res=false;
+      fb.innerHTML='<span class="bad">✗ 自评：没答对 —— 收进错题本，过两天再写一遍。</span>'; }
+  }
+
+  if(res===false){ wrong.add(id); fixedS.delete(id); }
+  else if(res===true){ half.delete(id); if(wrong.has(id)){ wrong.delete(id); fixedS.add(id);
+    fb.innerHTML+=' <span class="note">👏 错题订正成功！</span>'; } }
+  updateMarks(id); renderMistakes(); updateSetScore(r.setId); updateTotal(); save();
+}
+
+function updateMarks(id){
+  const el=document.getElementById("it-"+id), bd=document.getElementById("bd-"+id);
+  if(!el) return;
+  const isHalf=half.has(id)&&!correct.has(id);
+  el.classList.toggle("wrong",wrong.has(id)&&!isHalf);
+  el.classList.toggle("half",isHalf);
+  el.classList.toggle("fixed",fixedS.has(id)&&!wrong.has(id));
+  el.classList.toggle("flagged",flag.has(id)&&!wrong.has(id)&&!fixedS.has(id)&&!isHalf);
+  const fb=document.querySelector(`button.flag[data-id="${id}"]`); if(fb) fb.classList.toggle("on",flag.has(id));
+  if(isHalf) bd.className="badge half",bd.textContent="◐ 不全";
+  else if(wrong.has(id)) bd.className="badge wrong",bd.textContent="✗ 错题";
+  else if(fixedS.has(id)) bd.className="badge fixed",bd.textContent="✓ 已订正";
+  else if(correct.has(id)) bd.className="badge ok",bd.textContent="✓";
+  else if(flag.has(id)) bd.className="badge",bd.textContent="🚩";
+  else bd.className="badge",bd.textContent="";
+}
+
+function renderMistakes(){
+  const ids=Object.keys(INDEX).filter(id=>wrong.has(id)||flag.has(id));
+  document.getElementById("msum").textContent=
+    `📕 错题本（${wrong.size} 道待订正${flag.size?"，🚩 "+flag.size+" 道待复习":""}）`;
+  document.getElementById("mlist").innerHTML = !ids.length
+    ? '<p class="empty">还没有错题 👍 做错的题会自动收进这里，点题目可以跳回去订正。</p>'
+    : '<ol class="mlist">'+ids.map(id=>{const r=INDEX[id];
+        const q=r.item.q.replace(/【.*?】/g,"____");
+        return `<li>${half.has(id)?"◐":"✗"} <a href="#it-${id}" data-go="${id}">${esc(q.length>30?q.slice(0,30)+"…":q)}</a>
+        <span class="where">（${r.setTitle} 第 ${r.num} 题）</span></li>`;}).join("")+'</ol>';
+  document.getElementById("markStat").textContent=
+    `错题 ${wrong.size} 道 · 已订正 ${fixedS.size} 道 · 标记 ${flag.size} 道`;
+  DATA.forEach(s=>{ let has=false; eachId(s.id,id=>{ if(wrong.has(id)||flag.has(id)) has=true; });
+    document.getElementById(s.id).classList.toggle("nowrong",!has); });
+}
+
+function eachId(setId,fn){
+  DATA.find(s=>s.id===setId).items.forEach((it,i)=>fn(`${setId}-${i}`,it));
+}
+function updateSetScore(setId){
+  let n=0; eachId(setId,id=>{ if(correct.has(id)) n++; });
+  const t=SET_TOTAL[setId];
+  document.getElementById("sc-"+setId).textContent=`本节：${n} / ${t}`+(n===t?"  🎉 全对！":"");
+}
+function updateTotal(){
+  document.getElementById("totalTxt").textContent=`${correct.size} / ${TOTAL} 题答对`;
+  document.getElementById("totalBar").style.width=(correct.size/TOTAL*100)+"%";
+}
+function clearItem(id){
+  const r=INDEX[id], it=r.item;
+  delete picked[id];
+  document.querySelectorAll(`button.opt[data-id="${id}"],button.self[data-id="${id}"]`)
+    .forEach(b=>b.className=b.classList.contains("self")?"self":"opt");
+  for(let k=0;k<(it._n||0);k++){ const e=document.getElementById(`in-${id}-${k}`); if(e){ e.value=""; e.className="blank"; } }
+  const tx=document.getElementById("tx-"+id); if(tx) tx.value="";
+  const sb=document.getElementById("sb-"+id); if(sb) sb.classList.remove("show");
+  document.getElementById("fb-"+id).className="fb";
+  document.getElementById("rv-"+id).classList.remove("show");
+  correct.delete(id); half.delete(id);
+}
+function flash(id){
+  const el=document.getElementById("it-"+id); if(!el) return;
+  document.body.classList.remove("only-wrong");
+  document.getElementById("btnOnlyWrong").textContent="只看错题 🔍";
+  el.scrollIntoView({behavior:"smooth",block:"center"});
+  el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),1200);
+}
+
+document.addEventListener("click",e=>{
+  const go=e.target.closest("a[data-go]"); if(go){ flash(go.dataset.go); return; }
+  const b=e.target.closest("button"); if(!b) return;
+  const act=b.dataset.act, id=b.dataset.id;
+  if(act==="pick"){
+    picked[id]=+b.dataset.k;
+    document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach(x=>x.className="opt");
+    b.classList.add("pick"); save(); checkOne(id);
+  }
+  if(act==="self"){
+    picked[id]=b.dataset.v;
+    document.querySelectorAll(`button.self[data-id="${id}"]`).forEach(x=>x.className="self");
+    b.classList.add("pick"); save(); checkOne(id);
+  }
+  if(act==="show"){
+    document.getElementById("rv-"+id).classList.add("show");
+    document.getElementById("sb-"+id).classList.add("show");
+  }
+  if(act==="one") checkOne(id);
+  if(act==="ans") document.getElementById("rv-"+id).classList.toggle("show");
+  if(act==="flag"){ flag.has(id)?flag.delete(id):flag.add(id); updateMarks(id); renderMistakes(); save(); }
+  if(act==="check") eachId(b.dataset.set,x=>checkOne(x));
+  if(act==="reveal"){
+    const on=b.textContent.indexOf("显示")>-1;
+    eachId(b.dataset.set,x=>{
+      document.getElementById("rv-"+x).classList.toggle("show",on);
+      const sb=document.getElementById("sb-"+x); if(sb&&on) sb.classList.add("show");
+    });
+    b.textContent=on?"隐藏本节答案":"显示本节答案";
+  }
+  if(act==="clear"){
+    eachId(b.dataset.set,x=>{ clearItem(x); updateMarks(x); });
+    updateSetScore(b.dataset.set); updateTotal(); renderMistakes(); save();
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter"||!e.target.classList.contains("blank")) return;
+  const id=e.target.id.slice(3,e.target.id.lastIndexOf("-"));
+  const k=+e.target.id.slice(e.target.id.lastIndexOf("-")+1);
+  const next=document.getElementById(`in-${id}-${k+1}`);
+  if(next) next.focus(); else checkOne(id);
+});
+document.addEventListener("input",e=>{
+  if(e.target.classList.contains("blank")||e.target.classList.contains("ans")) save();
+});
+document.getElementById("btnOnlyWrong").addEventListener("click",function(){
+  const on=document.body.classList.toggle("only-wrong");
+  this.textContent=on?"显示全部题目 ↩":"只看错题 🔍";
+  if(on) document.getElementById("mbox").open=false;
+});
+document.getElementById("btnRedo").addEventListener("click",()=>{
+  const ids=[...wrong];
+  if(!ids.length){ alert("现在没有错题，太棒了 🎉"); return; }
+  ids.forEach(id=>{ clearItem(id); updateMarks(id); });
+  DATA.forEach(s=>updateSetScore(s.id)); updateTotal(); renderMistakes(); save(); flash(ids[0]);
+});
+document.getElementById("btnClearMarks").addEventListener("click",()=>{
+  if(!confirm("清除所有错题记录和🚩标记？（已写的答案会保留）")) return;
+  [...wrong,...fixedS,...flag,...half].forEach(id=>{
+    wrong.delete(id); fixedS.delete(id); flag.delete(id); half.delete(id); updateMarks(id); });
+  renderMistakes(); save();
+});
+render();
+</script>
+<script src="同步.js?v=202611162213" data-key="reading-practice-v1"></script>
+</body>
+</html>
