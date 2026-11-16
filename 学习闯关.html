@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>英语闯关 · 快问快答</title>
+<title>学习闯关 · 快问快答</title>
 <style>
   :root{
     --bg:#f6f7fb; --card:#fff; --ink:#1f2430; --muted:#6b7280;
@@ -164,14 +164,24 @@
 
 <script>
 /* =====================================================================
-   英语闯关 · 快问快答
-   题库不另存一份：运行时把两个练习页抓下来，抠出里面的 DATA 直接用。
+   学习闯关 · 快问快答
+   题库不另存一份：运行时把各个练习页抓下来，抠出里面的 DATA 直接用。
    所以以后改题只改练习页，这里自动跟着变。
+
+   加新科目只要两步：在 SOURCES 里加一行，再写一个 from* 适配器把那一页的
+   数据结构翻译成 {stem, opts, ans, why, ask} 就行。
    ===================================================================== */
 
 const SOURCES = [
-  {file:"介词专项练习.html",         kind:"prep", name:"介词",   icon:"📍", color:"#7a4de0"},
-  {file:"划线部分提问专项练习.html", kind:"ul",   name:"划线提问", icon:"❓", color:"#2f6df6"},
+  {file:"介词专项练习.html",         kind:"prep", from:"prep", name:"介词",   icon:"📍", color:"#7a4de0", say:true},
+  {file:"划线部分提问专项练习.html", kind:"ul",   from:"ul",   name:"划线提问", icon:"❓", color:"#2f6df6", say:true},
+  {file:"递等式计算专项练习.html",   kind:"math", from:"math", name:"递等式计算", icon:"🧮", color:"#0e8a6e"},
+  {file:"递等式巧算专项练习.html",   kind:"math", from:"math", name:"递等式巧算", icon:"⚡", color:"#2563a8"},
+  // 阅读理解没有放进来：它的题几乎都要对着原文或材料才能答
+  //（「第③段……」「这个故事……」「小刚逾期 5 天要交多少钱」——规则在材料里）。
+  // 搬进快问快答就成了无源之水，孩子只能瞎猜。剩下真正自洽的只有三道
+  // 「这句话用的修辞手法是」，撑不起一关，不如不做。
+  // 以后要补语文闯关，正路是单独写一份字词句基础练习页，那类题天生自洽。
 ];
 
 const PER_LEVEL = 10;                 // 每关题数
@@ -188,6 +198,7 @@ const WAIT_MAX      = 9000;           // 封顶，再长也不等了
 const FALLBACK = {
   prep:["in","on","at","under","behind","near","next to","between","for","with","to","by","about","of","from","above"],
   ul:["What","Where","When","Who","Whose","Why","How","How many","How much","How old","What colour","What time","What day"],
+  math:[],
 };
 
 /* ---------------- 小工具 ---------------- */
@@ -246,6 +257,7 @@ function enVoice(){
 // speakGen：每次新朗读都会打断上一条，被打断的那条不许再执行它的回调，
 // 否则「重听」会顺手触发上一次朗读挂着的「自动跳下一题」。
 let speakGen = 0;
+// q 传进来是为了判断这题该不该念；不传就是调用方已经确认过了
 function speak(text, done, force){
   const fin = done || function(){};
   if((!save.speak && !force) || !window.speechSynthesis || !text){ fin(); return; }
@@ -367,55 +379,136 @@ function fromUl(set){
   return qs;
 }
 
+/* ---------------- 数学：递等式计算 / 巧算 → 题目 ---------------- */
+const STEP_CN = ["①","②","③","④","⑤","⑥","⑦","⑧"];
+// 题目里混着 × ÷ − 和中括号，先翻成 JS 认识的写法。
+// 只放行数字和运算符，别的一律拒掉——题库是自己写的，但 eval 还是要守住入口。
+function toJs(t){
+  const js = String(t).replace(/【|】/g,"").replace(/×/g,"*").replace(/÷/g,"/")
+    .replace(/[−–—]/g,"-").replace(/\[/g,"(").replace(/\]/g,")").replace(/\s/g,"");
+  return /^[0-9+\-*/().]+$/.test(js) ? js : null;
+}
+function val(t){
+  const js = toJs(t); if(!js) return null;
+  try{ const v = eval(js); return Number.isFinite(v) ? v : null; }catch(e){ return null; }
+}
+// 从左往右硬算，无视「先乘除后加减」——四年级最典型的错法，拿来当干扰项最像
+function ltr(t){
+  const js = toJs(t);
+  if(!js || /[()]/.test(js)) return null;
+  const tk = js.match(/\d+\.?\d*|[+\-*/]/g);
+  if(!tk || tk.length < 5) return null;           // 只有一个运算符时左右算法一样，没意义
+  let v = parseFloat(tk[0]);
+  for(let i=1;i<tk.length;i+=2){
+    const b = parseFloat(tk[i+1]);
+    if(tk[i]==="+") v+=b; else if(tk[i]==="-") v-=b; else if(tk[i]==="*") v*=b; else v/=b;
+  }
+  return Number.isFinite(v) ? v : null;
+}
+// 解决问题那几题前面带题干，"列式：" 后面才是算式
+const exprOf = e => String(e).split("列式：").pop().trim();
+// 凑两个得数干扰项：优先用真实误算（算错顺序、算到一半就停），再退到位值滑错
+function numOpts(ans, cands){
+  const seen = new Set([ans]), out = [];
+  for(const c of cands.concat([ans*10, ans/10, ans+10, Math.abs(ans-10), ans*2])){
+    if(out.length >= 2) break;
+    if(!Number.isFinite(c) || c <= 0 || Math.abs(c%1) > 1e-9) continue;
+    if(seen.has(c)) continue;
+    seen.add(c); out.push(c);
+  }
+  return out.length >= 2 ? shuffle([ans, ...out]) : null;
+}
+function fromMath(set){
+  const qs = [];
+  set.parts.forEach(p => p.items.forEach(it => {
+
+    if(p.type === "order"){
+      qs.push({stem:it.e, ask:"这道题应该先算哪一步？", kind:"math",
+               opts:shuffle(it.opts.slice()), ans:it.opts[it.a], why:it.why});
+
+    }else if(p.type === "calc"){
+      const e = exprOf(it.e), ans = val(e);
+      if(ans === null) return;
+      // 每一步填的数都在 lines 的【】里，最后一个就是得数
+      const mid = [];
+      it.lines.forEach(l => (l.match(/【(.*?)】/g)||[]).forEach(x => mid.push(+x.slice(1,-1))));
+      const last = mid.pop();
+      if(!Number.isFinite(last) || Math.abs(ans - last) > 1e-9) return;   // 对不上就别出，宁缺毋滥
+      const opts = numOpts(ans, [ltr(e)].concat(mid.reverse()));          // 算到一半就停下，最后一个中间值最像
+      if(!opts) return;
+      qs.push({stem:e, ask:"这道题的得数是多少？", kind:"math", num:true,
+               opts:opts.map(String), ans:String(ans), why:it.why});
+
+    }else if(p.type === "fix"){
+      const ans = Number(it.a);
+      if(!Number.isFinite(ans)) return;
+      // 错解自己算出来的那个数，是现成的最佳干扰项
+      const bogus = val(it.sol[it.sol.length-1]);
+      const opts = numOpts(ans, [bogus, val(it.sol[it.sol.length-2] || "")]);
+      if(!opts) return;
+      qs.push({stem:exprOf(it.e),
+               cn:"别人是这样算的：" + it.sol.map((l,k)=>STEP_CN[k]+" = "+l).join("　"),
+               ask:"这样算错了，正确的得数是多少？", kind:"math", tag:"找错", num:true,
+               opts:opts.map(String), ans:String(ans), why:it.why});
+    }
+  }));
+  return qs;
+}
+
+const ADAPTERS = {prep:fromPrep, ul:fromUl, math:fromMath};
+
 /* ---------------- 状态 ---------------- */
 const COURSES = [];
+let loadFailed = [];      // 哪几科的题库没读进来，首页底部提示用
 let S = {};
-
 /* ---------------- 启动 ---------------- */
 boot();
 
 async function boot(){
-  $("app").innerHTML = '<header class="top"><h1>🎮 英语闯关</h1>'
+  $("app").innerHTML = '<header class="top"><h1>🎮 学习闯关</h1>'
     + '<p>正在读题库…</p></header>';
 
   if(location.protocol === "file:"){ offline("本地双击打开"); return; }
 
-  try{
-    for(const src of SOURCES){
+  for(const src of SOURCES){
+    try{
       const data = await fetchBank(src.file);
-      const levels = data.map(set => {
-        const qs = src.kind === "prep" ? fromPrep(set) : fromUl(set);
+      const adapt = ADAPTERS[src.from];
+      let levels = data.map(set => {
+        const qs = adapt(set);
+        // 只有英文题才朗读。数学和语文交给英文语音念，出来的是噪音
+        qs.forEach(q => { q.say = !!src.say; });
         return {id:src.kind + "-" + set.id, title:set.title, qs};
       }).filter(l => l.qs.length > 0);
       if(levels.length) COURSES.push(Object.assign({}, src, {levels}));
+    }catch(err){
+      // 一科读不到不该拖垮整个游戏，记下来照常开别的科
+      loadFailed.push(src.name + "（" + (err && err.message || err) + "）");
     }
-    if(!COURSES.length) throw new Error("题库是空的");
-  }catch(err){
-    offline(err && err.message ? err.message : String(err));
-    return;
   }
+  if(!COURSES.length){ offline(loadFailed.join("；") || "题库是空的"); return; }
   home();
 }
 
 /* 题库读不到时的提示（最常见就是 file:// 直接打开） */
 function offline(reason){
   $("app").innerHTML =
-    '<header class="top"><h1>🎮 英语闯关</h1><p>题库没读进来</p></header>'
+    '<header class="top"><h1>🎮 学习闯关</h1><p>题库没读进来</p></header>'
   + '<div class="note"><b>原因：' + esc(reason) + '</b><br><br>'
-  + '这个页面要去读 <code>介词专项练习.html</code> 和 <code>划线部分提问专项练习.html</code> 里的题目，'
+  + '这个页面要去读同目录下几个练习页里的题目，'
   + '而浏览器不允许本地双击打开的网页读取同目录的其它文件。<br><br>'
   + '<b>两种办法：</b><br>'
   + '① 直接用线上地址打开（手机扫码进的就是线上的，不受影响）；<br>'
   + '② 电脑上想本地玩，在这个文件夹里开个小服务器：<br>'
   + '<code>python -m http.server 8000</code><br>'
-  + '然后浏览器访问 <code>http://localhost:8000/英语闯关.html</code>'
+  + '然后浏览器访问 <code>http://localhost:8000/学习闯关.html</code>'
   + '</div><footer><a href="index.html">← 回导航页</a></footer>';
 }
 
 /* ---------------- 首页：关卡列表 ---------------- */
 function home(){
   stopCountdown(); stopAdvance(); stopLimit();
-  let h = '<header class="top"><h1>🎮 英语闯关</h1>'
+  let h = '<header class="top"><h1>🎮 学习闯关</h1>'
         + '<p>一题一选，点完马上知道对错 · 做错的会在本关结束后再问一遍</p>'
         + '<div class="toprow">'
         + '<button class="tgl' + (save.sound?"":" off") + '" id="tSound">' + (save.sound?"🔊 音效开":"🔇 音效关") + '</button>'
@@ -445,7 +538,10 @@ function home(){
 
   const done = COURSES.reduce((n,c)=>n + c.levels.filter(l=>(save.stars[l.id]||0)>=1).length, 0);
   const all  = COURSES.reduce((n,c)=>n + c.levels.length, 0);
-  h += '<footer>已通关 ' + done + ' / ' + all + ' 关 · 题目来自两个练习页，改题不用改这里</footer>';
+  const qn   = COURSES.reduce((n,c)=>n + c.levels.reduce((m,l)=>m+l.qs.length,0), 0);
+  h += '<footer>已通关 ' + done + ' / ' + all + ' 关 · 共 ' + qn + ' 道题可抽'
+     + (loadFailed.length ? '<br><span style="color:#c2410c">这几科没读进来：' + esc(loadFailed.join("；")) + '</span>' : "")
+     + '<br>题目直接取自各个练习页，改题不用改这里</footer>';
 
   $("app").innerHTML = h;
   $("tSound").onclick = () => { save.sound = !save.sound; persist(); if(save.sound) beep(true); home(); };
@@ -499,7 +595,7 @@ function question(){
   + '<p class="stem">' + stemHtml(q.stem) + '</p>'
   + (q.cn ? '<p class="cn">' + esc(q.cn) + '</p>' : "")
   + '<div class="qrow"><p class="ask">' + esc(q.ask) + '</p>'
-  + '<button class="say" id="say">🔊 再听一遍</button></div>'
+  + (q.say ? '<button class="say" id="say">🔊 再听一遍</button>' : "") + '</div>'
   + '</div>'
 
   + (save.limit && !S.reviewing
@@ -516,11 +612,12 @@ function question(){
   document.querySelectorAll("#opts button.opt").forEach(b => {
     b.onclick = () => answer(+b.dataset.k);
   });
-  $("say").onclick = replay;
+  if($("say")) $("say").onclick = replay;
   $("quit").onclick = quit;
 
   // 题目一出来先读一遍（听力铺垫），读完才开始计时
-  speak(sayable(q.stem, null), () => startLimit());
+  if(q.say) speak(sayable(q.stem, null), () => startLimit());
+  else startLimit();
 }
 
 // ___ 显示成橙色横线；【】里的内容画下划线（划线部分提问用）
@@ -648,7 +745,8 @@ function wrongFlow(q, headline){
   // 不马上跳：先把正确句子读完，再留一段时间看讲解，到点自动走
   $("acts").innerHTML = '<button class="btn primary wide" id="go">知道了，下一题 →<i class="cd" id="cd"></i></button>';
   $("go").onclick = () => { stopCountdown(); next(); };
-  speak(sayable(q.stem, q.ans), () => startCountdown(waitMs(q)));
+  if(q.say) speak(sayable(q.stem, q.ans), () => startCountdown(waitMs(q)));
+  else startCountdown(waitMs(q));
 }
 
 /* ---------------- 判题 ---------------- */
@@ -674,10 +772,9 @@ function answer(k){
     $("fb").innerHTML = '<div class="hd">✅ ' + cheer + (S.streak >= 3 ? "　🔥 连对 " + S.streak : "") + '</div>'
                       + (q.why ? '<div class="why">' + esc(q.why) + '</div>' : "");
     // 读一遍补完整的句子，顺带把正确说法印进耳朵
-    speak(sayable(q.stem, q.ans), () => {
-      stopAdvance();
-      advTimer = setTimeout(next, save.speak ? 180 : 700);
-    });
+    const after = () => { stopAdvance(); advTimer = setTimeout(next, (q.say && save.speak) ? 180 : 700); };
+    if(q.say) speak(sayable(q.stem, q.ans), after);
+    else after();
 
   }else{
     wrongFlow(q, "❌ 正确答案是 " + esc(q.ans));
@@ -765,6 +862,6 @@ function result(){
   if(stars === 3) beep(true);
 }
 </script>
-<script src="同步.js?v=202611162219" data-key="en-arcade-v1"></script>
+<script src="同步.js?v=202611162322" data-key="en-arcade-v1"></script>
 </body>
 </html>
