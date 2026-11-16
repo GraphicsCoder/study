@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>英语熏听 · 磨耳朵</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --card:#fff; --ink:#1f2430; --muted:#6b7280;
+    --line:#e5e7eb; --brand:#0284c7; --brand-soft:#e6f4fd;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);line-height:1.65;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;
+    -webkit-tap-highlight-color:transparent;
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+  .wrap{max-width:720px;margin:0 auto;padding:20px 16px 60px}
+
+  header.top{background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;
+    border-radius:16px;padding:20px 22px;margin-bottom:16px}
+  header.top h1{margin:0 0 6px;font-size:23px;letter-spacing:.5px}
+  header.top p{margin:0;opacity:.94;font-size:14px}
+  header.top a{color:#fff;text-decoration:underline;font-size:13px}
+  .hrow{display:flex;align-items:flex-start;gap:10px}
+  .hrow h1{flex:1;min-width:0}
+
+  /* ---------- 正在播 ---------- */
+  .now{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:24px 20px;margin-bottom:14px;text-align:center}
+  .now .tags{margin-bottom:12px}
+  .now .grp{font-size:12.5px;color:var(--brand);background:var(--brand-soft);
+    border-radius:99px;padding:3px 12px;display:inline-block}
+
+  /* 单元类型：对话 / 短文 / 问答 / 单句 */
+  .kind{font-size:11.5px;border-radius:99px;padding:2px 9px;margin-right:6px;
+    font-weight:600;white-space:nowrap;display:inline-block;vertical-align:1px;
+    background:#eef1f6;color:var(--muted)}
+  .kind.k-talk{background:#e8f6ed;color:#15803d}
+  .kind.k-text{background:#fff1e7;color:#c2410c}
+  .kind.k-qa  {background:#e6f4fd;color:#0369a1}
+  .kind.k-one {background:#f3f0fd;color:#6d3fd0}
+  .now .en{font-size:24px;line-height:1.6;margin:0;word-break:break-word;font-weight:500}
+  .now .cn{font-size:15px;color:var(--muted);margin:8px 0 0}
+  .now .idx{font-size:12.5px;color:var(--muted);margin:12px 0 0}
+  body.blind .now .en,body.blind .now .cn{filter:blur(9px);user-select:none}
+  body.blind .now .en:active,body.blind .now .cn:active{filter:none}
+  .seek{height:5px;border-radius:99px;background:#e8ecf2;overflow:hidden;margin-top:14px}
+  .seek i{display:block;height:100%;width:0;background:var(--brand);transition:width .2s linear}
+
+  /* ---------- 控制 ---------- */
+  .ctrl{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px}
+  button.rnd{font-family:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;
+    color:var(--ink);border-radius:99px;width:58px;height:58px;font-size:22px;
+    display:flex;align-items:center;justify-content:center;transition:transform .1s}
+  button.rnd:active{transform:scale(.93)}
+  button.rnd.big{width:76px;height:76px;font-size:30px;
+    background:var(--brand);border-color:var(--brand);color:#fff}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:4px 16px;margin-bottom:14px}
+  .panel > summary{cursor:pointer;font-weight:600;font-size:15px;padding:11px 0}
+  .panel > summary::marker{color:var(--brand)}
+  .line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:7px 0}
+  .line + .line{border-top:1px dashed var(--line)}
+  .line .lb{font-size:14px;color:var(--muted);flex:none;min-width:70px}
+  .seg{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+  button.sg{font-family:inherit;font-size:13.5px;padding:7px 13px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink)}
+  button.sg.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+  .hint{font-size:12.5px;color:var(--muted);line-height:1.7;margin:8px 0 12px}
+
+  /* ---------- 列表 ---------- */
+  /* 列表在自己的框里滚，这样播到哪儿都不用翻页，上面的播放区一直看得见 */
+  .list{max-height:44vh;overflow-y:auto;overscroll-behavior:contain;
+    position:relative;-webkit-overflow-scrolling:touch;
+    border-radius:14px;padding-right:2px}
+  details.grp{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:2px 16px;margin-bottom:10px}
+  details.grp summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:15px}
+  details.grp summary::marker{color:var(--brand)}
+  ol.tl{margin:0 0 12px;padding:0;list-style:none}
+  ol.tl li{padding:9px 10px;border-radius:9px;cursor:pointer;font-size:15px;line-height:1.6;
+    border-left:3px solid transparent}
+  ol.tl li:hover{background:#f3f5f9}
+  ol.tl li.on{background:var(--brand-soft);border-left-color:var(--brand);font-weight:600}
+  ol.tl li .c{display:block;font-size:13px;color:var(--muted);font-weight:400}
+
+  .note{background:#fff;border:1px solid var(--line);border-left:4px solid #e9a23b;
+    border-radius:12px;padding:16px 18px;font-size:14.5px;line-height:1.9}
+  .note code{background:#f3f5f9;border-radius:5px;padding:2px 7px;
+    font-family:Consolas,monospace;font-size:13.5px}
+  .note b{color:var(--ink)}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:18px 10px 0}
+
+  @media (max-width:640px){
+    .wrap{padding:12px 10px 50px}
+    header.top{padding:16px 14px;border-radius:12px}
+    header.top h1{font-size:20px}
+    .now{padding:20px 15px}
+    .now .en{font-size:21px}
+    button.rnd{width:54px;height:54px;font-size:20px}
+    button.rnd.big{width:70px;height:70px;font-size:28px}
+    .line .lb{min-width:100%}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<audio id="au" preload="auto"></audio>
+
+<!--TRACKS-START--><script>const TRACKS=[{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"The cat is under the table.","cn":"","f":"音频/7d3e6725184f.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"Where is the cat?","cn":"","f":"音频/cb3d34462482.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"Those books are Peter's.","cn":"","f":"音频/0db82faf357d.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"Whose books are those?","cn":"","f":"音频/f056a568c49b.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"My father is forty years old.","cn":"","f":"音频/ba2fed62bc3c.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"How old is your father?","cn":"","f":"音频/cb0b7cccd752.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"The leaves are green in spring.","cn":"","f":"音频/fd633824677b.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"What colour are the leaves in spring?","cn":"","f":"音频/f9138317baf3.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"It is Friday today.","cn":"","f":"音频/2ede9ee74b6e.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"What day is it today?","cn":"","f":"音频/3118da56da04.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"The pencil is in my schoolbag.","cn":"","f":"音频/b40127368573.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"Where is the pencil?","cn":"","f":"音频/51987f9843af.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"Those are Jack's gloves.","cn":"","f":"音频/7adfc6261512.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"Whose gloves are those?","cn":"","f":"音频/a2446a26ace4.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"My new skirt is pink.","cn":"","f":"音频/c54b5a7d7f63.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"What colour is your new skirt?","cn":"","f":"音频/de6e5d407e59.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"The girl in red is my classmate.","cn":"","f":"音频/23540bad66e1.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"Who is the girl in red?","cn":"","f":"音频/e96a54a6f48b.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"It is half past six now.","cn":"","f":"音频/8de8d1f12391.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"What time is it now?","cn":"","f":"音频/a7bba5c6a7bf.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"Today is Tuesday.","cn":"","f":"音频/e55edba34032.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"What day is today?","cn":"","f":"音频/5a94bf47b6ca.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"The elephants are big and strong.","cn":"","f":"音频/7ba98a296efe.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"What are the elephants like?","cn":"","f":"音频/6856c4a9a118.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"My grandfather is seventy years old.","cn":"","f":"音频/d04d66f9e948.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"How old is your grandfather?","cn":"","f":"音频/cf08856d7ea0.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"The pears are ten yuan a kilo.","cn":"","f":"音频/51f82083fff0.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"How much are the pears?","cn":"","f":"音频/28b62dc9daf5.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"Her favourite season is winter.","cn":"","f":"音频/6d216671350d.mp3"},{"g":"划线提问 · 专项一 · be 动词句（am / is / are）","k":"问答","t":"What is her favourite season?","cn":"","f":"音频/351b08e563ac.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There are four museums in this city.","cn":"","f":"音频/5728e740b4e1.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"How many museums are there in this city?","cn":"","f":"音频/6ccc080affac.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There is a bird in the tree.","cn":"","f":"音频/4839b5fb4959.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"What is in the tree?","cn":"","f":"音频/3a8cef57c214.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There are some toys on the bed.","cn":"","f":"音频/de93e5bf40b8.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"Where are the toys?","cn":"","f":"音频/29553e008726.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There are seven days in a week.","cn":"","f":"音频/67cd6523ca89.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"How many days are there in a week?","cn":"","f":"音频/a93aeec1ec9a.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There is some juice in the bottle.","cn":"","f":"音频/670d5bed0e86.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"Where is the juice?","cn":"","f":"音频/2e24508988e6.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There is a cat under the chair.","cn":"","f":"音频/71e712b4b29a.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"What is under the chair?","cn":"","f":"音频/40d378818cfa.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There are some books on the desk.","cn":"","f":"音频/0e6d428ed561.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"Where are the books?","cn":"","f":"音频/1a4b406dabff.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There are twelve months in a year.","cn":"","f":"音频/98051d3dc4c0.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"How many months are there in a year?","cn":"","f":"音频/7923f79f0e49.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There is a big park near my home.","cn":"","f":"音频/603e0943a03b.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"What is near your home?","cn":"","f":"音频/d2f3de1be221.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There are five people in Tom's family.","cn":"","f":"音频/3d5a60d894e5.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"How many people are there in Tom's family?","cn":"","f":"音频/1543481916ad.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There is some milk in the glass.","cn":"","f":"音频/18e008027dac.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"Where is the milk?","cn":"","f":"音频/702209c57221.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There is an English book in the bag.","cn":"","f":"音频/2337abb4969e.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"What is in the bag?","cn":"","f":"音频/1ed9862ceed3.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There are two birds in the tree.","cn":"","f":"音频/b8bbbd511ac6.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"How many birds are there in the tree?","cn":"","f":"音频/a8b124a14af7.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"There is a clock on the wall.","cn":"","f":"音频/86aa22a53093.mp3"},{"g":"划线提问 · 专项二 · There be 句型","k":"问答","t":"Where is the clock?","cn":"","f":"音频/0474597c9a05.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"Tom does his homework in the evening.","cn":"","f":"音频/9931333ec4a0.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"When does Tom do his homework?","cn":"","f":"音频/26eb62d2ab10.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"They go to school by bus.","cn":"","f":"音频/b05afe6997a2.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"How do they go to school?","cn":"","f":"音频/cf4266f8d776.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"I have two hamburgers for lunch.","cn":"","f":"音频/849c976e88cc.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"How many hamburgers do you have for lunch?","cn":"","f":"音频/a4f146d95ad6.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"She likes swimming.","cn":"","f":"音频/663ef8cfb925.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"What does she like?","cn":"","f":"音频/ef5ad887d200.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"My mother works in a hospital.","cn":"","f":"音频/96cd5109d8d8.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"Where does your mother work?","cn":"","f":"音频/978837997bae.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"He goes to school by bike.","cn":"","f":"音频/8fb8bbcaa9aa.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"How does he go to school?","cn":"","f":"音频/b8bfcf15c45c.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"I like apples very much.","cn":"","f":"音频/e0db6144986b.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"What do you like very much?","cn":"","f":"音频/253a7a710849.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"They play football on the playground.","cn":"","f":"音频/3a3c019ee93d.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"Where do they play football?","cn":"","f":"音频/c8858e2835b2.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"My sister gets up at six thirty.","cn":"","f":"音频/6e8a5b764f02.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"What time does your sister get up?","cn":"","f":"音频/e48fa5cd13b1.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"She has two cousins.","cn":"","f":"音频/a4e4bd3985c6.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"How many cousins does she have?","cn":"","f":"音频/1cc2d5505655.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"We go to the library on Saturdays.","cn":"","f":"音频/6ed64d279578.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"When do you go to the library?","cn":"","f":"音频/0d265dfb5306.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"Peter likes winter because he can make snowmen.","cn":"","f":"音频/4c9962d25ab7.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"Why does Peter like winter?","cn":"","f":"音频/335183198ee9.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"The children have lunch at school.","cn":"","f":"音频/402ea6ca8547.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"Where do the children have lunch?","cn":"","f":"音频/ab1ac196ba7a.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"Mr Li teaches English.","cn":"","f":"音频/b38588ff4f39.mp3"},{"g":"划线提问 · 专项三 · 一般现在时（实义动词，要用 do / does）","k":"问答","t":"What does Mr Li teach?","cn":"","f":"音频/b0a1c1c3f04d.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"They are playing football.","cn":"","f":"音频/39b163ceca12.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"What are they playing?","cn":"","f":"音频/fefd69410b1b.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"Kitty is singing in the music room.","cn":"","f":"音频/cc3e7d1244d5.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"Where is Kitty singing?","cn":"","f":"音频/d1c2fc702e1c.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"The boys are running on the playground.","cn":"","f":"音频/2e11603024b3.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"What are the boys doing on the playground?","cn":"","f":"音频/ce0b95982491.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"We are watching a film.","cn":"","f":"音频/7dffda63f3de.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"What are you watching?","cn":"","f":"音频/264eb339dbce.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"He is talking to his teacher.","cn":"","f":"音频/7d0bfd8d1676.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"Who is he talking to?","cn":"","f":"音频/3a00c15241df.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"They are playing football on the playground.","cn":"","f":"音频/becb78ffe4f2.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"What are they playing on the playground?","cn":"","f":"音频/dde7035d1659.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"Kitty is reading a book in the living room.","cn":"","f":"音频/9c676d14ad92.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"Where is Kitty reading a book?","cn":"","f":"音频/c95ec40a4c41.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"The boys are swimming now.","cn":"","f":"音频/020aca110834.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"What are the boys doing now?","cn":"","f":"音频/5d822b1e05a3.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"Alice is drawing a picture.","cn":"","f":"音频/eb17e54a0040.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"Who is drawing a picture?","cn":"","f":"音频/de5bf25cc1c4.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"My mother is cooking in the kitchen.","cn":"","f":"音频/3ceea7ee7041.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"Where is your mother cooking?","cn":"","f":"音频/ebbc4330f585.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"He is writing an e-mail.","cn":"","f":"音频/75cb54e56216.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"What is he writing?","cn":"","f":"音频/35e02c2054e3.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"The cat is sleeping under the bed.","cn":"","f":"音频/b36cfdce72c5.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"Where is the cat sleeping?","cn":"","f":"音频/967e8d1dcc5e.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"We are singing an English song.","cn":"","f":"音频/d5b44fe137b4.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"What are you singing?","cn":"","f":"音频/d54634a9dd80.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"Ben is flying a kite with his father. ★","cn":"","f":"音频/a359ff0458e3.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"Who is Ben flying a kite with?","cn":"","f":"音频/21d5ba1492b7.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"They are cleaning the classroom.","cn":"","f":"音频/a74c036f5674.mp3"},{"g":"划线提问 · 专项四 · 现在进行时（be + V-ing）","k":"问答","t":"What are they doing?","cn":"","f":"音频/e05d6053c87a.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"My father cleans the car on Sundays.","cn":"","f":"音频/665155302270.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Who cleans the car on Sundays?","cn":"","f":"音频/62de76eaa7a3.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"A cat is under the chair.","cn":"","f":"音频/c2a4fb6f4f66.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Alice likes drawing.","cn":"","f":"音频/f2edef4a544c.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Who likes drawing?","cn":"","f":"音频/d2cf3ef20093.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Jim and Tom are in the playground.","cn":"","f":"音频/eaab356a8741.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Who is in the playground?","cn":"","f":"音频/7dd8365359bf.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"The dog is running fast.","cn":"","f":"音频/fe3836a6f1ba.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"What is running fast?","cn":"","f":"音频/526ca15124b1.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Kitty and Alice are in the music room.","cn":"","f":"音频/c895bf522400.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Who is in the music room?","cn":"","f":"音频/a4e1d72ffb71.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"A pen is on the desk.","cn":"","f":"音频/9fc0713bdf4f.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"What is on the desk?","cn":"","f":"音频/99ab8a92be88.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Tom likes playing basketball.","cn":"","f":"音频/07ee0dae5aa0.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Who likes playing basketball?","cn":"","f":"音频/3bd916053386.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"The little boy is crying.","cn":"","f":"音频/6a0f810b52c4.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Who is crying?","cn":"","f":"音频/0435f62b9978.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Jim's mother works in a hospital.","cn":"","f":"音频/d6ba699e9691.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Who works in a hospital?","cn":"","f":"音频/ccd3a05cef3d.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Some apples are in the basket.","cn":"","f":"音频/ba6a039a86c4.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"What is in the basket?","cn":"","f":"音频/2b8dc640cc48.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"My brother can swim very fast.","cn":"","f":"音频/4bde673f9766.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Who can swim very fast?","cn":"","f":"音频/ab793eb0876d.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Peter went to the park yesterday.","cn":"","f":"音频/dce3878cd4f2.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"Who went to the park yesterday?","cn":"","f":"音频/50e199058421.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"The dog is running after the ball.","cn":"","f":"音频/7140fa8ed741.mp3"},{"g":"划线提问 · 专项五 · 划线的是主语（★最容易错）","k":"问答","t":"What is running after the ball?","cn":"","f":"音频/9b6d7d5ddb71.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"There are thirty students in my class.","cn":"","f":"音频/03ab62c419ba.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How many students are there in your class?","cn":"","f":"音频/b65582f32f80.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"The book is twenty yuan.","cn":"","f":"音频/8c46919a8945.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How much is the book?","cn":"","f":"音频/f6456d71c80d.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"My sister is nine years old.","cn":"","f":"音频/7883f9cb495b.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How old is your sister?","cn":"","f":"音频/dcc857b52358.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"School starts at eight o'clock.","cn":"","f":"音频/93b7eef660d5.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"What time does School start?","cn":"","f":"音频/66bc1a8a1cf4.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"The rope is two metres long.","cn":"","f":"音频/413c61aef4fd.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How long is the rope?","cn":"","f":"音频/f556f5844306.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"There are thirty-five students in my class.","cn":"","f":"音频/f950d11dfa35.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"The toy car is ninety-nine yuan.","cn":"","f":"音频/c1e591f9591d.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How much is the toy car?","cn":"","f":"音频/b20c02c9f8b6.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"My cousin is eleven years old.","cn":"","f":"音频/dd085c134cc1.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How old is your cousin?","cn":"","f":"音频/d3a828d601ef.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"I have three story books.","cn":"","f":"音频/6d3b7fbab039.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How many story books do you have?","cn":"","f":"音频/9827be5d03f5.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"There is some water in the bottle.","cn":"","f":"音频/f65fd22ceb46.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How much water is there in the bottle?","cn":"","f":"音频/d8043f085994.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"The ruler is twenty centimetres long.","cn":"","f":"音频/fe00e2baa09d.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How long is the ruler?","cn":"","f":"音频/5e93eba0989d.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"She buys four kilos of apples.","cn":"","f":"音频/46f7c21dbaee.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How many kilos of apples does she buy?","cn":"","f":"音频/8706764668c5.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"The bananas are eight yuan.","cn":"","f":"音频/1ceccba4ffe2.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How much are the bananas?","cn":"","f":"音频/c33b2bc2564e.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"He watches TV for an hour every day. ★","cn":"","f":"音频/e48c17a97407.mp3"},{"g":"划线提问 · 专项六 · how 家族（数量 / 价钱 / 年龄 / 时间 / 长度）","k":"问答","t":"How long does he watch TV every day?","cn":"","f":"音频/50b4ea1c0130.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"He can play the guitar.","cn":"","f":"音频/7a492a2a74cf.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"What can he play?","cn":"","f":"音频/3e3c81ca3b44.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"We are going to the park tomorrow.","cn":"","f":"音频/6539a9f829da.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"When are you going to the park?","cn":"","f":"音频/5e3e886e786f.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"They went to Beijing last summer.","cn":"","f":"音频/f188dc0b233d.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"When did they go to Beijing?","cn":"","f":"音频/772f5538e89b.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"I was at home yesterday.","cn":"","f":"音频/2c050063ebfe.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"Where were you yesterday?","cn":"","f":"音频/3e976452d071.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"Tom bought a new bag last week.","cn":"","f":"音频/d60c67700ded.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"What did Tom buy last week?","cn":"","f":"音频/39a60276cffa.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"He can play the piano.","cn":"","f":"音频/9958be368fa7.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"We are going to the zoo tomorrow.","cn":"","f":"音频/719151d4b492.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"When are you going to the zoo?","cn":"","f":"音频/83d52146e02a.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"They are going to plant trees in the park.","cn":"","f":"音频/32e53feae926.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"Where are they going to plant trees?","cn":"","f":"音频/1790c9ce5d7d.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"She can swim very well.","cn":"","f":"音频/eddabeee9cfb.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"How can she swim?","cn":"","f":"音频/bfbbc609d1e1.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"Tom bought a new bag yesterday.","cn":"","f":"音频/2496e5630afc.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"What did Tom buy yesterday?","cn":"","f":"音频/a52fd05255f1.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"The film was very interesting.","cn":"","f":"音频/4171c2783e30.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"How was the film?","cn":"","f":"音频/6f560923cde7.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"We are going to have a picnic this Sunday.","cn":"","f":"音频/9d45f5960be0.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"What are you going to have this Sunday?","cn":"","f":"音频/ab9609157341.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"She did her homework at home last night.","cn":"","f":"音频/0a5f18eec3aa.mp3"},{"g":"划线提问 · 专项七 · can / be going to / 一般过去时（综合提高）","k":"问答","t":"Where did she do her homework last night?","cn":"","f":"音频/12e49456d0b7.mp3"},{"g":"听力材料 · 我的猫在哪儿？","k":"对话","t":"Mum, where is my cat?","cn":"妈妈，我的猫在哪儿？","f":"音频/a9ef8742730b.mp3"},{"g":"听力材料 · 我的猫在哪儿？","k":"对话","t":"Is it under the table?","cn":"它在桌子下面吗？","f":"音频/9529befce962.mp3"},{"g":"听力材料 · 我的猫在哪儿？","k":"对话","t":"No, it isn't.","cn":"不，不在。","f":"音频/90d06d2fe196.mp3"},{"g":"听力材料 · 我的猫在哪儿？","k":"对话","t":"Look! It's behind the door.","cn":"看！它在门后面。","f":"音频/2af28518efaf.mp3"},{"g":"听力材料 · 我的猫在哪儿？","k":"对话","t":"Oh, yes. It's sleeping.","cn":"哦，是的。它在睡觉。","f":"音频/01e688ccff8b.mp3"},{"g":"听力材料 · 我的猫在哪儿？","k":"对话","t":"Don't wake it up.","cn":"别把它吵醒。","f":"音频/d42b925ffb64.mp3"},{"g":"听力材料 · 我的房间","k":"短文","t":"This is my bedroom.","cn":"这是我的卧室。","f":"音频/1476e5f97602.mp3"},{"g":"听力材料 · 我的房间","k":"短文","t":"There is a bed and a desk in it.","cn":"里面有一张床和一张书桌。","f":"音频/5ffa1c4b991d.mp3"},{"g":"听力材料 · 我的房间","k":"短文","t":"My schoolbag is on the chair.","cn":"我的书包在椅子上。","f":"音频/d1f75e2b4541.mp3"},{"g":"听力材料 · 我的房间","k":"短文","t":"A picture is on the wall.","cn":"墙上有一幅画。","f":"音频/fd72ce23efe7.mp3"},{"g":"听力材料 · 我的房间","k":"短文","t":"My football is under the bed.","cn":"我的足球在床底下。","f":"音频/697c65f8bfb4.mp3"},{"g":"听力材料 · 我的房间","k":"短文","t":"I like my bedroom very much.","cn":"我非常喜欢我的卧室。","f":"音频/bf98c1daca61.mp3"},{"g":"听力材料 · 几点了？","k":"对话","t":"It's half past seven.","cn":"七点半。","f":"音频/880d1a96258e.mp3"},{"g":"听力材料 · 几点了？","k":"对话","t":"When do you go to school?","cn":"你什么时候上学？","f":"音频/50f14aa546cd.mp3"},{"g":"听力材料 · 几点了？","k":"对话","t":"I go to school at eight o'clock.","cn":"我八点上学。","f":"音频/28248448c104.mp3"},{"g":"听力材料 · 几点了？","k":"对话","t":"Do you have lunch at school?","cn":"你在学校吃午饭吗？","f":"音频/4b2798d834c2.mp3"},{"g":"听力材料 · 几点了？","k":"对话","t":"Yes. I have lunch at twelve.","cn":"是的。我十二点吃午饭。","f":"音频/e1bcabadec54.mp3"},{"g":"听力材料 · 我的生日","k":"短文","t":"My birthday is in May.","cn":"我的生日在五月。","f":"音频/132e86e9b543.mp3"},{"g":"听力材料 · 我的生日","k":"短文","t":"It's on the fifth of May.","cn":"是五月五号。","f":"音频/cd3677234e85.mp3"},{"g":"听力材料 · 我的生日","k":"短文","t":"I have a party in the afternoon.","cn":"我下午开派对。","f":"音频/58402e45d329.mp3"},{"g":"听力材料 · 我的生日","k":"短文","t":"My friends come to my home at three o'clock.","cn":"我的朋友们三点来我家。","f":"音频/3237531cd3e7.mp3"},{"g":"听力材料 · 我的生日","k":"短文","t":"We sing and dance together.","cn":"我们一起唱歌跳舞。","f":"音频/ee26f121f94e.mp3"},{"g":"听力材料 · 我的生日","k":"短文","t":"At night, I am very happy.","cn":"到了晚上，我非常开心。","f":"音频/246084c738ba.mp3"},{"g":"听力材料 · 你怎么上学？","k":"对话","t":"How do you go to school, Ben?","cn":"本，你怎么去上学？","f":"音频/4d101401626a.mp3"},{"g":"听力材料 · 你怎么上学？","k":"对话","t":"I go to school by bike.","cn":"我骑自行车上学。","f":"音频/a39c1d1b559f.mp3"},{"g":"听力材料 · 你怎么上学？","k":"对话","t":"Does your sister go with you?","cn":"你妹妹跟你一起去吗？","f":"音频/3f09e25f1680.mp3"},{"g":"听力材料 · 你怎么上学？","k":"对话","t":"No. She goes on foot.","cn":"不。她走路去。","f":"音频/adce59b972eb.mp3"},{"g":"听力材料 · 你怎么上学？","k":"对话","t":"My father takes me to school in his car.","cn":"我爸爸开车送我上学。","f":"音频/0acbb11978e6.mp3"},{"g":"听力材料 · 你怎么上学？","k":"对话","t":"That's nice.","cn":"那真好。","f":"音频/dcf465eea564.mp3"},{"g":"听力材料 · 在公园里","k":"短文","t":"It's Sunday morning.","cn":"现在是星期天早上。","f":"音频/e21854b6e41f.mp3"},{"g":"听力材料 · 在公园里","k":"短文","t":"We are in the park.","cn":"我们在公园里。","f":"音频/fbf3f39e892c.mp3"},{"g":"听力材料 · 在公园里","k":"短文","t":"There is a big tree near the lake.","cn":"湖边有一棵大树。","f":"音频/b74882413ae5.mp3"},{"g":"听力材料 · 在公园里","k":"短文","t":"Some birds are in the tree.","cn":"一些鸟停在树上。","f":"音频/3c0a3b448041.mp3"},{"g":"听力材料 · 在公园里","k":"短文","t":"There are four boys under the tree.","cn":"树下有四个男孩。","f":"音频/559fe68d584a.mp3"},{"g":"听力材料 · 这是谁的手套？","k":"对话","t":"Whose gloves are these?","cn":"这是谁的手套？","f":"音频/db8f8f5b4885.mp3"},{"g":"听力材料 · 这是谁的手套？","k":"对话","t":"They are Alice's.","cn":"是爱丽丝的。","f":"音频/f6aaeb180b3b.mp3"},{"g":"听力材料 · 这是谁的手套？","k":"对话","t":"What colour are they?","cn":"它们是什么颜色的？","f":"音频/8c19e88c07d1.mp3"},{"g":"听力材料 · 这是谁的手套？","k":"对话","t":"They are red and white.","cn":"红白相间的。","f":"音频/164c4bdbb2f7.mp3"},{"g":"听力材料 · 这是谁的手套？","k":"对话","t":"Is this her hat, too?","cn":"这也是她的帽子吗？","f":"音频/6e0098c2c258.mp3"},{"g":"听力材料 · 这是谁的手套？","k":"对话","t":"No. That one is mine.","cn":"不。那顶是我的。","f":"音频/414cdf6fcd00.mp3"},{"g":"听力材料 · 在小店里","k":"对话","t":"How many apples do you want?","cn":"你要几个苹果？","f":"音频/7ffe3427cb16.mp3"},{"g":"听力材料 · 在小店里","k":"对话","t":"I want six, please.","cn":"我要六个，谢谢。","f":"音频/926c88b8b621.mp3"},{"g":"听力材料 · 在小店里","k":"对话","t":"Here you are.","cn":"给你。","f":"音频/63e8bcc7fa8a.mp3"},{"g":"听力材料 · 在小店里","k":"对话","t":"How much are they?","cn":"多少钱？","f":"音频/a5117da6179e.mp3"},{"g":"听力材料 · 在小店里","k":"对话","t":"Ten yuan.","cn":"十元。","f":"音频/9fcebd93db7f.mp3"},{"g":"听力材料 · 在小店里","k":"对话","t":"Thank you very much.","cn":"非常感谢。","f":"音频/904d3ad251b4.mp3"},{"g":"听力材料 · 我的朋友本","k":"短文","t":"Ben is my good friend.","cn":"本是我的好朋友。","f":"音频/7da822511a12.mp3"},{"g":"听力材料 · 我的朋友本","k":"短文","t":"He is ten years old.","cn":"他十岁。","f":"音频/8a147f97501f.mp3"},{"g":"听力材料 · 我的朋友本","k":"短文","t":"He is tall and strong.","cn":"他又高又壮。","f":"音频/df23b05462ed.mp3"},{"g":"听力材料 · 我的朋友本","k":"短文","t":"He likes swimming and running.","cn":"他喜欢游泳和跑步。","f":"音频/c4352193e9b2.mp3"},{"g":"听力材料 · 我的朋友本","k":"短文","t":"He lives next to my home.","cn":"他住在我家旁边。","f":"音频/43911ebb303e.mp3"},{"g":"听力材料 · 我的朋友本","k":"短文","t":"We go to school together every day.","cn":"我们每天一起上学。","f":"音频/c21bf512cc3b.mp3"},{"g":"听力材料 · 在动物园","k":"对话","t":"Where are the pandas?","cn":"熊猫在哪里？","f":"音频/c4fc1e5952c8.mp3"},{"g":"听力材料 · 在动物园","k":"对话","t":"They are over there, behind the trees.","cn":"在那边，树后面。","f":"音频/6c1e5ceab89c.mp3"},{"g":"听力材料 · 在动物园","k":"对话","t":"How many pandas are there?","cn":"有几只熊猫？","f":"音频/64efb7fa7cf9.mp3"},{"g":"听力材料 · 在动物园","k":"对话","t":"There are three.","cn":"有三只。","f":"音频/9e37dcd4015f.mp3"},{"g":"听力材料 · 在动物园","k":"对话","t":"They are eating.","cn":"它们在吃东西。","f":"音频/ca6c396f1583.mp3"},{"g":"听力材料 · 在动物园","k":"对话","t":"What are they like?","cn":"它们什么样？","f":"音频/fdc2c53825d3.mp3"},{"g":"听力材料 · 在动物园","k":"对话","t":"They are black and white. They are so cute!","cn":"它们是黑白的。太可爱了！","f":"音频/e7646e04da1f.mp3"}];</script><!--TRACKS-END-->
+
+<script>
+/* =====================================================================
+   英语熏听 · 播放器
+   清单 TRACKS 由 生成熏听音频.py 注入到上面那个 <script> 里，
+   所以这个页面不用 fetch 任何东西，本地双击打开也能正常播。
+   ===================================================================== */
+
+const KEY = "xun-ting-v1";
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+let cfg = {loop:"all", rate:1, gap:0, blind:false, sleep:0, cur:0, setOpen:false};
+try{ Object.assign(cfg, JSON.parse(localStorage.getItem(KEY) || "{}")); }catch(e){}
+cfg.sleep = 0;               // 定时关闭不跨次保留，每次打开都从「不限」开始
+const persist = () => { try{ localStorage.setItem(KEY, JSON.stringify(cfg)); }catch(e){} };
+
+const au = $("au");
+let cur = Math.min(cfg.cur || 0, Math.max(0, TRACKS.length - 1));
+let playing = false;
+let sleepUntil = 0;          // 0 = 不限；否则是该停的时间戳
+let gapTimer = null;
+let errRun = 0;              // 连续出错次数，防止整串文件都缺时疯狂空转
+let lastShown = -1;          // 列表里上次定位到的句子，用来避免重复滚动
+
+/* 按 g 字段把句子切成单元 */
+const GROUPS = [];
+TRACKS.forEach((t, i) => {
+  const last = GROUPS[GROUPS.length - 1];
+  if(last && last.name === t.g) last.to = i;
+  else GROUPS.push({name:t.g, kind:t.k || "", from:i, to:i});
+});
+const groupOf = i => GROUPS.find(g => i >= g.from && i <= g.to) || GROUPS[0];
+
+/* 单元类型对应的配色 */
+const KIND_CSS = {"对话":"k-talk", "短文":"k-text", "问答":"k-qa", "单句":"k-one"};
+const kindTag = k => k ? '<span class="kind ' + (KIND_CSS[k] || "") + '">' + esc(k) + '</span>' : "";
+
+/* ---------------- 没有音频时的说明 ---------------- */
+if(!TRACKS.length){
+  $("app").innerHTML =
+    '<header class="top"><h1>🎧 英语熏听</h1><p>还没有音频</p></header>'
+  + '<div class="note">这个页面播的是<b>预先生成好的 mp3</b>，'
+  + '这样 iPad 锁屏、切到别的 App 都能继续播（浏览器自带的朗读做不到这点）。<br><br>'
+  + '<b>先生成一次音频：</b><br>'
+  + '① 装一下工具：<code>pip install edge-tts</code><br>'
+  + '② 在这个文件夹里跑：<code>python 生成熏听音频.py</code><br><br>'
+  + '脚本会把两份英语练习里的句子还原成完整正确的句子，加上 '
+  + '<code>熏听材料.py</code> 里的对话短文，逐句生成 mp3 放进 <code>音频/</code>，'
+  + '再把播放清单写回这个页面。<br>'
+  + '以后改了题目或材料，重跑一次就行，已经生成过的不会重复生成。'
+  + '</div><footer><a href="index.html">← 回导航页</a></footer>';
+}else{
+  render();
+  load(cur, false);
+}
+
+/* ---------------- 播放控制 ---------------- */
+function load(i, autoplay){
+  clearGap();
+  cur = (i + TRACKS.length) % TRACKS.length;
+  cfg.cur = cur; persist();
+  au.src = TRACKS[cur].f;
+  au.playbackRate = cfg.rate;
+  paint();
+  media();
+  if(autoplay) start();
+}
+
+function start(){
+  au.playbackRate = cfg.rate;
+  const p = au.play();
+  if(p && p.catch) p.catch(()=>{});     // 没有用户手势时会被拒，忽略
+  playing = true;
+  paint();
+}
+
+function pause(){
+  clearGap();
+  au.pause();
+  playing = false;
+  paint();
+}
+
+// 按钮永远看播放器的真实状态，免得切歌瞬间的事件把 playing 带偏
+function toggle(){ (au.paused && !gapTimer) ? start() : pause(); }
+
+function clearGap(){ if(gapTimer){ clearTimeout(gapTimer); gapTimer = null; } }
+
+// auto=true 表示这是一句播完自动续的，单句循环只在这种情况下原地重复
+function step(dir, auto){
+  if(auto && cfg.loop === "one"){ load(cur, true); return; }
+  const g = groupOf(cur);
+  let i = cur + dir;
+  if(cfg.loop === "group"){
+    if(i > g.to) i = g.from;
+    if(i < g.from) i = g.to;
+  }
+  load(i, playing || auto);
+}
+
+au.onended = () => {
+  if(sleepUntil && Date.now() >= sleepUntil){   // 定时到了就停在这儿
+    sleepUntil = 0; cfg.sleep = 0; persist();
+    pause(); render();
+    return;
+  }
+  if(cfg.gap > 0){ gapTimer = setTimeout(() => step(1, true), cfg.gap * 1000); }
+  else step(1, true);
+};
+au.onplay  = () => { errRun = 0; playing = true; paint(); };
+au.ontimeupdate = () => {
+  const bar = $("seek");
+  if(bar && au.duration) bar.style.width = (au.currentTime / au.duration * 100) + "%";
+};
+// 某个 mp3 缺了就跳过下一句；但如果一连串都加载不出来（比如音频目录没传上去），
+// 就停下来，不然会一路空转到底
+au.onerror = () => {
+  if(!playing) return;
+  if(++errRun > 5){ pause(); errRun = 0; return; }
+  step(1, true);
+};
+
+/* 锁屏 / 控制中心里的信息和按钮 */
+function media(){
+  if(!("mediaSession" in navigator)) return;
+  const t = TRACKS[cur];
+  try{
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: t.t, artist: t.cn || t.g, album: "英语熏听",
+    });
+    navigator.mediaSession.setActionHandler("play",  () => start());
+    navigator.mediaSession.setActionHandler("pause", () => pause());
+    navigator.mediaSession.setActionHandler("previoustrack", () => step(-1, false));
+    navigator.mediaSession.setActionHandler("nexttrack",     () => step(1, false));
+  }catch(e){}
+}
+
+/* ---------------- 界面 ---------------- */
+function render(){
+  const sleepLeft = sleepUntil ? Math.max(0, Math.round((sleepUntil - Date.now())/60000)) : 0;
+
+  $("app").innerHTML =
+    '<header class="top"><div class="hrow"><h1>🎧 英语熏听</h1>'
+  + '<a href="index.html">← 回导航页</a></div>'
+  + '<p>放着磨耳朵就行 · 锁屏和切到别的 App 都会继续播</p></header>'
+
+  + '<div class="now">'
+  + '<div class="tags"><span id="kind"></span><span class="grp" id="grp"></span></div>'
+  + '<p class="en" id="en"></p>'
+  + '<p class="cn" id="cn"></p>'
+  + '<p class="idx" id="idx"></p>'
+  + '<div class="seek"><i id="seek"></i></div>'
+  + '</div>'
+
+  + '<div class="ctrl">'
+  + '<button class="rnd" id="bPrev" title="上一句">⏮</button>'
+  + '<button class="rnd big" id="bPlay" title="播放 / 暂停">▶</button>'
+  + '<button class="rnd" id="bNext" title="下一句">⏭</button>'
+  + '</div>'
+
+  + '<details class="panel" id="setBox"' + (cfg.setOpen ? " open" : "") + '>'
+  + '<summary>⚙️ 播放设置</summary>'
+  + row("循环", "loop", [["all","全部"],["group","本单元"],["one","单句"]])
+  + row("语速", "rate", [[0.75,"慢"],[1,"正常"],[1.25,"快"]])
+  + row("句间停顿", "gap", [[0,"不停"],[1,"1 秒"],[2,"2 秒"],[3,"3 秒"]])
+  + row("定时关闭", "sleep", [[0,"不限"],[15,"15 分"],[30,"30 分"],[60,"60 分"]])
+  + row("文字", "blind", [[false,"显示"],[true,"盲听"]])
+  + '<p class="hint">盲听模式下文字是糊的，按住能临时看清。'
+  + (sleepLeft ? '<br>⏳ 大约 ' + sleepLeft + ' 分钟后停。' : '')
+  + '<br>句间停顿设成「不停」时后台播放最稳，设了停顿在锁屏状态下可能不准。</p>'
+  + '</details>'
+
+  + '<div class="list" id="list">'
+  + GROUPS.map((g, gi) =>
+      '<details class="grp" data-g="' + gi + '"><summary>' + kindTag(g.kind) + esc(g.name)
+      + ' <span style="color:var(--muted);font-weight:400">· ' + (g.to - g.from + 1) + ' 句</span></summary>'
+      + '<ol class="tl">'
+      + TRACKS.slice(g.from, g.to + 1).map((t, k) =>
+          '<li data-i="' + (g.from + k) + '">' + esc(t.t)
+          + (t.cn ? '<span class="c">' + esc(t.cn) + '</span>' : '') + '</li>').join("")
+      + '</ol></details>').join("")
+  + '</div>'
+
+  + '<footer>共 ' + TRACKS.length + ' 句 · 进度和设置存在这台设备上<br>'
+  + '改了题目或材料，重跑 <code>python 生成熏听音频.py</code> 就会更新</footer>';
+
+  $("bPlay").onclick = toggle;
+  $("bPrev").onclick = () => step(-1, false);
+  $("bNext").onclick = () => step(1, false);
+
+  document.querySelectorAll("button.sg").forEach(b => {
+    b.onclick = () => setCfg(b.dataset.k, b.dataset.v);
+  });
+  document.querySelectorAll("ol.tl li").forEach(li => {
+    li.onclick = () => load(+li.dataset.i, true);
+  });
+  // 记住设置面板是开是合，否则改一个设置后面板就自己收起来了
+  $("setBox").ontoggle = () => { cfg.setOpen = $("setBox").open; persist(); };
+
+  lastShown = -1;      // DOM 重建过了，重新定位一次
+  paint();
+}
+
+function row(label, key, opts){
+  return '<div class="line"><span class="lb">' + label + '</span><div class="seg">'
+    + opts.map(([v, text]) =>
+        '<button class="sg' + (String(cfg[key]) === String(v) ? " on" : "")
+        + '" data-k="' + key + '" data-v="' + v + '">' + text + '</button>').join("")
+    + '</div></div>';
+}
+
+function setCfg(key, raw){
+  let v = raw;
+  if(raw === "true" || raw === "false") v = (raw === "true");
+  else if(!isNaN(parseFloat(raw)) && key !== "loop") v = parseFloat(raw);
+  cfg[key] = v;
+  persist();
+
+  if(key === "rate") au.playbackRate = v;
+  if(key === "sleep") sleepUntil = v ? Date.now() + v * 60000 : 0;
+  if(key === "gap" && v === 0) clearGap();
+  render();
+}
+
+/* 只刷新会变的那几处，不重建整个列表 */
+function paint(){
+  const t = TRACKS[cur];
+  if(!t || !$("en")) return;
+  $("kind").innerHTML = kindTag(t.k || "");
+  $("grp").textContent = t.g;
+  $("en").textContent  = t.t;
+  $("cn").textContent  = t.cn || "";
+  $("idx").textContent = (cur + 1) + " / " + TRACKS.length;
+  $("bPlay").textContent = (!au.paused || gapTimer) ? "⏸" : "▶";
+  document.body.classList.toggle("blind", !!cfg.blind);
+
+  document.querySelectorAll("ol.tl li").forEach(li => {
+    li.classList.toggle("on", +li.dataset.i === cur);
+  });
+  if(cur !== lastShown){ lastShown = cur; keepVisible(); }
+}
+
+/* 把当前句滚到列表框的中间。
+   注意只滚 .list 这个框，不用 scrollIntoView——那个会把整个页面一起滚，
+   结果就是播到后面时，上面的「正在播」和播放键被顶出屏幕，得一直往回翻。 */
+function keepVisible(){
+  const box = $("list");
+  if(!box) return;
+  const gi = GROUPS.indexOf(groupOf(cur));
+  const d = box.querySelector('details.grp[data-g="' + gi + '"]');
+  if(d && !d.open) d.open = true;        // 单元没展开的话，滚过去也看不见
+  const on = box.querySelector("ol.tl li.on");
+  if(!on) return;
+  const top = on.offsetTop - (box.clientHeight - on.offsetHeight) / 2;
+  box.scrollTo({top: Math.max(0, top), behavior: "smooth"});
+}
+</script>
+</body>
+</html>
