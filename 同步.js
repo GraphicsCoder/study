@@ -16,7 +16,9 @@
   "use strict";
 
   // ↓↓↓ 部署完 Cloudflare Worker 后，把这里换成你自己的地址 ↓↓↓
-  var API = "study-sync.eden-meng.workers.dev";
+  // 必须带 https:// 开头，结尾不要斜杠。少了协议头的话浏览器会当成相对路径，
+  // 实际去请求 你的网站域名/study-sync.xxx.workers.dev，必然失败。
+  var API = "https://study-sync.eden-meng.workers.dev";
 
   var me = document.currentScript;
   var KEY = me && me.dataset ? me.dataset.key : "";

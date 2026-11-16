@@ -33,50 +33,69 @@ export default {
     };
     if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
-    const url = new URL(req.url);
-    const code = (url.searchParams.get("k") || "").trim();
-    if (code.length < 6 || code.length > 64) {
-      return json({ ok: false, err: "口令长度要在 6~64 位之间" }, 400, cors);
+    // 兜住所有异常，并且保证错误响应也带 CORS 头。
+    // 否则 KV 绑定名写错之类的问题会抛出裸 500，浏览器只报一句笼统的
+    // Failed to fetch，前端完全看不出真实原因。
+    try {
+      return await handle(req, env, cors);
+    } catch (e) {
+      return json({ ok: false, err: String((e && e.message) || e) }, 500, cors);
     }
-    const kvKey = "fam:" + code;
-
-    if (req.method === "GET") {
-      const blob = (await env.STUDY.get(kvKey, "json")) || {};
-      return json({ ok: true, blob }, 200, cors);
-    }
-
-    if (req.method === "POST") {
-      let body;
-      try {
-        body = await req.json();
-      } catch {
-        return json({ ok: false, err: "请求不是合法 JSON" }, 400, cors);
-      }
-      const { key, t, v } = body || {};
-      if (typeof key !== "string" || !key || typeof t !== "number" || !isFinite(t)) {
-        return json({ ok: false, err: "缺 key 或 t" }, 400, cors);
-      }
-
-      const blob = (await env.STUDY.get(kvKey, "json")) || {};
-      const cur = blob[key];
-
-      // 远端的更新就不覆盖，把远端的时间戳告诉客户端，让它下次拉取
-      if (cur && cur.t > t) {
-        return json({ ok: true, saved: false, t: cur.t }, 200, cors);
-      }
-
-      blob[key] = { t, v };
-      const text = JSON.stringify(blob);
-      if (text.length > MAX_BYTES) {
-        return json({ ok: false, err: "数据超过 200KB，存不下" }, 413, cors);
-      }
-      await env.STUDY.put(kvKey, text);
-      return json({ ok: true, saved: true, t }, 200, cors);
-    }
-
-    return json({ ok: false, err: "不支持的请求方式" }, 405, cors);
   },
 };
+
+async function handle(req, env, cors) {
+  if (!env.STUDY) {
+    return json(
+      { ok: false, err: "KV 没绑定：Worker 的 Settings 里变量名必须正好是 STUDY" },
+      500,
+      cors
+    );
+  }
+
+  const url = new URL(req.url);
+  const code = (url.searchParams.get("k") || "").trim();
+  if (code.length < 6 || code.length > 64) {
+    return json({ ok: false, err: "口令长度要在 6~64 位之间" }, 400, cors);
+  }
+  const kvKey = "fam:" + code;
+
+  if (req.method === "GET") {
+    const blob = (await env.STUDY.get(kvKey, "json")) || {};
+    return json({ ok: true, blob }, 200, cors);
+  }
+
+  if (req.method === "POST") {
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return json({ ok: false, err: "请求不是合法 JSON" }, 400, cors);
+    }
+    const { key, t, v } = body || {};
+    if (typeof key !== "string" || !key || typeof t !== "number" || !isFinite(t)) {
+      return json({ ok: false, err: "缺 key 或 t" }, 400, cors);
+    }
+
+    const blob = (await env.STUDY.get(kvKey, "json")) || {};
+    const cur = blob[key];
+
+    // 远端的更新就不覆盖，把远端的时间戳告诉客户端，让它下次拉取
+    if (cur && cur.t > t) {
+      return json({ ok: true, saved: false, t: cur.t }, 200, cors);
+    }
+
+    blob[key] = { t, v };
+    const text = JSON.stringify(blob);
+    if (text.length > MAX_BYTES) {
+      return json({ ok: false, err: "数据超过 200KB，存不下" }, 413, cors);
+    }
+    await env.STUDY.put(kvKey, text);
+    return json({ ok: true, saved: true, t }, 200, cors);
+  }
+
+  return json({ ok: false, err: "不支持的请求方式" }, 405, cors);
+}
 
 function json(obj, status, cors) {
   return new Response(JSON.stringify(obj), {
