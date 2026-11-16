@@ -50,6 +50,16 @@
 
   /* ---------- 控制 ---------- */
   .ctrl{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:16px}
+  /* 定时关闭的倒计时：设了才出现，每秒自己走，点一下可以取消 */
+  .sleepchip{display:none;margin:-6px auto 16px;width:fit-content;cursor:pointer;
+    align-items:center;gap:10px;font-size:14px;padding:7px 8px 7px 14px;border-radius:99px;
+    background:var(--brand-soft);color:#0a5f8f;border:1px solid #bfe3f7;user-select:none}
+  .sleepchip.show{display:flex}
+  .sleepchip b{font-variant-numeric:tabular-nums;font-size:15px}
+  .sleepchip .x{font-size:12.5px;color:var(--muted);border-left:1px solid #bfe3f7;padding:0 8px 0 10px}
+  .sleepchip:active{transform:scale(.97)}
+  .sleepchip.ending{background:#fef6e7;color:#92400e;border-color:#e9a23b}
+  .sleepchip.ending .x{border-left-color:#e9a23b}
   button.rnd{font-family:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;
     color:var(--ink);border-radius:99px;width:58px;height:58px;font-size:22px;
     display:flex;align-items:center;justify-content:center;transition:transform .1s}
@@ -250,8 +260,6 @@ function media(){
 
 /* ---------------- 界面 ---------------- */
 function render(){
-  const sleepLeft = sleepUntil ? Math.max(0, Math.round((sleepUntil - Date.now())/60000)) : 0;
-
   $("app").innerHTML =
     '<header class="top"><div class="hrow"><h1>🎧 英语熏听</h1>'
   + '<a href="index.html">← 回导航页</a></div>'
@@ -271,6 +279,8 @@ function render(){
   + '<button class="rnd" id="bNext" title="下一句">⏭</button>'
   + '</div>'
 
+  + '<div class="sleepchip" id="sleepChip"></div>'
+
   + '<details class="panel" id="setBox"' + (cfg.setOpen ? " open" : "") + '>'
   + '<summary>⚙️ 播放设置</summary>'
   + row("循环", "loop", [["all","全部"],["group","本单元"],["one","单句"]])
@@ -279,7 +289,7 @@ function render(){
   + row("定时关闭", "sleep", [[0,"不限"],[15,"15 分"],[30,"30 分"],[60,"60 分"]])
   + row("文字", "blind", [[false,"显示"],[true,"盲听"]])
   + '<p class="hint">盲听模式下文字是糊的，按住能临时看清。'
-  + (sleepLeft ? '<br>⏳ 大约 ' + sleepLeft + ' 分钟后停。' : '')
+  + '<br>定时关闭会在播放器下方显示倒计时，点倒计时可以取消。到点后会把当前这句播完再停。'
   + '<br>句间停顿设成「不停」时后台播放最稳，设了停顿在锁屏状态下可能不准。</p>'
   + '</details>'
 
@@ -309,10 +319,35 @@ function render(){
   });
   // 记住设置面板是开是合，否则改一个设置后面板就自己收起来了
   $("setBox").ontoggle = () => { cfg.setOpen = $("setBox").open; persist(); };
+  $("sleepChip").onclick = cancelSleep;
 
   lastShown = -1;      // DOM 重建过了，重新定位一次
   paint();
+  paintSleep();
 }
+
+/* ---------------- 定时关闭的倒计时 ---------------- */
+function mmss(ms){
+  const s = Math.max(0, Math.round(ms / 1000));
+  return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+function paintSleep(){
+  const el = $("sleepChip");
+  if(!el) return;
+  if(!sleepUntil){ el.className = "sleepchip"; el.innerHTML = ""; return; }
+  const left = sleepUntil - Date.now();
+  el.className = "sleepchip show" + (left > 0 ? "" : " ending");
+  el.innerHTML = left > 0
+    ? '<span>⏳ <b>' + mmss(left) + '</b> 后停止</span><span class="x">取消</span>'
+    // 到点不是立刻掐断，而是把这句播完，所以这里要说清楚
+    : '<span>⏳ 时间到，这句播完就停</span><span class="x">取消</span>';
+}
+function cancelSleep(){
+  if(!sleepUntil) return;
+  sleepUntil = 0; cfg.sleep = 0; persist();
+  render();          // 顺便把设置面板里的「定时关闭」复位成「不限」
+}
+setInterval(paintSleep, 1000);
 
 function row(label, key, opts){
   return '<div class="line"><span class="lb">' + label + '</span><div class="seg">'
