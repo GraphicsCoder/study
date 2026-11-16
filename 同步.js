@@ -18,7 +18,10 @@
  *   页面保存 → 盖上本地时间戳 → 停 1.2 秒没有新动作就推送
  *   关闭页面 → 用 sendBeacon 补推一次
  *
- * 口令存在 __sync_code__ 下，不带页面后缀，所以一台设备登录一次，全站生效。
+ * 登录名存在 __sync_code__ 下，不带页面后缀，所以一台设备登录一次，全站生效。
+ *
+ * 注意：登录名既是身份也是钥匙，没有密码。服务端按它取数据（KV 键 fam:<登录名>），
+ * 所以它必须够独特——这是「不引入账号体系」换来的简单，代价写在 同步说明.md 里。
  */
 (function () {
   "use strict";
@@ -31,8 +34,9 @@
   var me = document.currentScript;
   var KEY = (me && me.dataset && me.dataset.key) || "";   // 导航页没有，属正常
 
-  var CODE = "__sync_code__";             // 家庭口令，全站共用，登录一次就够
-  var SKIP = "__sync_skip_login__";       // 用户点过「以后再说」，别再自动弹
+  var CODE = "__sync_code__";             // 登录名，全站共用，登录一次就够
+  var SKIP = "__sync_skip_login__";       // 点过「以后再说」的时间戳，过几天会再问一次
+  var SKIP_DAYS = 3;
 
   function tkey(k) { return "__sync_t__" + k; }           // 某份数据的本地时间戳
   function oncek(k) { return "__sync_reloaded__" + k; }   // 防刷新循环的标记
@@ -61,6 +65,12 @@
       '#syncchip.ok{color:#15803d;border-color:#86d7a5}' +
       '#syncchip.err{color:#c2410c;border-color:#f0b48e;opacity:1}' +
       '#syncchip.busy{color:#0284c7;border-color:#9ad2f5}' +
+      // 没登录时要显眼一点：之前又小又淡，点过「以后再说」之后家长就找不到入口了
+      '#syncchip.off{opacity:1;color:#0e8a6e;border-color:#0e8a6e;font-weight:600;' +
+      'animation:syncpulse 2.4s ease-in-out infinite}' +
+      '@keyframes syncpulse{0%,100%{box-shadow:0 2px 10px rgba(0,0,0,.08)}' +
+      '50%{box-shadow:0 2px 16px rgba(14,138,110,.45)}}' +
+      '@media (prefers-reduced-motion:reduce){#syncchip.off{animation:none}}' +
 
       '#syncmask{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.45);' +
       'display:none;align-items:center;justify-content:center;padding:16px;' +
@@ -76,8 +86,7 @@
       'padding:11px 12px;font-size:16px;font-family:inherit;border:1px solid #d7dbe3;' +
       'border-radius:10px;background:#fcfcfd;outline:none}' +
       '#syncbox input:focus{border-color:#0e8a6e;background:#fff}' +
-      '#syncbox .eye{margin:8px 0 0;font-size:13px;color:#6b7280;display:flex;align-items:center;gap:6px;cursor:pointer}' +
-      '#syncbox .eye input{width:auto;margin:0}' +
+      '#syncbox .hint{font-size:12.5px;color:#6b7280;margin:8px 0 0;line-height:1.7}' +
       '#syncbox .err{color:#c2410c;font-size:13px;margin:10px 0 0;display:none}' +
       '#syncbox .err.show{display:block}' +
       '#syncbox .who{background:#e8f6ed;color:#15803d;border-radius:10px;padding:10px 12px;' +
@@ -112,16 +121,24 @@
     document.body.appendChild(mask);
   }
 
+  // 服务端的报错里写的还是「口令」，这里统一成界面上的叫法
+  function human(m) { return String(m == null ? "" : m).replace(/口令/g, "登录名"); }
+
+  // 登录名是用户输入的，拼进 innerHTML 前先转义
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
   function paint(state, msg) {
     if (!chip) return;
-    chip.className = state === "ok" ? "ok" : state === "err" ? "err" : state === "busy" ? "busy" : "";
+    chip.className = state === "ok" ? "ok" : state === "err" ? "err" : state === "busy" ? "busy" : "off";
     chip.textContent =
-      state === "off"  ? "☁ 点这里登录同步" :
+      state === "off"  ? "☁ 点这里登录" :
       state === "busy" ? "☁ 同步中…" :
       state === "ok"   ? "☁ 已同步" :
                          "⚠ 同步失败";
-    chip.title = msg || (state === "off"
-      ? "两台设备登录同一个口令，进度就会互通"
+    chip.title = human(msg) || (state === "off"
+      ? "两台设备用同一个登录名，进度就会互通"
       : "点一下可以手动同步、退出登录");
   }
 
@@ -135,12 +152,13 @@
   function panelLogin(autoPopped) {
     box.innerHTML =
       '<h3>☁ 开启跨设备同步</h3>' +
-      '<p>在 iPad 和电脑上登录<b>同一个口令</b>，做题进度、错题本、闯关星星就互通了。<br>' +
-      '口令由你自己定，至少 6 位，不用注册、不用手机号。</p>' +
-      '<label for="synccode">家庭口令</label>' +
-      '<input id="synccode" type="password" autocomplete="off" autocapitalize="off" ' +
-      'spellcheck="false" placeholder="两台设备填一模一样的">' +
-      '<label class="eye"><input id="syncshow" type="checkbox">显示口令</label>' +
+      '<p>在 iPad 和电脑上用<b>同一个登录名</b>，做题进度、错题本、闯关星星就互通了。<br>' +
+      '名字由你自己定，不用注册、不用手机号。</p>' +
+      '<label for="synccode">登录名</label>' +
+      '<input id="synccode" type="text" autocomplete="off" autocapitalize="off" ' +
+      'spellcheck="false" placeholder="例如 lisa2016">' +
+      '<p class="hint">至少 6 位。这个名字就是进入这份进度的唯一钥匙，' +
+      '别用 <b>lisa</b>、<b>123456</b> 这种容易撞上的，建议<b>名字加数字</b>。</p>' +
       '<p class="err" id="syncerr"></p>' +
       '<div class="btns">' +
         '<button class="primary" id="syncok">登录</button>' +
@@ -151,17 +169,15 @@
     var err = box.querySelector("#syncerr");
     input.value = localStorage.getItem(CODE) || "";
 
-    box.querySelector("#syncshow").onchange = function () {
-      input.type = this.checked ? "text" : "password";
-    };
     box.querySelector("#synclater").onclick = function () {
-      if (autoPopped) rawSet(SKIP, "1");   // 点过「以后再说」就不再主动打扰
+      // 记下时间：过几天再问一次。永久静音的话，家长就再也等不到提示了
+      if (autoPopped) rawSet(SKIP, String(Date.now()));
       close();
     };
     box.querySelector("#syncok").onclick = function () {
       var code = input.value.trim();
       if (code.length < 6) {
-        err.textContent = "口令至少 6 位，别用 123456 这种——知道口令的人就能看到和改掉进度。";
+        err.textContent = "登录名至少 6 位。太短容易被人猜到，猜到的人就能看到和改掉进度。";
         err.className = "err show";
         input.focus();
         return;
@@ -180,11 +196,10 @@
   /* 已登录：状态面板 */
   function panelLogged() {
     var code = localStorage.getItem(CODE) || "";
-    var masked = code.slice(0, 2) + "····" + code.slice(-1);
     box.innerHTML =
       '<h3>☁ 同步已开启</h3>' +
-      '<div class="who">当前口令：<b>' + masked + '</b><br>' +
-      '另一台设备登录同样的口令，进度就会互通。</div>' +
+      '<div class="who">当前登录名：<b>' + esc(code) + '</b><br>' +
+      '另一台设备用同样的名字登录，进度就会互通。</div>' +
       '<p>进度是打开页面时拉取、做完题后自动上传的，平时不用管它。</p>' +
       '<div class="btns">' +
         '<button class="primary" id="syncnow">立即同步</button>' +
@@ -197,7 +212,7 @@
     box.querySelector("#syncout").onclick = function () {
       if (!confirm("退出后这台设备不再同步，已经做过的题目记录仍然留在本机。确定吗？")) return;
       localStorage.removeItem(CODE);
-      rawSet(SKIP, "1");
+      rawSet(SKIP, String(Date.now()));
       close();
       paint("off");
     };
@@ -228,8 +243,12 @@
     var code = localStorage.getItem(CODE);
     if (!code) {
       paint("off");
-      // 没登录过、也没拒绝过 → 主动弹一次，省得家长找不到那个小圆点
-      if (!localStorage.getItem(SKIP)) setTimeout(function () { panelLogin(true); }, 600);
+      // 没登录过、或者「以后再说」已经过了几天 → 主动弹一次。
+      // 旧版本这里存的是 "1"，Number("1") 很小，一样会判定成早就过期，自动修复。
+      var skip = +(localStorage.getItem(SKIP) || 0);
+      if (Date.now() - skip > SKIP_DAYS * 864e5) {
+        setTimeout(function () { panelLogin(true); }, 600);
+      }
       return;
     }
     if (API.indexOf("请改成") > -1) {

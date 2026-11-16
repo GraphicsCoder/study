@@ -81,9 +81,17 @@ function ok(name, cond, extra) { T.push({ name, pass: !!cond, extra }); }
   ok("未登录时提示登录", r.chip.textContent.includes("登录"), r.chip.textContent);
   ok("未登录时自动弹框", r.log.popped);
 
-  // 2. 点过「以后再说」就不再自动弹
+  // 2. 刚点过「以后再说」，短期内不再打扰
+  r = await run({ dataKey: "math-tdsjs-v1", store: { __sync_skip_login__: String(Date.now()) } });
+  ok("刚拒绝过就不再打扰", !r.log.popped);
+
+  // 2b. 「以后再说」是暂时的：过几天要再问一次，否则家长等不到提示就以为入口没了
+  r = await run({ dataKey: "math-tdsjs-v1", store: { __sync_skip_login__: String(Date.now() - 10 * 864e5) } });
+  ok("隔几天会再问一次", r.log.popped);
+
+  // 2c. 旧版本存的是 "1"，要能自动当成早就过期
   r = await run({ dataKey: "math-tdsjs-v1", store: { __sync_skip_login__: "1" } });
-  ok("拒绝过就不再打扰", !r.log.popped);
+  ok("旧标记不会永久静音", r.log.popped);
 
   // 3. 关键改动：云端别的页面的进度，也会在当前页落盘
   r = await run({
