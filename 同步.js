@@ -91,7 +91,10 @@
       '#syncbox code{font-family:Consolas,Menlo,monospace;font-size:12.5px;' +
       'background:#f3f5f9;border-radius:4px;padding:1px 5px;word-break:break-all}' +
       '#syncbox .bad{background:#fdeee6;color:#c2410c;border-radius:10px;padding:10px 12px;' +
-      'font-size:13.5px;margin:0 0 14px;word-break:break-all}' +
+      'font-size:13.5px;margin:0 0 8px;word-break:break-all}' +
+      '#syncbox .more{color:#6b7280;cursor:pointer;text-decoration:underline dotted}' +
+      '#syncbox .more:hover{color:#1f2430}' +
+      '#syncbox .raw{margin-top:8px}' +
       '#syncbox .err{color:#c2410c;font-size:13px;margin:10px 0 0;display:none}' +
       '#syncbox .err.show{display:block}' +
       '#syncbox .who{background:#e8f6ed;color:#15803d;border-radius:10px;padding:10px 12px;' +
@@ -143,9 +146,12 @@
       state === "busy" ? "☁ 同步中…" :
       state === "ok"   ? "☁ 已同步" :
                          "⚠ 同步失败";
-    chip.title = human(msg) || (state === "off"
-      ? "两台设备用同一个登录名，进度就会互通"
-      : "点一下可以手动同步、退出登录");
+    // 失败原因不往 tooltip 里放：悬停就弹出一长串后台报错，看不懂也没必要
+    chip.title =
+      state === "err"  ? "点一下看看怎么回事" :
+      state === "off"  ? "两台设备用同一个登录名，进度就会互通" :
+      state === "busy" ? "正在和云端对一下进度" :
+                         (human(msg) || "点一下可以手动同步、退出登录");
   }
 
   function close() { if (mask) mask.classList.remove("show"); }
@@ -156,42 +162,34 @@
     localStorage.getItem(CODE) ? panelLogged() : panelLogin();
   }
 
-  /* 同步失败：把原因和下一步怎么查写明白 */
+  /* 同步失败：对家长和孩子只说人话。
+     服务端原话、接口地址这些只在点开「详情」后才出现——平时摊在屏幕上
+     既看不懂，也没必要把后台细节露给每个用过这台设备的人。 */
   function panelError() {
     var e = lastErr;
-    var why;
-    if (/地址还没填/.test(e)) {
-      why = '<b>同步.js 里的 Worker 地址还没填。</b>见 同步说明.md 第 6 步。';
-    } else if (/Failed to fetch|NetworkError|Load failed|网络|TypeError/i.test(e)) {
-      why = '<b>连不上服务器。</b>常见的三种原因：<br>' +
-            '① 所在网络拦截了 <code>workers.dev</code>——公司网、校园网、部分家庭路由器的' +
-            '广告过滤都可能拦。<b>换成手机流量试一下</b>，能通就是网络的问题；<br>' +
-            '② Cloudflare 上的 Worker 没部署成功，或者已经被删了；<br>' +
-            '③ 同步.js 里的地址写错了（拼错、少了 https://、结尾多了斜杠）。';
-    } else if (/STUDY/.test(e)) {
-      why = '<b>Worker 上的 KV 没绑定。</b>到 Cloudflare 这个 Worker 的 Settings 里，' +
-            '把 KV 绑定的变量名改成 <code>STUDY</code>（必须一字不差），见 同步说明.md 第 4 步。';
-    } else if (/长度/.test(e)) {
-      why = '<b>登录名长度不合要求</b>，要 6~64 位。';
-    } else {
-      why = '这是服务器返回的原话，对照 同步说明.md 第四节排查。';
-    }
 
     box.innerHTML =
-      '<h3>⚠ 同步失败</h3>' +
-      '<div class="bad">' + esc(e) + '</div>' +
-      '<p>' + why + '</p>' +
-      '<p class="hint">接口地址：<code>' + esc(API) + '</code><br>' +
-      '同步失败<b>不影响做题</b>，进度照常存在这台设备上，等接上了会自动补传。</p>' +
+      '<h3>☁ 同步暂时没连上</h3>' +
+      '<p><b>做题不受影响。</b>进度已经存在这台设备上，等连上了会自动补传。</p>' +
+      '<p class="hint">偶尔一次不用管。要是一直这样，换个网络再试试——' +
+      '比如把手机的 WiFi 关掉、用流量打开。</p>' +
       '<div class="btns">' +
         '<button class="primary" id="syncretry">重试</button>' +
         '<button id="syncrelogin">换登录名</button>' +
         '<button class="ghost" id="syncclose">关闭</button>' +
-      '</div>';
+      '</div>' +
+      '<p class="hint"><span class="more" id="syncmore">详情 ›</span></p>' +
+      '<div class="raw" id="syncraw"></div>';
 
     box.querySelector("#syncretry").onclick = function () { close(); lastErr = ""; boot(); };
     box.querySelector("#syncrelogin").onclick = function () { lastErr = ""; panelLogin(); };
     box.querySelector("#syncclose").onclick = close;
+    box.querySelector("#syncmore").onclick = function () {
+      this.style.display = "none";
+      box.querySelector("#syncraw").innerHTML =
+        '<div class="bad">' + esc(e) + '</div>' +
+        '<p class="hint">接口：<code>' + esc(API) + '</code></p>';
+    };
     mask.classList.add("show");
   }
 

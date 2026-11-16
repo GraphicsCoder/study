@@ -122,11 +122,19 @@ const tick = () => new Promise((r) => setImmediate(() => setImmediate(r)));
   c.chip.onclick();
   ok("点开是失败面板", c.shown() && !!c.$("syncretry"));
   const html = c.mask.children[0]._html;
-  ok("面板里有服务器原话", /Failed to fetch/.test(html));
-  ok("面板里给了排查方向", /workers\.dev/.test(html) && /手机流量/.test(html));
-  ok("面板里写了不影响做题", /不影响做题/.test(html));
+  ok("默认不显示服务器原话", !/Failed to fetch/.test(html));
+  ok("默认不显示接口地址", !/workers\.dev/.test(html));
+  ok("提示换个网络试试", /流量/.test(html));
+  ok("写明不影响做题", /做题不受影响/.test(html));
   ok("有重试按钮", !!c.$("syncretry"));
   ok("有换登录名按钮", !!c.$("syncrelogin"));
+
+  // 「详情」是留给大人排查的，点开才给原话
+  c.$("syncmore").onclick.call(c.$("syncmore"));
+  const raw = c.$("syncraw")._html;
+  ok("详情里能看到原话", /Failed to fetch/.test(raw));
+  ok("详情里能看到接口地址", /workers\.dev/.test(raw));
+
   c.$("syncrelogin").onclick();
   ok("能从失败面板切到登录框", !!c.$("synccode"));
 
