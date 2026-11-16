@@ -60,6 +60,8 @@
   .sleepchip:active{transform:scale(.97)}
   .sleepchip.ending{background:#fef6e7;color:#92400e;border-color:#e9a23b}
   .sleepchip.ending .x{border-left-color:#e9a23b}
+  .sleepchip.held{background:#f3f5f9;color:var(--muted);border-color:var(--line)}
+  .sleepchip.held .x{border-left-color:var(--line)}
   button.rnd{font-family:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;
     color:var(--ink);border-radius:99px;width:58px;height:58px;font-size:22px;
     display:flex;align-items:center;justify-content:center;transition:transform .1s}
@@ -140,7 +142,11 @@ const persist = () => { try{ localStorage.setItem(KEY, JSON.stringify(cfg)); }ca
 const au = $("au");
 let cur = Math.min(cfg.cur || 0, Math.max(0, TRACKS.length - 1));
 let playing = false;
-let sleepUntil = 0;          // 0 = 不限；否则是该停的时间戳
+/* 定时关闭按「实际听了多久」算，不按墙上时钟：
+   播放中用 sleepUntil（该停的时间戳）；一暂停就折算成 sleepLeft（剩余毫秒）存起来，
+   继续播放时再换算回时间戳。这样中途去吃个饭，剩下的时间不会白白耗掉。 */
+let sleepUntil = 0;
+let sleepLeft  = 0;
 let gapTimer = null;
 let errRun = 0;              // 连续出错次数，防止整串文件都缺时疯狂空转
 let lastShown = -1;          // 列表里上次定位到的句子，用来避免重复滚动
@@ -194,14 +200,18 @@ function start(){
   const p = au.play();
   if(p && p.catch) p.catch(()=>{});     // 没有用户手势时会被拒，忽略
   playing = true;
+  sleepResume();
   paint();
+  paintSleep();
 }
 
 function pause(){
   clearGap();
   au.pause();
   playing = false;
+  sleepHold();
   paint();
+  paintSleep();
 }
 
 // 按钮永远看播放器的真实状态，免得切歌瞬间的事件把 playing 带偏
@@ -222,8 +232,8 @@ function step(dir, auto){
 }
 
 au.onended = () => {
-  if(sleepUntil && Date.now() >= sleepUntil){   // 定时到了就停在这儿
-    sleepUntil = 0; cfg.sleep = 0; persist();
+  if(sleepOn() && sleepRemain() <= 0){          // 定时到了就停在这儿
+    sleepUntil = 0; sleepLeft = 0; cfg.sleep = 0; persist();
     pause(); render();
     return;
   }
@@ -289,7 +299,8 @@ function render(){
   + row("定时关闭", "sleep", [[0,"不限"],[15,"15 分"],[30,"30 分"],[60,"60 分"]])
   + row("文字", "blind", [[false,"显示"],[true,"盲听"]])
   + '<p class="hint">盲听模式下文字是糊的，按住能临时看清。'
-  + '<br>定时关闭会在播放器下方显示倒计时，点倒计时可以取消。到点后会把当前这句播完再停。'
+  + '<br>定时关闭会在播放器下方显示倒计时，点倒计时可以取消。倒计时<b>只在播放时走</b>，'
+  + '暂停了它也跟着停，中途去做别的事不会白白耗掉。到点后会把当前这句播完再停。'
   + '<br>句间停顿设成「不停」时后台播放最稳，设了停顿在锁屏状态下可能不准。</p>'
   + '</details>'
 
@@ -327,6 +338,25 @@ function render(){
 }
 
 /* ---------------- 定时关闭的倒计时 ---------------- */
+function sleepOn(){ return sleepUntil > 0 || sleepLeft > 0; }
+function sleepRemain(){ return sleepUntil ? sleepUntil - Date.now() : sleepLeft; }
+function setSleep(min){
+  if(!min){ sleepUntil = 0; sleepLeft = 0; return; }
+  const ms = min * 60000;
+  // 正在播就开始计时，没播就先存着，等按下播放再走
+  if(playing){ sleepUntil = Date.now() + ms; sleepLeft = 0; }
+  else { sleepLeft = ms; sleepUntil = 0; }
+}
+function sleepHold(){            // 暂停播放：把倒计时冻在当前剩余
+  if(!sleepUntil) return;
+  sleepLeft = Math.max(0, sleepUntil - Date.now());
+  sleepUntil = 0;
+}
+function sleepResume(){          // 继续播放：接着之前剩下的走
+  if(!sleepLeft) return;
+  sleepUntil = Date.now() + sleepLeft;
+  sleepLeft = 0;
+}
 function mmss(ms){
   const s = Math.max(0, Math.round(ms / 1000));
   return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
@@ -334,17 +364,19 @@ function mmss(ms){
 function paintSleep(){
   const el = $("sleepChip");
   if(!el) return;
-  if(!sleepUntil){ el.className = "sleepchip"; el.innerHTML = ""; return; }
-  const left = sleepUntil - Date.now();
-  el.className = "sleepchip show" + (left > 0 ? "" : " ending");
+  if(!sleepOn()){ el.className = "sleepchip"; el.innerHTML = ""; return; }
+  const left = sleepRemain();
+  const held = sleepUntil === 0;          // 冻住了，说明没在播
+  el.className = "sleepchip show" + (left > 0 ? (held ? " held" : "") : " ending");
   el.innerHTML = left > 0
-    ? '<span>⏳ <b>' + mmss(left) + '</b> 后停止</span><span class="x">取消</span>'
+    ? '<span>⏳ <b>' + mmss(left) + '</b> 后停止' + (held ? '（已暂停）' : '') + '</span>'
+      + '<span class="x">取消</span>'
     // 到点不是立刻掐断，而是把这句播完，所以这里要说清楚
     : '<span>⏳ 时间到，这句播完就停</span><span class="x">取消</span>';
 }
 function cancelSleep(){
-  if(!sleepUntil) return;
-  sleepUntil = 0; cfg.sleep = 0; persist();
+  if(!sleepOn()) return;
+  sleepUntil = 0; sleepLeft = 0; cfg.sleep = 0; persist();
   render();          // 顺便把设置面板里的「定时关闭」复位成「不限」
 }
 setInterval(paintSleep, 1000);
@@ -365,7 +397,7 @@ function setCfg(key, raw){
   persist();
 
   if(key === "rate") au.playbackRate = v;
-  if(key === "sleep") sleepUntil = v ? Date.now() + v * 60000 : 0;
+  if(key === "sleep") setSleep(v);
   if(key === "gap" && v === 0) clearGap();
   render();
 }
