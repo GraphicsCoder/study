@@ -368,5 +368,7 @@ function keepVisible(){
   box.scrollTo({top: Math.max(0, top), behavior: "smooth"});
 }
 </script>
+<!-- 熏听不接同步：它每播一句就存一次播放位置，接上去会把 Cloudflare KV 的
+     每日写入额度刷爆；而且语速、定时关闭这类设置本来就该各设备独立。 -->
 </body>
 </html>
