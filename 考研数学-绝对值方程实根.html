@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>考研数学专项 · 含绝对值方程的实根个数</title>
+<style>
+  :root{
+    --bg:#f4f6f8; --card:#fff; --ink:#1a1f2b; --muted:#667085;
+    --line:#e3e7ee; --brand:#3b5bdb; --brand-soft:#eaeffd;
+    --ok:#15803d; --ok-soft:#e8f6ed; --no:#c2410c; --no-soft:#fdeee6;
+    --warn:#92400e; --warn-soft:#fef6e7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.65;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+  .wrap{max-width:900px;margin:0 auto;padding:24px 16px 80px}
+  header.top{background:linear-gradient(135deg,#3b5bdb,#5f7ce8);color:#fff;
+    border-radius:16px;padding:22px 24px;margin-bottom:18px}
+  header.top h1{margin:0 0 6px;font-size:23px;letter-spacing:.3px}
+  header.top p{margin:0;opacity:.93;font-size:14px}
+  header.top a{color:#fff}
+  .score-bar{display:flex;align-items:center;gap:12px;margin-top:14px;
+    background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px}
+  .bar{flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:#fff;transition:width .35s}
+
+  /* 数学式子统一用等宽，下标上标用 Unicode，不引外部公式库 */
+  .m{font-family:"Cambria Math","Latin Modern Math",Consolas,"Courier New",monospace;
+    font-size:1.05em;letter-spacing:.2px;white-space:nowrap}
+  /* 题干和选项是整句话，任何宽度下都必须能折行——nowrap 只留给正文里的短式子，
+     防止「x² − 2x」被拆到两行。不要指望媒体查询兜底，窗口宽度千奇百怪。 */
+  .q .m, button.opt .m{white-space:normal}
+  .blk{display:block;margin:6px 0;font-family:"Cambria Math",Consolas,monospace;font-size:16px}
+
+  /* 函数图像：内联 SVG，随容器缩放 */
+  figure.figbox{margin:10px 0 4px;padding:0}
+  figure.figbox figcaption{font-size:12.5px;color:var(--muted);line-height:1.75;margin-top:5px}
+  svg.fig{display:block;width:100%;max-width:440px;height:auto;
+    border:1px solid var(--line);border-radius:10px;background:#fff}
+  svg.fig .fg-grid{stroke:#eef1f6;stroke-width:1}
+  svg.fig .fg-axis{stroke:#9aa3b2;stroke-width:1.3}
+  svg.fig .fg-curve{fill:none;stroke:#3b5bdb;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+  svg.fig .fg-tick{font-size:10.5px;fill:#8a93a3;font-family:Consolas,monospace}
+  svg.fig .fg-lab{font-size:11.5px;font-family:Consolas,monospace;font-weight:600}
+  svg.fig .fg-note{font-size:10.5px;fill:#98a0ae}
+  .figrow{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 4px}
+  .figrow figure.figbox{flex:1;min-width:260px;margin:0}
+
+  details.guide{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.guide summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px}
+  details.guide summary::marker{color:var(--brand)}
+  details.guide h4{margin:16px 0 6px;font-size:15px;color:#2c45a8}
+  .rule{background:var(--brand-soft);border-radius:10px;padding:11px 14px;margin:8px 0 14px;font-size:14.5px;line-height:1.95}
+  .pitfall{background:var(--warn-soft);border-left:4px solid #e9a23b;border-radius:8px;padding:11px 14px;margin:8px 0 14px;font-size:14px;line-height:1.9}
+  .three{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
+  .three div{flex:1;min-width:190px;background:var(--brand-soft);border-radius:10px;padding:11px 14px;font-size:14px}
+  .three .k{font-size:15px;font-weight:700;color:#2c45a8;margin-bottom:4px}
+  table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 14px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:#eef1f6;font-weight:600}
+  td b{color:var(--brand)}
+  tr.hl td{background:#fdfaf2}
+
+  nav.jump{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  nav.jump a{font-size:13px;text-decoration:none;color:var(--brand);background:#fff;
+    border:1px solid var(--line);border-radius:99px;padding:6px 12px}
+  nav.jump a:hover{background:var(--brand-soft)}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .tools .pill{font-size:13px;color:var(--muted);margin-left:auto}
+  details.mistakes{background:var(--card);border:1px solid #f0b48e;border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.mistakes summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px;color:var(--no)}
+  ol.mlist{margin:0 0 14px;padding-left:22px;font-size:14.5px}
+  ol.mlist li{margin:7px 0}
+  ol.mlist a{color:var(--brand);text-decoration:none}
+  ol.mlist a:hover{text-decoration:underline}
+  ol.mlist .where{color:var(--muted);font-size:12.5px;margin-left:6px}
+  .empty{color:var(--muted);font-size:14px;padding:4px 0 14px}
+
+  section.set{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px 20px;margin-bottom:20px;scroll-margin-top:12px}
+  section.set h2{margin:0 0 4px;font-size:18px}
+  .tip{font-size:13.5px;color:var(--muted);margin:0 0 6px}
+  .setbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .setbar .sc{font-size:13px;color:var(--muted);margin-left:auto}
+
+  .item{border-top:1px dashed var(--line);padding:15px 0;border-left:3px solid transparent;scroll-margin-top:16px;transition:background .3s}
+  .item.wrong{border-left-color:var(--no);background:#fff8f4;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.half{border-left-color:#e9a23b;background:var(--warn-soft);padding-left:12px;border-radius:0 8px 8px 0}
+  .item.fixed{border-left-color:#86d7a5;background:#f7fcf9;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flagged{border-left-color:#e9a23b;background:var(--warn-soft);padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flash{background:#fff3cd}
+  .q{font-size:16px;margin:0 0 10px;line-height:1.95}
+  .q .n{display:inline-block;min-width:26px;color:var(--muted);font-size:14px}
+  .q .tag{font-size:12px;border-radius:99px;padding:2px 8px;margin-right:6px;
+    background:var(--brand-soft);color:#2c45a8;vertical-align:1px;white-space:nowrap}
+  .q .lv{font-size:12px;border-radius:99px;padding:2px 8px;margin-left:6px;
+    background:#fdf0e6;color:#9a5518;vertical-align:1px;white-space:nowrap}
+  .badge{font-size:12px;border-radius:99px;padding:2px 9px;margin-left:8px;vertical-align:2px;white-space:nowrap}
+  .badge.wrong{background:var(--no-soft);color:var(--no);border:1px solid #f0b48e}
+  .badge.half{background:var(--warn-soft);color:var(--warn);border:1px solid #e9a23b}
+  .badge.fixed{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+  .badge.ok{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+
+  .opts{display:flex;flex-direction:column;gap:7px;margin:0 0 8px 26px}
+  button.opt{font-family:inherit;font-size:15px;padding:9px 14px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;text-align:left;line-height:1.7}
+  button.opt:hover{background:var(--brand-soft)}
+  button.opt.pick{border-color:var(--brand);background:var(--brand-soft);font-weight:600}
+  button.opt.good{border-color:#86d7a5;background:var(--ok-soft);color:var(--ok);font-weight:600}
+  button.opt.bad{border-color:#f0b48e;background:var(--no-soft);color:var(--no)}
+  input.blank{width:92px;padding:4px 7px;font-size:16px;font-family:inherit;text-align:center;
+    border:0;border-bottom:2px solid #c9ced8;background:#fcfcfd;margin:0 3px}
+  input.blank:focus{outline:none;border-bottom-color:var(--brand);background:#fff}
+  input.blank.good{border-bottom-color:#2f9e5f;background:var(--ok-soft);color:var(--ok)}
+  input.blank.bad{border-bottom-color:#e07a3f;background:var(--no-soft);color:var(--no)}
+  textarea.ans{display:block;width:calc(100% - 26px);margin:0 0 8px 26px;min-height:88px;
+    padding:10px 12px;font-size:15px;font-family:inherit;line-height:1.9;
+    border:1px solid var(--line);border-radius:10px;background:#fcfcfd;resize:vertical}
+  textarea.ans:focus{outline:none;border-color:var(--brand);background:#fff}
+  .selfbar{display:none;gap:8px;flex-wrap:wrap;margin:0 0 8px 26px;align-items:center}
+  .selfbar.show{display:flex}
+  .selfbar .lab{font-size:13.5px;color:var(--muted)}
+  button.self{font-size:13.5px;padding:7px 12px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;font-family:inherit}
+  button.self.pick[data-v="1"]{border-color:#86d7a5;background:var(--ok-soft);color:var(--ok);font-weight:600}
+  button.self.pick[data-v="0.5"]{border-color:#e9a23b;background:var(--warn-soft);color:var(--warn);font-weight:600}
+  button.self.pick[data-v="0"]{border-color:#f0b48e;background:var(--no-soft);color:var(--no);font-weight:600}
+
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:26px}
+  button{font-family:inherit;font-size:13.5px;padding:8px 13px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink)}
+  button:hover{background:#eef1f6}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.primary:hover{filter:brightness(1.07)}
+  button.flag{padding:7px 10px;line-height:1}
+  button.flag.on{background:var(--warn-soft);border-color:#e9a23b}
+  .fb{margin:8px 0 0 26px;font-size:14px;display:none}
+  .fb.show{display:block}
+  .fb .good{color:var(--ok)} .fb .bad{color:var(--no)} .fb .note{color:var(--warn)}
+  .reveal{display:none;margin:8px 0 0 26px;font-size:14.5px;background:var(--ok-soft);
+    border-left:4px solid #86d7a5;border-radius:8px;padding:11px 14px;line-height:1.95}
+  .reveal.show{display:block}
+  .reveal b{color:#13603f}
+  .reveal ul{margin:6px 0 0;padding-left:20px}
+  .reveal li{margin:3px 0}
+  .reveal .step{display:block;margin:4px 0}
+  .why{display:block;color:#475069;font-size:13.5px;margin-top:6px;line-height:1.9}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:10px}
+
+  body.only-wrong .item:not(.wrong):not(.half):not(.flagged){display:none}
+  body.only-wrong section.set.nowrong{display:none}
+  body.only-wrong details.guide{display:none}
+
+  @media (max-width:640px){
+    .wrap{padding:12px 10px 60px}
+    header.top{padding:16px 14px;border-radius:12px;margin-bottom:14px}
+    header.top h1{font-size:19px}
+    header.top p{font-size:13px;line-height:1.8}
+    .score-bar{font-size:12.5px;padding:7px 10px;gap:8px}
+    details.guide,details.mistakes{padding:2px 12px;border-radius:12px}
+    details.guide summary,details.mistakes summary{font-size:15px}
+    .rule,.pitfall{font-size:13.5px;padding:10px 11px}
+    .three div{min-width:100%}
+    table{font-size:12.5px}
+    th,td{padding:5px 6px}
+    nav.jump{gap:6px}
+    nav.jump a{font-size:12.5px;padding:5px 10px}
+    .tools{gap:6px}
+    .tools .pill{margin-left:0;width:100%;font-size:12.5px}
+    section.set{padding:14px 12px;border-radius:12px;margin-bottom:14px}
+    section.set h2{font-size:16.5px}
+    .tip{font-size:13px}
+    .setbar .sc{margin-left:0;width:100%}
+    .q{font-size:15px}
+    .q .n{min-width:20px}
+    .opts,.row,.selfbar{margin-left:4px}
+    .fb,.reveal{margin-left:4px}
+    .reveal{padding:10px 11px;font-size:14px}
+    textarea.ans{width:calc(100% - 4px);margin-left:4px}
+    button.opt{font-size:14px;padding:9px 11px}
+    button{font-size:13px;padding:9px 11px}
+    button.flag{padding:9px 10px}
+    /* 式子长的时候允许横向滑动，不要硬挤 */
+    .m{white-space:normal}
+  }
+  @media print{
+    body{background:#fff}
+    nav.jump,.tools,.setbar button,.row button,.selfbar,header.top .score-bar,details.mistakes{display:none}
+    .reveal{display:block !important}
+    section.set{break-inside:avoid;border:0;padding:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>含绝对值方程的实根个数 · 专项训练</h1>
+  <p>考研数学 · 5 个专项 · 24 题 · 分类讨论 / 数形结合 / 换元法<br>
+  核心问题：关于 <span class="m">x</span> 的方程有两个不同实根，求实数 <span class="m">a</span> 的取值范围<br>
+  <a href="index.html">🏠 全部练习</a></p>
+  <div class="score-bar">
+    <span>总进度</span><span class="bar"><i id="totalBar"></i></span>
+    <span id="totalTxt">0 / 0 题答对</span>
+  </div>
+</header>
+
+<details class="guide" open>
+  <summary>📐 方法总纲（先看这里）</summary>
+
+  <h4>① 三条路，看题选路</h4>
+  <div class="three">
+    <div><div class="k">A. 去绝对值</div>按绝对值内部的符号<b>分段讨论</b>，每段解出来后<b>必须回代检验是否落在该段内</b>。式子简单、绝对值不多时最快。</div>
+    <div><div class="k">B. 数形结合</div>把方程化成 <span class="m">f(x) = a</span>，画出 <span class="m">y = f(x)</span>，再看水平线 <span class="m">y = a</span> 与它的<b>交点个数</b>。含参问根数的首选。</div>
+    <div><div class="k">C. 换元</div>只出现 <span class="m">|x|</span> 和 <span class="m">x²</span> 时，令 <span class="m">t = |x| ≥ 0</span>，化成 <b>t 的二次方程</b>，再把 t 的根数翻译回 x 的根数。</div>
+  </div>
+
+  <h4>② 换元法的关键：t 的根数 ≠ x 的根数</h4>
+  <div class="rule">
+    令 <span class="m">t = |x|</span>，则每一个 <b><span class="m">t > 0</span> 对应 2 个 x</b>（<span class="m">x = ±t</span>），
+    <b><span class="m">t = 0</span> 只对应 1 个 x</b>，<b><span class="m">t &lt; 0</span> 要舍去</b>。<br>
+    所以要让原方程恰有 2 个不同实根，<span class="m">t</span> 的方程只有两种合法情形：<br>
+    　(i) <b>恰有一个正根</b>（另一根为负或不存在）；<br>
+    　(ii) <b>有一个正的二重根</b>。<br>
+    <b>第 (ii) 种最容易漏</b>——判别式等于零的那个孤立的 a 值。
+  </div>
+  <p style="font-size:13.5px;color:#667085;margin:0 0 8px">
+  以 <span class="m">x² − 2|x| + a = 0</span> 为例。换元后是 <span class="m">t² − 2t = −a</span>，
+  于是又变成「一条抛物线 + 一条水平线」，<b>只不过左半边 <span class="m">t &lt; 0</span> 整片作废</b>：</p>
+  <div id="figT"></div>
+
+  <h4>③ 必须背熟：<span class="m">|f(x)| = a</span> 的根数表（以 <span class="m">f(x) = x² − 2x</span> 为例）</h4>
+  <p style="font-size:13.5px;color:#667085;margin:0 0 8px">
+  <span class="m">y = |x² − 2x|</span>：把抛物线在 x 轴下方的部分<b>翻折上去</b>，
+  得到两个零点 <span class="m">x = 0, 2</span>，中间鼓起一个峰，<b>峰高 = 原顶点纵坐标的绝对值 = 1</b>。
+  下面这张图把五种情况画在了一起——水平线每升高一点，交点个数就跟着变：</p>
+  <div id="figMain"></div>
+  <table>
+    <tr><th>a 的范围</th><th>水平线位置</th><th>交点（实根）个数</th></tr>
+    <tr><td><span class="m">a &lt; 0</span></td><td>在 x 轴下方（图中没画）</td><td><b>0</b> 个</td></tr>
+    <tr class="hl"><td><span class="m">a = 0</span></td><td>绿线：正好是 x 轴</td><td><b>2</b> 个（两个零点）</td></tr>
+    <tr><td><span class="m">0 &lt; a &lt; 1</span></td><td>橙线：穿过峰的腰部</td><td><b>4</b> 个</td></tr>
+    <tr><td><span class="m">a = 1</span></td><td>红线：正好擦过峰顶</td><td><b>3</b> 个</td></tr>
+    <tr class="hl"><td><span class="m">a &gt; 1</span></td><td>紫线：高过峰顶</td><td><b>2</b> 个</td></tr>
+  </table>
+  <div class="rule">
+    所以 <span class="m">|x² − 2x| = a</span> 恰有两个不同实根 ⟺ <b><span class="m">a = 0 或 a &gt; 1</span></b>。<br>
+    对着图看就明白为什么答案<b>不是一个区间</b>：两个「2 个根」的情形，一个在最底下（贴着 x 轴），
+    一个在最上面（高过峰顶），中间被 4 个根和 3 个根隔开了。<span class="m">a = 0</span> 这一支，十个人里有八个会漏。
+  </div>
+
+  <h4>④ 通用的峰高怎么算</h4>
+  <div class="rule">
+    设 <span class="m">f(x) = x² + px + q</span> 有两个不同实根，则 <span class="m">y = |f(x)|</span> 的峰高就是
+    <b><span class="m">|f(−p/2)|</span></b>，即原抛物线顶点纵坐标的绝对值。<br>
+    例：<span class="m">|x² − 4|</span> 顶点 <span class="m">(0, −4)</span>，峰高 4 ⟹ 两根 ⟺ <span class="m">a = 0 或 a &gt; 4</span>；<br>
+    　　<span class="m">|x² − 2x − 3|</span> 顶点 <span class="m">(1, −4)</span>，峰高 4 ⟹ 两根 ⟺ <span class="m">a = 0 或 a &gt; 4</span>。<br>
+    <b>若 <span class="m">f</span> 本身没有实根</b>（判别式 &lt; 0），则 <span class="m">|f(x)| = f(x)</span> 全程为正，图像不翻折，根数表完全不同，要重新讨论。
+  </div>
+
+  <h4>⑤ 一字之差，图形天壤之别：距离之「和」与距离之「差」</h4>
+  <div class="figrow" id="figDist"></div>
+  <div class="rule">
+    左图底部是一段<b>水平的谷底</b>，所以 <span class="m">a</span> 等于最小值时是<b>无穷多解</b>，
+    比最小值大才是两解；<br>
+    右图<b>两端都是水平射线</b>，中间严格单调，所以要么无穷多解、要么恰一解、要么无解，
+    <b>永远不可能恰好两解</b>。<br>
+    看一眼图就能定性，比硬分段快得多。
+  </div>
+
+  <div class="pitfall">
+    <b>五个高频失分点</b><br>
+    ① <b>忘了右边必须非负</b>：<span class="m">|g(x)| = h(a)</span> 必须先要求 <span class="m">h(a) ≥ 0</span>，否则无解；<br>
+    ② <b>分段解完不检验</b>：在 <span class="m">x ≥ 2</span> 这一段解出 <span class="m">x = 1</span>，必须舍掉；<br>
+    ③ <b>漏掉孤立解</b>：答案常是「<span class="m">a = 0</span> 或 <span class="m">a &gt; 1</span>」这种<b>点 ∪ 区间</b>的形式；<br>
+    ④ <b>换元后只数 t 的个数</b>：<span class="m">t</span> 的两个正根对应 <b>4 个</b> x，不是 2 个；<br>
+    ⑤ <b>端点等号想当然</b>：<span class="m">a = 1</span> 时擦顶是 3 个根不是 2 个，所以写 <span class="m">a ≥ 1</span> 就错了。
+  </div>
+</details>
+
+<nav class="jump" id="jump"></nav>
+<div class="tools">
+  <button id="btnOnlyWrong">只看错题 🔍</button>
+  <button id="btnRedo">重做所有错题</button>
+  <button id="btnClearMarks">清除错题记录</button>
+  <span class="pill" id="markStat"></span>
+</div>
+<details class="mistakes" id="mbox">
+  <summary id="msum">📕 错题本（0）</summary>
+  <div id="mlist"></div>
+</details>
+
+<div id="app"></div>
+<footer>选择题和填空题自动批改 · 讨论题对照参考答案后自评 · 记录保存在本机浏览器 · Ctrl+P 打印自动显示答案</footer>
+</div>
+
+<script>
+/* 题型：choice 单选（自动批改） / fill 填空（自动批改） / open 讨论题（对照后自评）
+   所有答案都用数值求根脚本 _verify.js 逐个验算过，边界值单独测。 */
+/* ===================== 画图 ===================== */
+/* 这类题的解释离了图就是空话，所以用内联 SVG 现画，不引任何外部库。
+   交点（也就是实根）不是手工标的，而是数值求出来的——图和答案同源，
+   改了函数或 a 值，点会自己跟着动，不会出现图文不符。 */
+const FIG = (function(){
+  const PAD = {l:30, r:14, t:14, b:24};
+
+  function mapper(sp, W, H){
+    const [x0,x1] = sp.xr, [y0,y1] = sp.yr;
+    return {
+      X: x => PAD.l + (x - x0)/(x1 - x0) * (W - PAD.l - PAD.r),
+      Y: y => H - PAD.b - (y - y0)/(y1 - y0) * (H - PAD.t - PAD.b),
+    };
+  }
+
+  // 把一条曲线采样成 path，超出纵向范围就断开，避免竖直的假线
+  function pathOf(f, sp, m, W){
+    const [x0,x1] = sp.xr, [y0,y1] = sp.yr;
+    const N = Math.max(240, (W|0) * 2);
+    let d = "", pen = false;
+    for(let i=0; i<=N; i++){
+      const x = x0 + (x1-x0)*i/N, y = f(x);
+      if(!isFinite(y) || y < y0 - 1e-9 || y > y1 + 1e-9){ pen = false; continue; }
+      d += (pen ? "L" : "M") + m.X(x).toFixed(1) + " " + m.Y(y).toFixed(1) + " ";
+      pen = true;
+    }
+    return d;
+  }
+
+  // 求 f 与 g 的交点：扫描变号 + 二分，再补一次「相切」检测（重根）
+  function meets(f, g, sp){
+    const [x0,x1] = sp.xr, h = x=>f(x)-g(x);
+    const out = [], N = 4000, step = (x1-x0)/N;
+    const add = x => { for(const p of out) if(Math.abs(p-x)<1e-4) return; out.push(x); };
+    let px = x0, pv = h(x0);
+    if(Math.abs(pv) < 1e-12) add(x0);
+    for(let i=1; i<=N; i++){
+      const x = x0 + step*i, v = h(x);
+      if(!isFinite(v)){ px=x; pv=v; continue; }
+      if(Math.abs(v) < 1e-12) add(x);
+      else if(isFinite(pv) && pv*v < 0){
+        let a=px, b=x, fa=pv;
+        for(let k=0;k<60;k++){ const mm=(a+b)/2, fm=h(mm); if(fa*fm<=0) b=mm; else {a=mm; fa=fm;} }
+        add((a+b)/2);
+      }else if(Math.abs(v) < 0.08){                 // 可能相切：找局部极小
+        const l=h(x-step), r=h(x+step);
+        if(isFinite(l)&&isFinite(r)&&Math.abs(v)<=Math.abs(l)&&Math.abs(v)<=Math.abs(r)){
+          // 三分法收敛到极小点。粗扫是不够的：像 |x²−2x| 在 x=0 处只是
+          // 「碰」到 x 轴而不穿过，取样点落不到正中间，粗扫出来的残差还很大，
+          // 用固定阈值一卡就把这个真实的根丢了。
+          let a=x-step, b=x+step;
+          for(let k=0;k<100;k++){
+            const m1=a+(b-a)/3, m2=b-(b-a)/3;
+            if(Math.abs(h(m1)) < Math.abs(h(m2))) b=m2; else a=m1;
+          }
+          const best=(a+b)/2;
+          if(Math.abs(h(best)) < 1e-9) add(best);
+        }
+      }
+      px=x; pv=v;
+    }
+    return out.filter(x => x >= x0-1e-9 && x <= x1+1e-9);
+  }
+
+  /* sp = {xr, yr, w, h, f, xlab, ylab, curveLabel,
+           lines:[{a?, m?, b?, c, label, dots?:false}]   // a=水平线 y=a；或 y=mx+b
+           shadeNeg:true                                  // 把 x<0 画成灰色禁区（换元用）
+         } */
+  function draw(sp){
+    const W = sp.w || 430, H = sp.h || 250;
+    const m = mapper(sp, W, H);
+    const [x0,x1] = sp.xr, [y0,y1] = sp.yr;
+    let s = `<svg class="fig" viewBox="0 0 ${W} ${H}" role="img" aria-label="${sp.alt||"函数图像"}">`;
+    s += `<rect x="0" y="0" width="${W}" height="${H}" fill="#fff" rx="8"/>`;
+
+    if(sp.shadeNeg && x0 < 0){                     // t = |x| ≥ 0，左半边是禁区
+      s += `<rect x="${m.X(x0)}" y="${PAD.t}" width="${m.X(0)-m.X(x0)}" height="${H-PAD.t-PAD.b}" fill="#f1f3f7"/>`;
+      s += `<text x="${(m.X(x0)+m.X(0))/2}" y="${PAD.t+14}" class="fg-note" text-anchor="middle">t &lt; 0 舍去</text>`;
+    }
+    // 网格
+    for(let x=Math.ceil(x0); x<=x1; x++){
+      s += `<line x1="${m.X(x)}" y1="${PAD.t}" x2="${m.X(x)}" y2="${H-PAD.b}" class="fg-grid"/>`;
+    }
+    for(let y=Math.ceil(y0); y<=y1; y++){
+      s += `<line x1="${PAD.l}" y1="${m.Y(y)}" x2="${W-PAD.r}" y2="${m.Y(y)}" class="fg-grid"/>`;
+    }
+    // 坐标轴
+    if(y0 <= 0 && y1 >= 0) s += `<line x1="${PAD.l}" y1="${m.Y(0)}" x2="${W-PAD.r}" y2="${m.Y(0)}" class="fg-axis"/>`;
+    if(x0 <= 0 && x1 >= 0) s += `<line x1="${m.X(0)}" y1="${PAD.t}" x2="${m.X(0)}" y2="${H-PAD.b}" class="fg-axis"/>`;
+    // 刻度数字
+    for(let x=Math.ceil(x0); x<=x1; x++){
+      if(x===0) continue;
+      s += `<text x="${m.X(x)}" y="${H-PAD.b+13}" class="fg-tick" text-anchor="middle">${x}</text>`;
+    }
+    for(let y=Math.ceil(y0); y<=y1; y++){
+      if(y===0) continue;
+      s += `<text x="${PAD.l-5}" y="${m.Y(y)+3.5}" class="fg-tick" text-anchor="end">${y}</text>`;
+    }
+    s += `<text x="${W-PAD.r+2}" y="${(y0<=0&&y1>=0?m.Y(0):H-PAD.b)+3.5}" class="fg-tick">${sp.xlab||"x"}</text>`;
+
+    // 主曲线
+    s += `<path d="${pathOf(sp.f, sp, m, W)}" class="fg-curve"/>`;
+
+    // 直线 + 交点
+    let dots = "";
+    (sp.lines||[]).forEach(L => {
+      const g = (L.a !== undefined) ? (()=>L.a) : (x => L.m*x + L.b);
+      const yA = g(x0), yB = g(x1);
+      s += `<line x1="${m.X(x0)}" y1="${m.Y(Math.max(y0,Math.min(y1,yA)))}"`
+         + ` x2="${m.X(x1)}" y2="${m.Y(Math.max(y0,Math.min(y1,yB)))}"`
+         + ` stroke="${L.c}" stroke-width="1.7" stroke-dasharray="${L.dash||"5 3"}"/>`;
+      if(L.label){
+        const ly = (L.a !== undefined) ? L.a : g(x1);
+        s += `<text x="${W-PAD.r-3}" y="${m.Y(Math.max(y0+0.1,Math.min(y1-0.05,ly)))-4}"`
+           + ` class="fg-lab" fill="${L.c}" text-anchor="end">${L.label}</text>`;
+      }
+      if(L.dots !== false) meets(sp.f, g, sp).forEach(x => {
+        // 换元图里 t < 0 的交点是存在的，但要舍去——画成空心灰点，
+        // 和有效根区分开。这正是「舍根」这一步最该被看见的地方。
+        const dead = sp.shadeNeg && x < -1e-9;
+        dots += dead
+          ? `<circle cx="${m.X(x)}" cy="${m.Y(sp.f(x))}" r="4" fill="#fff" stroke="#9aa3b2" stroke-width="1.8" stroke-dasharray="2 1.6"/>`
+          : `<circle cx="${m.X(x)}" cy="${m.Y(sp.f(x))}" r="4" fill="${L.c}" stroke="#fff" stroke-width="1.6"/>`;
+      });
+    });
+    s += dots;                                      // 点画在最上面
+    s += `</svg>`;
+    return s;
+  }
+
+  function wrap(sp){
+    return `<figure class="figbox">${draw(sp)}`
+      + (sp.cap ? `<figcaption>${sp.cap}</figcaption>` : "") + `</figure>`;
+  }
+  return {draw, wrap};
+})();
+
+/* 常用曲线 */
+const F = {
+  absQuad: (p,q) => x => Math.abs(x*x + p*x + q),       // |x² + px + q|
+  sumDist: (u,v) => x => Math.abs(x-u) + Math.abs(x-v),
+  difDist: (u,v) => x => Math.abs(x-u) - Math.abs(x-v),
+  absLin:  k      => x => Math.abs(x-k),
+  tQuad:   p      => t => t*t + p*t,                     // 换元后的 y = t² + pt
+};
+const C = {g:"#15803d", o:"#c2410c", r:"#be123c", p:"#7c3aed", b:"#3b5bdb"};
+
+/* 把图挂到对应题目的解析后面：有 fig 字段就追加一张 */
+function attachFigures(){
+  DATA.forEach(set => set.items.forEach(it => {
+    if(it.fig) it.why += FIG.wrap(it.fig);
+  }));
+}
+
+const DATA = [
+{
+  id:"s1", title:"专项一 · 去绝对值：先定号，再分段",
+  tip:"最朴素的一条路。要点：右边必须非负；每段解出的根必须落回该段。",
+  items:[
+  {t:"choice", lv:"基础",
+   q:`若关于 x 的方程 |x − 3| = a 有两个不同的实根，则实数 a 的取值范围是`,
+   opts:[`a > 0`, `a ≥ 0`, `a > 3`, `a ≠ 3`], a:0,
+   why:`右边是距离，必须 a ≥ 0 才可能有解。a = 0 时方程成了 |x−3| = 0，只有 x = 3 这一个根；a > 0 时 x = 3 ± a 是两个不同的根。所以要两个不同实根必须 a > 0。选 a ≥ 0 的，就是把 a = 0 时的重根当成了两个。`},
+
+  {t:"choice", lv:"基础",
+   q:`若关于 x 的方程 |2x + 1| = a − 2 有两个不同的实根，则实数 a 的取值范围是`,
+   opts:[`a > 2`, `a ≥ 2`, `a > 0`, `a > −2`], a:0,
+   why:`套同一个模子：要两个不同实根，右边必须严格大于 0，即 a − 2 > 0，得 a > 2。左边系数 2 只影响根的位置（x = (−1 ± (a−2))/2），不影响根的个数。`},
+
+  {t:"choice", lv:"中等",
+   q:`若关于 x 的方程 |x + 1| + |x − 3| = a 有两个不同的实根，则实数 a 的取值范围是`,
+   opts:[`a > 4`, `a ≥ 4`, `a > 0`, `0 < a < 4`], a:0,
+   fig:{xr:[-3.4,5.4], yr:[-0.6,8], f:F.sumDist(-1,3), h:230,
+        lines:[{a:3, c:C.g, label:"a=3"},{a:4, c:C.o, label:"a=4"},{a:6, c:C.p, label:"a=6"}],
+        cap:`绿线 <b>a=3</b> 低于谷底，无解；橙线 <b>a=4</b> 正好是谷底，整段 [−1,3] 都是解（无穷多）；紫线 <b>a=6</b> 高过谷底，左右各一个交点，恰两解。`},
+   why:`几何意义：左边是数轴上 x 到 −1 和到 3 的距离之和。当 x 落在区间 [−1, 3] 内时，这个和恒等于 4（最小值）；走出区间，每远离 1 个单位就多 2。所以：a < 4 无解；a = 4 时整个闭区间 [−1,3] 上的点全是解，是无穷多个解，不是两个；a > 4 时左右各一个，恰好两个。端点必须取严格不等号。`},
+
+  {t:"fill", lv:"中等",
+   q:`方程 |x − 1| + |x + 2| = a 有两个不同的实根，则 a 的取值范围是 a > 【　】。`,
+   as:[[`3`]],
+   why:`两点 1 和 −2 之间的距离是 3，所以左边的最小值是 3，且在整个闭区间 [−2, 1] 上恒为 3。a = 3 时是无穷多解，a > 3 时恰有两解。`},
+
+  {t:"choice", lv:"易错",
+   q:`关于 x 的方程 |x − 1| − |x + 2| = a 有两个不同的实根，则实数 a`,
+   opts:[`不存在这样的 a`, `a = 3`, `−3 < a < 3`, `a > 3`], a:0,
+   fig:{xr:[-5.4,4.4], yr:[-4.2,4.2], f:F.difDist(1,-2), h:230,
+        lines:[{a:3, c:C.o, label:"a=3"},{a:1, c:C.g, label:"a=1"},{a:-3, c:C.p, label:"a=−3"}],
+        cap:`两端是水平射线：橙线 <b>a=3</b> 和紫线 <b>a=−3</b> 各自压在一整条射线上，无穷多解；绿线 <b>a=1</b> 只能交中间那段单调斜线，恰一解。<b>没有任何高度能切出两个交点。</b>`},
+   why:`把左边 g(x) 分三段写出来：x ≤ −2 时恒为 3；−2 < x < 1 时为 −1 − 2x，从 3 严格减到 −3；x ≥ 1 时恒为 −3。所以水平线 y = a 与它的交点只有三种情况：a = 3 或 a = −3 时交在一整条射线上（无穷多解）；−3 < a < 3 时因为中间段严格单调，恰好一个交点；|a| > 3 时没有交点。永远不可能恰好两个。和「距离之和」不同，<b>距离之差</b>的图像两端是平的，这是本质区别。`}
+  ]
+},
+{
+  id:"s2", title:"专项二 · 数形结合：|二次| = a",
+  tip:"先把抛物线在 x 轴下方的部分翻折上去，再让水平线从下往上扫。",
+  items:[
+  {t:"choice", lv:"必会",
+   q:`若关于 x 的方程 |x² − 2x| = a 有两个不同的实根，则实数 a 的取值范围是`,
+   opts:[`a = 0 或 a > 1`, `a > 1`, `0 < a < 1`, `a ≥ 1`], a:0,
+   fig:{xr:[-1.3,3.3], yr:[-0.5,2.6], f:F.absQuad(-2,0),
+        lines:[{a:0, c:C.g, label:"a=0"},{a:0.5, c:C.o, label:"a=0.5"},
+               {a:1, c:C.r, label:"a=1"},{a:1.8, c:C.p, label:"a=1.8"}],
+        cap:`数一数每条线上的点：绿 <b>2 个</b>、橙 <b>4 个</b>、红 <b>3 个</b>、紫 <b>2 个</b>。两个「2 个根」的情形被中间隔开，所以答案不是一个区间。`},
+   why:`y = |x² − 2x| 的图像：零点 x = 0, 2，中间翻折起来一个峰，峰高 = |顶点纵坐标| = |(1)² − 2(1)| = 1。水平线从下往上扫：a < 0 没有交点；a = 0 恰好是 x 轴，交于两个零点，<b>2 个根</b>；0 < a < 1 穿过峰腰，左右各两个，4 个根；a = 1 擦过峰顶，3 个根；a > 1 高过峰顶，只剩外侧两个，<b>2 个根</b>。所以答案是 a = 0 或 a > 1，一个孤立点加一个开区间。`},
+
+  {t:"choice", lv:"必会",
+   q:`若关于 x 的方程 |x² − 4| = a 有两个不同的实根，则实数 a 的取值范围是`,
+   opts:[`a = 0 或 a > 4`, `a > 4`, `a ≥ 4`, `0 < a < 4`], a:0,
+   fig:{xr:[-3.4,3.4], yr:[-1,6.5], f:F.absQuad(0,-4),
+        lines:[{a:0, c:C.g, label:"a=0"},{a:2, c:C.o, label:"a=2"},
+               {a:4, c:C.r, label:"a=4"},{a:5.5, c:C.p, label:"a=5.5"}],
+        cap:`峰高变成 4（顶点 (0,−4)），其余完全同构：绿 2 个、橙 4 个、红 3 个、紫 2 个。`},
+   why:`同一个模型，只是峰高变了：y = x² − 4 的顶点是 (0, −4)，翻折后峰高 4，零点 x = ±2。于是 a = 0 时 2 个根，0 < a < 4 时 4 个，a = 4 时 3 个，a > 4 时 2 个。答案 a = 0 或 a > 4。`},
+
+  {t:"fill", lv:"中等",
+   q:`方程 |x² − 2x − 3| = a 有两个不同的实根，则 a = 0 或 a > 【　】。`,
+   as:[[`4`]],
+   fig:{xr:[-2.4,4.4], yr:[-1,6.5], f:F.absQuad(-2,-3),
+        lines:[{a:0, c:C.g, label:"a=0"},{a:4, c:C.r, label:"a=4"},{a:5.5, c:C.p, label:"a=5.5"}],
+        cap:`顶点 (1,−4) ⟹ 峰高 4。红线正好擦顶是 3 个根，紫线高过峰顶才是 2 个根。`},
+   why:`x² − 2x − 3 = (x − 1)² − 4，顶点 (1, −4)，所以峰高是 4，零点 x = −1, 3。a > 4 时水平线高过峰顶，恰两个交点。`},
+
+  {t:"choice", lv:"对比",
+   q:`若关于 x 的方程 |x² − 2x| = a 恰有三个不同的实根，则 a =`,
+   opts:[`1`, `0`, `2`, `不存在`], a:0,
+   fig:{xr:[-1.3,3.3], yr:[-0.5,2.2], f:F.absQuad(-2,0), h:210,
+        lines:[{a:1, c:C.r, label:"a=1"}],
+        cap:`水平线正好擦过峰顶：峰顶 1 个 + 外侧 2 个 = <b>3 个</b>。`},
+   why:`三个根只出现在一个瞬间：水平线正好擦过峰顶。此时峰顶那个点算一个根，外侧两个点各算一个，共 3 个。峰高是 1，所以 a = 1。把根数表背下来，这类题是送分的。`},
+
+  {t:"choice", lv:"对比",
+   q:`若关于 x 的方程 |x² − 2x| = a 恰有四个不同的实根，则实数 a 的取值范围是`,
+   opts:[`0 < a < 1`, `0 ≤ a ≤ 1`, `a > 1`, `0 < a ≤ 1`], a:0,
+   fig:{xr:[-1.3,3.3], yr:[-0.5,2.2], f:F.absQuad(-2,0), h:210,
+        lines:[{a:0.5, c:C.o, label:"a=0.5"}],
+        cap:`严格卡在 x 轴与峰顶之间时，左右两段各贡献 2 个交点，共 <b>4 个</b>。`},
+   why:`水平线必须<b>严格</b>卡在 x 轴和峰顶之间：碰到 x 轴（a = 0）掉成 2 个根，碰到峰顶（a = 1）掉成 3 个根。所以两端都取不到，是开区间 0 < a < 1。`},
+
+  {t:"open", lv:"综合",
+   q:`讨论方程 |x² − 4x + 3| = a 的实根个数（对 a 分类）。`,
+   ref:`先定形：x² − 4x + 3 = (x − 2)² − 1，零点 x = 1 和 x = 3，顶点 (2, −1)，故 y = |x² − 4x + 3| 的峰高为 1。水平线 y = a 自下而上扫过：
+① a < 0 时，无实根；
+② a = 0 时，2 个实根（x = 1, 3）；
+③ 0 < a < 1 时，4 个实根；
+④ a = 1 时，3 个实根（峰顶 x = 2 与外侧两点）；
+⑤ a > 1 时，2 个实根。`,
+   points:[`先求出零点与顶点，指明峰高 = 1`,`按 a < 0 / a = 0 / 0 < a < 1 / a = 1 / a > 1 五段分类，不漏不重`,`a = 0 和 a = 1 这两个临界值单独成类`,`每类都写出具体根数`],
+   fig:{xr:[-0.4,4.4], yr:[-0.5,2.6], f:F.absQuad(-4,3),
+        lines:[{a:0, c:C.g, label:"a=0"},{a:0.5, c:C.o, label:"a=0.5"},
+               {a:1, c:C.r, label:"a=1"},{a:2, c:C.p, label:"a=2"}],
+        cap:`零点 1 和 3，顶点 (2,−1) ⟹ 峰高 1。绿 2 个、橙 4 个、红 3 个、紫 2 个。`},
+   why:`这是 |二次| = a 的标准讨论，五段缺一不可。阅卷时 a = 0 与 a = 1 两个临界点是给分点，合并到区间里去就要扣分。`}
+  ]
+},
+{
+  id:"s3", title:"专项三 · 换元：令 t = |x| ≥ 0",
+  tip:"只出现 |x| 和 x² 时用。换完别忘了把 t 的根数翻译回 x 的根数。",
+  items:[
+  {t:"choice", lv:"必会",
+   q:`若关于 x 的方程 x² − 2|x| + a = 0 有两个不同的实根，则实数 a 的取值范围是`,
+   opts:[`a < 0 或 a = 1`, `a < 0`, `0 < a < 1`, `a ≤ 1`], a:0,
+   fig:{xr:[-1.6,3.4], yr:[-1.6,2.6], f:F.tQuad(-2), xlab:"t", shadeNeg:true,
+        lines:[{a:1, c:C.p, label:"−a=1 (a=−1)"},{a:0, c:C.g, label:"−a=0 (a=0)"},
+               {a:-0.5, c:C.o, label:"−a=−0.5"},{a:-1, c:C.r, label:"−a=−1 (a=1)"}],
+        cap:`换元后看 <b>y = t² − 2t 与 y = −a</b>，左半边作废（那里的交点画成空心灰点）。紫线（a=−1）舍掉一个负根后只剩 <b>1 个</b>正交点 ⟹ x 有 2 个；红线（a=1）切在顶点 t=1 ⟹ x 有 2 个；绿线（a=0）交于 t=0 和 t=2 ⟹ x 有 1+2=<b>3</b> 个；橙线两个正交点 ⟹ x 有 <b>4</b> 个。`},
+   why:`注意 x² = |x|²，令 t = |x| ≥ 0，方程化为 t² − 2t + a = 0，根为 t = 1 ± √(1 − a)（需 a ≤ 1）。要原方程恰有 2 个不同实根，只有两种可能：<b>(i) t 恰有一个正根</b>——两根之积 a < 0 时一正一负，负根舍去，剩一个正根，给出 x = ±t 两个根；<b>(ii) t 有一个正的二重根</b>——判别式为 0 即 a = 1，此时 t = 1，给出 x = ±1 两个根。其余情形：a = 0 时 t = 0 或 2，共 3 个根；0 < a < 1 时两个正根，共 4 个根；a > 1 时无解。所以答案 a < 0 或 a = 1。漏掉 a = 1 是最常见的错。`},
+
+  {t:"choice", lv:"中等",
+   q:`若关于 x 的方程 x² − |x| + a = 0 有两个不同的实根，则实数 a 的取值范围是`,
+   opts:[`a < 0 或 a = 1/4`, `a < 0`, `a = 1/4`, `0 < a < 1/4`], a:0,
+   why:`令 t = |x| ≥ 0，得 t² − t + a = 0，判别式 1 − 4a。同样两条路：(i) 一正一负根 ⟺ 两根之积 a < 0；(ii) 正的二重根 ⟺ 判别式 1 − 4a = 0，即 a = 1/4，此时 t = 1/2 > 0，合法，给出 x = ±1/2。注意这里的二重根临界值是 1/4 不是 1——系数变了，临界值就跟着变，不能照搬上一题。`},
+
+  {t:"choice", lv:"易错",
+   q:`若关于 x 的方程 x² + a|x| + 1 = 0 有两个不同的实根，则实数 a =`,
+   opts:[`−2`, `a < −2`, `a ≤ −2`, `2`], a:0,
+   why:`令 t = |x| ≥ 0，得 t² + at + 1 = 0。两根之积为 1 > 0，说明两根<b>同号</b>，不可能一正一负，所以「一正一负」这条路堵死了，只剩二重根一条路：判别式 a² − 4 = 0 得 a = ±2；又两根之和为 −a 必须为正，故 a < 0，取 a = −2。此时 t = 1，x = ±1，恰两个根。若 a < −2，t 有两个不同正根，对应 <b>4 个</b> x，不是 2 个。这题专治「看到判别式就写 ≥ 0」。`},
+
+  {t:"fill", lv:"中等",
+   q:`方程 x² − 4|x| + a = 0 有四个不同的实根，则 【　】 < a < 【　】。`,
+   as:[[`0`],[`4`]],
+   why:`令 t = |x|，得 t² − 4t + a = 0。四个 x 根 ⟺ t 有<b>两个不同的正根</b>：判别式 16 − 4a > 0 得 a < 4；两根之积 a > 0；两根之和 4 > 0 自动满足。故 0 < a < 4。`},
+
+  {t:"open", lv:"综合",
+   q:`讨论方程 x² − 2|x| + a = 0 的实根个数（对 a 分类）。`,
+   ref:`令 t = |x| ≥ 0，原方程化为 t² − 2t + a = 0，判别式 Δ = 4 − 4a。
+记住对应关系：t > 0 对应 2 个 x，t = 0 对应 1 个 x，t < 0 舍去。
+① a > 1 时，Δ < 0，t 无实根，原方程 0 个实根；
+② a = 1 时，t = 1（二重正根），原方程 2 个实根（x = ±1）；
+③ 0 < a < 1 时，t = 1 ± √(1−a) 是两个不同正根，原方程 4 个实根；
+④ a = 0 时，t = 0 或 t = 2，分别给出 1 个和 2 个 x，原方程 3 个实根；
+⑤ a < 0 时，两根之积 a < 0，一正一负，负根舍去，原方程 2 个实根。`,
+   points:[`明确换元并写出 t ≥ 0 的限制`,`写出 t 的根数与 x 的根数的对应关系（t>0 给 2 个，t=0 给 1 个）`,`按 a > 1 / a = 1 / 0 < a < 1 / a = 0 / a < 0 五段讨论`,`a = 1（二重根）和 a = 0（零根）两个临界值单独成类`],
+   fig:{xr:[-1.6,3.4], yr:[-1.6,2.6], f:F.tQuad(-2), xlab:"t", shadeNeg:true,
+        lines:[{a:1, c:C.p, label:"a=−1"},{a:0, c:C.g, label:"a=0"},
+               {a:-0.5, c:C.o, label:"a=0.5"},{a:-1, c:C.r, label:"a=1"}],
+        cap:`水平线的高度是 <b>−a</b>。线从上往下扫：先只交到右半支（x 有 2 个根），到 t=0 时多一个零根（3 个），再往下切出两个正根（4 个），直到切于顶点（2 个），更低就无交点。`},
+   why:`换元题的采分点有两个：一是写明 t ≥ 0 的限制，二是写明 t 与 x 的根数对应。只写 t 的讨论、不翻译回 x，即使分类全对也拿不到满分。`}
+  ]
+},
+{
+  id:"s4", title:"专项四 · 含参直线：|f(x)| = 过定点的直线",
+  tip:"右边不再是常数，而是随 a 转动的直线。思路仍是分段去绝对值，但每段都要检验。",
+  items:[
+  {t:"choice", lv:"中等",
+   q:`若关于 x 的方程 |x − 2| = ax 有两个不同的实根，则实数 a 的取值范围是`,
+   opts:[`0 < a < 1`, `a > 0`, `0 < a ≤ 1`, `a > 1`], a:0,
+   fig:{xr:[-1.4,6.4], yr:[-0.8,5], f:F.absLin(2),
+        lines:[{m:0.5,b:0, c:C.g, label:"a=0.5"},{m:1,b:0, c:C.r, label:"a=1"},
+               {m:1.6,b:0, c:C.p, label:"a=1.6"}],
+        cap:`V 形顶点在 (2,0)，直线绕原点转。绿线（0&lt;a&lt;1）同时穿过左右两条边 ⟹ <b>2 个</b>交点；红线 a=1 与右边那条边<b>平行</b>，只剩左边 1 个；a 再大仍只有 1 个。`},
+   why:`分段。当 x ≥ 2：x − 2 = ax ⟹ x(1 − a) = 2 ⟹ x = 2/(1−a)，要求它确实 ≥ 2，解得 0 ≤ a < 1。当 x < 2：2 − x = ax ⟹ x = 2/(1+a)，要求它确实 < 2，解得 a > 0（或 a < −1，此时根为负数也满足 x < 2）。两段都有根才凑够两个：取交集得 0 < a < 1。从图上看更直观：y = |x−2| 是一个顶点在 (2,0) 的 V 形，y = ax 是过原点、斜率为 a 的直线；斜率从 0 转到 1 的过程中直线能同时切到 V 的两条边，到 a = 1 时与右支平行，只剩一个交点。`},
+
+  {t:"choice", lv:"中等",
+   q:`若关于 x 的方程 |x| = ax + 1 有两个不同的实根，则实数 a 的取值范围是`,
+   opts:[`−1 < a < 1`, `a > 1`, `a < −1`, `a ≠ ±1`], a:0,
+   fig:{xr:[-4.4,4.4], yr:[-0.6,4], f:x=>Math.abs(x),
+        lines:[{m:0,b:1, c:C.g, label:"a=0"},{m:0.7,b:1, c:C.o, label:"a=0.7"},
+               {m:1,b:1, c:C.r, label:"a=1"},{m:1.5,b:1, c:C.p, label:"a=1.5"}],
+        cap:`直线恒过定点 (0,1)。只有斜率严格介于 −1 和 1 之间（绿、橙）时才能同时穿过 V 的两条边；a=1 时与右边那条边平行（红），只剩 1 个交点。`},
+   why:`当 x ≥ 0：x = ax + 1 ⟹ x = 1/(1−a)，要求 ≥ 0 且 a ≠ 1，得 a < 1。当 x < 0：−x = ax + 1 ⟹ x = −1/(1+a)，要求 < 0 且 a ≠ −1，得 a > −1。两边都要有根，取交集 −1 < a < 1。图像上：y = |x| 是顶点在原点的 V 形（两条边斜率分别是 1 和 −1），y = ax + 1 是过定点 (0,1) 转动的直线，只有当斜率严格介于 −1 和 1 之间时，才能同时穿过 V 的左右两条边。`},
+
+  {t:"open", lv:"较难",
+   q:`讨论方程 |x² − 2x| = ax 的实根个数，并指出恰有两个不同实根时 a 的取值范围。`,
+   ref:`注意 x = 0 恒为一个根（两边同时为 0），讨论时先把它单独拎出来。
+对 x ≠ 0，由 |x||x − 2| = ax：
+· 当 x > 0 时，约去 x 得 |x − 2| = a，故需 a ≥ 0。a = 0 时 x = 2；a > 0 时 x = 2 + a（恒 > 0，合法）与 x = 2 − a（需 > 0，即 a < 2）。
+· 当 x < 0 时，约去 x（负数，不等号方向无关但要变号）得 |x − 2| = −a，故需 a ≤ 0。又 x < 0 时 x − 2 < 0，故 2 − x = −a，x = 2 + a，需 < 0，即 a < −2。
+汇总（全部根，含 x = 0）：
+① a < −2：根为 0 与 2 + a，共 2 个；
+② −2 ≤ a < 0：仅 x = 0，共 1 个；
+③ a = 0：根为 0 与 2，共 2 个；
+④ 0 < a < 2：根为 0、2 + a、2 − a，共 3 个；
+⑤ a = 2：2 − a = 0 与已有的根重合，根为 0 与 4，共 2 个；
+⑥ a > 2：根为 0 与 2 + a，共 2 个。
+故恰有两个不同实根 ⟺ a < −2 或 a = 0 或 a ≥ 2。`,
+   points:[`首先指出 x = 0 恒为一根，并单独处理`,`x > 0 与 x < 0 两段分别约去 x，得到 |x−2| = a 与 |x−2| = −a`,`每段解出的根都回代检验是否落在该段`,`注意 a = 2 时 2 − a = 0 与 x = 0 重合，根数要去重`,`最终写成 a < −2 或 a = 0 或 a ≥ 2`],
+   fig:{xr:[-3.4,5.4], yr:[-1,6], f:F.absQuad(-2,0),
+        lines:[{m:1,b:0, c:C.o, label:"a=1"},{m:2,b:0, c:C.r, label:"a=2"},
+               {m:3,b:0, c:C.p, label:"a=3"},{m:-3,b:0, c:C.g, label:"a=−3"}],
+        cap:`直线恒过原点，而原点正好在曲线上 ⟹ <b>x=0 永远是根</b>。橙线 a=1 共 3 个交点；红线 a=2 恰好经过 (0,0) 与 (4,8)，是 <b>2 个</b>（原来的 2−a 退化到了原点）；紫线 a=3 也是 2 个；绿线 a=−3 在左侧交一个，加原点共 2 个。`},
+   why:`这题的三个坑：(1) 漏掉 x = 0 这个恒成立的根；(2) 两边约去 x 时忘了 x < 0 的情形会让右边变号；(3) a = 2 时两个根撞在一起，必须去重，否则会误判成 3 个根。最后答案里 a ≥ 2 的等号能取，正是因为这次去重。`}
+  ]
+},
+{
+  id:"s5", title:"专项五 · 综合与易错辨析",
+  tip:"把前面四条路混在一起考，以及那些一不留神就掉进去的坑。",
+  items:[
+  {t:"choice", lv:"易错",
+   q:`小王解「方程 x² − 2|x| + a = 0 有两个不同实根，求 a」，答案写了「a < 0」。他漏掉了哪一种情形？`,
+   opts:[`t 有正的二重根，即 a = 1`, `t 有两个正根，即 0 < a < 1`, `t = 0 的情形，即 a = 0`, `他没有漏，答案就是 a < 0`], a:0,
+   why:`令 t = |x| 后，「x 恰有两个根」有两条路：t 恰一个正根（对应 a < 0），或 t 有一个正的二重根（判别式为 0，a = 1，此时 x = ±1 确实是两个根）。小王只走了第一条。注意 B 选项给出的是 4 个 x 根，C 选项给出的是 3 个（t = 0 贡献 1 个、t = 2 贡献 2 个），都不是 2 个。`},
+
+  {t:"choice", lv:"易错",
+   q:`下列关于方程 |x² − 2x| = a 的说法，正确的是`,
+   opts:[`恰有两个不同实根时，a 的取值集合不是一个区间`,
+         `实根个数随 a 的增大而单调减少`,
+         `实根个数只可能是 0 个、2 个或 4 个`,
+         `它与方程 x² − 2x = a 的实根个数总是相同`], a:0,
+   why:`A 对：答案是 a = 0 或 a > 1，即 {0} ∪ (1, +∞)，一个孤立点并上一个开区间，不是区间。<br>B 错：根数随 a 增大依次是 0 → 2 → 4 → 3 → 2，先增后减，并不单调。<br>C 错：a = 1 时水平线擦过峰顶，恰好 3 个根，奇数个是存在的。<br>D 错：去掉绝对值后 x² − 2x = a 是普通二次方程，a = 0 时 2 根、a = −1 时 1 根、a < −1 时无根，与带绝对值的完全不同。`},
+
+  {t:"fill", lv:"中等",
+   q:`方程 |x² − 1| = a 恰有三个不同实根，则 a = 【　】。`,
+   as:[[`1`]],
+   why:`y = x² − 1 顶点 (0, −1)，翻折后峰高为 1，零点 x = ±1。水平线擦过峰顶时恰有三个交点，故 a = 1。`},
+
+  {t:"choice", lv:"综合",
+   q:`若关于 x 的方程 |x² − 2x| = ax 有两个不同的实根，则实数 a 的取值范围是`,
+   opts:[`a < −2 或 a = 0 或 a ≥ 2`, `a < −2 或 a > 2`, `a ≤ −2 或 a ≥ 2`, `a = 0 或 a > 2`], a:0,
+   fig:{xr:[-3.4,5.4], yr:[-1,6], f:F.absQuad(-2,0), h:230,
+        lines:[{m:2,b:0, c:C.r, label:"a=2"},{m:-2.5,b:0, c:C.g, label:"a=−2.5"}],
+        cap:`a=2（红）与 a=−2.5（绿）都恰好 2 个交点，但它们分别落在答案的两段上。`},
+   why:`完整讨论见专项四最后一题。三个关键：x = 0 恒为一根；a = 2 时另一支的根 2 − a = 0 与它重合、去重后仍是两个根，所以等号能取；−2 ≤ a < 0 时只剩 x = 0 一个根。`},
+
+  {t:"open", lv:"综合",
+   q:`已知方程 |x² − 2x| = a 恰有两个不同实根，求 a 的取值范围，并说明为什么答案不是一个区间。`,
+   ref:`设 f(x) = |x² − 2x|。因 x² − 2x = (x − 1)² − 1，其零点为 x = 0, 2，顶点为 (1, −1)，故 y = f(x) 由抛物线在 x 轴下方的部分翻折而成，峰高为 1。
+水平线 y = a 与之交点数：a < 0 时 0 个；a = 0 时 2 个；0 < a < 1 时 4 个；a = 1 时 3 个；a > 1 时 2 个。
+故恰有两个不同实根 ⟺ a = 0 或 a > 1，即 a ∈ {0} ∪ (1, +∞)。
+之所以不是一个区间：根数作为 a 的函数并不单调。从 a = 0 往上，水平线一旦离开 x 轴就同时切到翻折起来的左右两段，根数由 2 跳到 4；只有当水平线升过峰顶（a > 1）后，中间两段才消失，根数重新回到 2。两个「2 个根」的区段被中间的 4 个根、3 个根隔断，自然拼不成一个区间。`,
+   points:[`指出零点 0、2 与峰高 1`,`完整给出五段根数`,`答案写成 a = 0 或 a > 1（或集合形式 {0} ∪ (1,+∞)）`,`解释根数非单调：2 → 4 → 3 → 2，两段被隔开`],
+   fig:{xr:[-1.3,3.3], yr:[-0.5,2.6], f:F.absQuad(-2,0),
+        lines:[{a:0, c:C.g, label:"a=0"},{a:0.5, c:C.o, label:"a=0.5"},
+               {a:1, c:C.r, label:"a=1"},{a:1.8, c:C.p, label:"a=1.8"}],
+        cap:`「2 个根」出现在<b>最低</b>（绿）和<b>最高</b>（紫）两处，中间被 4 个根、3 个根隔断——这就是答案拼不成一个区间的原因。`},
+   why:`很多人算对了 a > 1 却漏掉 a = 0，根源就是默认「答案应该是一个区间」。把根数随 a 变化的全过程写出来，这个洞自然就补上了。`}
+  ]
+}
+];
+
+/* ===================== 引擎 ===================== */
+/* 题库里为了便于校对，正确选项一律写在第一个。直接用的话一路选 A 就能满分，
+   所以渲染前按题目 id 做一次「有种子的」打乱：每道题的打乱结果固定不变
+   （刷新页面、换设备都一样，错题本和答案解析才对得上），但 A/B/C/D 分布是散的。 */
+function shuffleOptions(){
+  const rngOf = seed => {                       // FNV-1a 取种子，再跑线性同余
+    let h = 2166136261;
+    for(const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+    return () => (h = (Math.imul(h, 1664525) + 1013904223) >>> 0) / 4294967296;
+  };
+  DATA.forEach(set => set.items.forEach((it, i) => {
+    if(it.t !== "choice") return;
+    const rnd = rngOf(set.id + "#" + i);
+    const ans = it.opts[it.a];
+    for(let k = it.opts.length - 1; k > 0; k--){
+      const j = Math.floor(rnd() * (k + 1));
+      [it.opts[k], it.opts[j]] = [it.opts[j], it.opts[k]];
+    }
+    it.a = it.opts.indexOf(ans);                // 跟着答案走，别用下标推
+  }));
+}
+shuffleOptions();
+attachFigures();
+drawGuideFigures();
+
+/* 方法总纲里的三张图 */
+function drawGuideFigures(){
+  const put = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
+
+  put("figMain", FIG.wrap({
+    xr:[-1.3,3.3], yr:[-0.5,2.6], f:F.absQuad(-2,0), w:470, h:270,
+    lines:[{a:0, c:C.g, label:"a=0"},{a:0.5, c:C.o, label:"a=0.5"},
+           {a:1, c:C.r, label:"a=1"},{a:1.8, c:C.p, label:"a=1.8"}],
+    cap:`<b>y = |x² − 2x|</b>（蓝）与四条水平线。圆点就是交点，也就是方程的实根——`
+      + `绿线 <b>2 个</b>，橙线 <b>4 个</b>，红线 <b>3 个</b>，紫线 <b>2 个</b>。`
+  }));
+
+  put("figT", FIG.wrap({
+    xr:[-1.6,3.4], yr:[-1.6,2.6], f:F.tQuad(-2), w:470, h:260, xlab:"t", shadeNeg:true,
+    lines:[{a:1, c:C.p, label:"a=−1"},{a:0, c:C.g, label:"a=0"},
+           {a:-0.5, c:C.o, label:"a=0.5"},{a:-1, c:C.r, label:"a=1"}],
+    cap:`<b>y = t² − 2t</b> 与水平线 <b>y = −a</b>，左半边（t &lt; 0）作废，`
+      + `那里的交点画成<b>空心灰点</b>表示舍去。<br>`
+      + `紫线：一个空心点被舍掉，只剩 1 个正交点 ⟹ x 有 <b>2</b> 个根；`
+      + `绿线交于 t=0 与 t=2 ⟹ x 有 1+2=<b>3</b> 个；`
+      + `橙线两个正交点 ⟹ x 有 <b>4</b> 个；红线切在顶点 t=1 ⟹ x 有 <b>2</b> 个。`
+  }));
+
+  put("figDist",
+    FIG.wrap({xr:[-3.4,5.4], yr:[-0.6,8], f:F.sumDist(-1,3), w:330, h:220,
+      lines:[{a:4, c:C.o, label:"a=4"},{a:6, c:C.p, label:"a=6"}],
+      cap:`<b>和</b>：y = |x+1| + |x−3|，谷底是一整段。`})
+  + FIG.wrap({xr:[-5.4,4.4], yr:[-4.2,4.2], f:F.difDist(1,-2), w:330, h:220,
+      lines:[{a:3, c:C.o, label:"a=3"},{a:1, c:C.g, label:"a=1"},{a:-3, c:C.p, label:"a=−3"}],
+      cap:`<b>差</b>：y = |x−1| − |x+2|，两端都是水平射线。`}));
+}
+
+const TOTAL = DATA.reduce((n,s)=>n+s.items.length,0);
+const SET_TOTAL={}; DATA.forEach(s=>SET_TOTAL[s.id]=s.items.length);
+const KEY="kaoyan-abs-eq-v1";
+let saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||"{}"); }catch(e){ saved={}; }
+const correct=new Set(saved.correct||[]), wrong=new Set(saved.wrong||[]),
+      half=new Set(saved.half||[]), fixedS=new Set(saved.fixed||[]), flag=new Set(saved.flag||[]);
+const picked=saved.picked||{};
+const INDEX={};
+const TAG={choice:"单选",fill:"填空",open:"讨论"};
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+// 批改填空：去掉空格和常见标点；分数写法 1/4 与小数 0.25 都认
+const norm=s=>String(s).replace(/[\s，,。．、；;：:！!？?"'“”‘’（）()《》【】]/g,"").trim();
+function sameNum(a,b){
+  const toNum=x=>{
+    const s=String(x).trim();
+    const m=s.match(/^(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)$/);
+    if(m) return (+m[1])/(+m[2]);
+    return /^-?\d+(?:\.\d+)?$/.test(s) ? +s : NaN;
+  };
+  const x=toNum(a), y=toNum(b);
+  return isFinite(x)&&isFinite(y) ? Math.abs(x-y)<1e-9 : false;
+}
+
+function render(){
+  const app=document.getElementById("app"), jump=document.getElementById("jump");
+  DATA.forEach(set=>{
+    jump.insertAdjacentHTML("beforeend",`<a href="#${set.id}">${set.title.split(" · ")[0]}</a>`);
+    const sec=document.createElement("section");
+    sec.className="set"; sec.id=set.id;
+    sec.innerHTML=`<h2>${set.title}</h2><p class="tip">${set.tip}</p>
+      <div class="setbar">
+        <button class="primary" data-act="check" data-set="${set.id}">检查本节</button>
+        <button data-act="reveal" data-set="${set.id}">显示本节答案</button>
+        <button data-act="clear" data-set="${set.id}">清空重做</button>
+        <span class="sc" id="sc-${set.id}"></span>
+      </div>`;
+
+    set.items.forEach((it,i)=>{
+      const id=`${set.id}-${i}`;
+      INDEX[id]={item:it,setId:set.id,setTitle:set.title.split(" · ")[0],num:i+1};
+      const div=document.createElement("div");
+      div.className="item"; div.id="it-"+id;
+
+      let n=0, qh="";
+      if(it.t==="fill"){
+        it.q.split(/(【.*?】)/).forEach(seg=>{
+          if(/^【.*?】$/.test(seg)){ qh+=`<input class="blank" id="in-${id}-${n}" autocomplete="off">`; n++; }
+          else qh+=esc(seg);
+        });
+        it._n=n;
+      } else qh=esc(it.q);
+
+      const head=`<p class="q"><span class="n">${i+1}.</span><span class="tag">${TAG[it.t]}</span>`
+        +`<span class="m">${qh}</span>`
+        +(it.lv?`<span class="lv">${esc(it.lv)}</span>`:"")
+        +`<span class="badge" id="bd-${id}"></span></p>`;
+
+      let body="", rv="";
+      if(it.t==="choice"){
+        body=`<div class="opts" id="op-${id}">`+it.opts.map((o,k)=>
+          `<button class="opt" data-act="pick" data-id="${id}" data-k="${k}">`
+          +`${String.fromCharCode(65+k)}．<span class="m">${esc(o)}</span></button>`).join("")+`</div>`;
+        rv=`<b>${String.fromCharCode(65+it.a)}．${esc(it.opts[it.a])}</b><span class="why">${it.why}</span>`;
+      }else if(it.t==="fill"){
+        rv=`<b>${it.as.map(a=>esc(a[0])).join("　，　")}</b><span class="why">${it.why}</span>`;
+      }else{
+        body=`<textarea class="ans" id="tx-${id}" placeholder="先自己把分类讨论写完整，再点下面对照……"></textarea>
+          <div class="selfbar" id="sb-${id}"><span class="lab">对照之后，自己评一下：</span>
+            <button class="self" data-act="self" data-id="${id}" data-v="1">✓ 完整正确</button>
+            <button class="self" data-act="self" data-id="${id}" data-v="0.5">◐ 漏了情形</button>
+            <button class="self" data-act="self" data-id="${id}" data-v="0">✗ 没做对</button>
+          </div>`;
+        rv=`<b>参考解答：</b><span class="step">${esc(it.ref).replace(/\n/g,"<br>")}</span>`
+          +`<b>得分点：</b><ul>`+it.points.map(x=>`<li>${esc(x)}</li>`).join("")+`</ul>`
+          +`<span class="why">${it.why}</span>`;
+      }
+
+      const mainBtn = it.t==="open"
+        ? `<button class="primary" data-act="show" data-id="${id}">对照参考解答</button>`
+        : `<button data-act="one" data-id="${id}">检查</button>
+           <button data-act="ans" data-id="${id}">答案</button>`;
+
+      div.innerHTML=head+body+`
+        <div class="row">
+          ${mainBtn}
+          <button class="flag" data-act="flag" data-id="${id}" title="标记这道题，之后要复习">🚩</button>
+        </div>
+        <div class="fb" id="fb-${id}"></div>
+        <div class="reveal" id="rv-${id}">${it.t==="open"?"":"<b>答案：</b>"}${rv}</div>`;
+      sec.appendChild(div);
+    });
+    app.appendChild(sec);
+  });
+
+  const inputs=saved.inputs||{};
+  Object.keys(inputs).forEach(k=>{ const el=document.getElementById("in-"+k); if(el) el.value=inputs[k]; });
+  const texts=saved.texts||{};
+  Object.keys(texts).forEach(k=>{ const el=document.getElementById("tx-"+k); if(el) el.value=texts[k]; });
+  Object.keys(picked).forEach(id=>{
+    const r=INDEX[id]; if(!r) return;
+    if(r.item.t==="choice"){
+      const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${picked[id]}"]`);
+      if(b) b.classList.add("pick");
+    }else if(r.item.t==="open"){
+      setShow(id,true);
+      const b=document.querySelector(`button.self[data-id="${id}"][data-v="${picked[id]}"]`);
+      if(b) b.classList.add("pick");
+    }
+  });
+  correct.forEach(id=>{ const r=INDEX[id]; if(!r) return;
+    if(r.item.t==="choice"){ const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${r.item.a}"]`); if(b){b.classList.remove("pick");b.classList.add("good");} }
+    else if(r.item.t==="fill"){ for(let k=0;k<(r.item._n||0);k++){ const e=document.getElementById(`in-${id}-${k}`); if(e) e.classList.add("good"); } }
+  });
+  DATA.forEach(s=>updateSetScore(s.id));
+  updateTotal(); Object.keys(INDEX).forEach(updateMarks); renderMistakes();
+}
+
+function save(){
+  const inputs={}, texts={};
+  document.querySelectorAll("input.blank").forEach(el=>{ if(el.value.trim()) inputs[el.id.slice(3)]=el.value; });
+  document.querySelectorAll("textarea.ans").forEach(el=>{ if(el.value.trim()) texts[el.id.slice(3)]=el.value; });
+  localStorage.setItem(KEY,JSON.stringify({inputs,texts,picked,correct:[...correct],
+    wrong:[...wrong],half:[...half],fixed:[...fixedS],flag:[...flag]}));
+}
+
+/* 参考解答可以收起来，方便自己重做一遍 */
+function setShow(id,on){
+  const rv=document.getElementById("rv-"+id), sb=document.getElementById("sb-"+id);
+  if(!rv) return;
+  rv.classList.toggle("show",on);
+  if(sb) sb.classList.toggle("show",on);
+  const b=document.querySelector(`button[data-act="show"][data-id="${id}"]`);
+  if(b) b.textContent = on ? "收起参考解答" : "对照参考解答";
+}
+
+function checkOne(id){
+  const r=INDEX[id]; if(!r) return;
+  const it=r.item, fb=document.getElementById("fb-"+id);
+  let res=null; fb.className="fb show";
+
+  if(it.t==="choice"){
+    const sel=picked[id];
+    if(sel===undefined){ fb.innerHTML='<span class="note">先选一个～</span>'; correct.delete(id); }
+    else{
+      document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach((b,k)=>{
+        b.className="opt"+(k===it.a?" good":(k===sel?" bad":""));
+      });
+      if(sel===it.a){ correct.add(id); res=true;
+        fb.innerHTML='<span class="good">✓ 正确</span> <span class="why">'+it.why+'</span>'; }
+      else{ correct.delete(id); res=false;
+        fb.innerHTML='<span class="bad">✗ 应选 '+String.fromCharCode(65+it.a)+'</span> <span class="why">'+it.why+'</span>'; }
+    }
+  }else if(it.t==="fill"){
+    let all=true, empty=true, firstBad=-1;
+    it.as.forEach((acc,k)=>{
+      const el=document.getElementById(`in-${id}-${k}`), v=norm(el.value);
+      if(v) empty=false;
+      const good = v!=="" && acc.some(x=>norm(x)===v||sameNum(x,el.value.trim()));
+      el.className="blank"+(v?(good?" good":" bad"):"");
+      if(!good){ all=false; if(firstBad<0) firstBad=k; }
+    });
+    if(empty){ fb.innerHTML='<span class="note">还没填哦～</span>'; correct.delete(id); }
+    else if(all){ correct.add(id); res=true;
+      fb.innerHTML='<span class="good">✓ 正确</span> <span class="why">'+it.why+'</span>'; }
+    else{ correct.delete(id); res=false;
+      fb.innerHTML='<span class="bad">✗ 第 '+(firstBad+1)+' 个空不对。</span> <span class="why">'+it.why+'</span>'; }
+  }else{
+    const v=picked[id];
+    if(v===undefined){ fb.innerHTML='<span class="note">先点「对照参考解答」，再自己评一下～</span>'; correct.delete(id); }
+    else if(v==="1"){ correct.add(id); half.delete(id); res=true; fb.innerHTML='<span class="good">✓ 自评：完整正确</span>'; }
+    else if(v==="0.5"){ correct.delete(id); res=false; half.add(id);
+      fb.innerHTML='<span class="note">◐ 自评：漏了情形 —— 对照上面的得分点，把漏掉的那一类补完整。</span>'; }
+    else{ correct.delete(id); half.delete(id); res=false;
+      fb.innerHTML='<span class="bad">✗ 自评：没做对 —— 收进错题本，过两天重做一遍。</span>'; }
+  }
+
+  if(res===false){ wrong.add(id); fixedS.delete(id); }
+  else if(res===true){ half.delete(id); if(wrong.has(id)){ wrong.delete(id); fixedS.add(id);
+    fb.innerHTML+=' <span class="note">👏 订正成功</span>'; } }
+  updateMarks(id); renderMistakes(); updateSetScore(r.setId); updateTotal(); save();
+}
+
+function updateMarks(id){
+  const el=document.getElementById("it-"+id), bd=document.getElementById("bd-"+id);
+  if(!el) return;
+  const isHalf=half.has(id)&&!correct.has(id);
+  el.classList.toggle("wrong",wrong.has(id)&&!isHalf);
+  el.classList.toggle("half",isHalf);
+  el.classList.toggle("fixed",fixedS.has(id)&&!wrong.has(id));
+  el.classList.toggle("flagged",flag.has(id)&&!wrong.has(id)&&!fixedS.has(id)&&!isHalf);
+  const fb=document.querySelector(`button.flag[data-id="${id}"]`); if(fb) fb.classList.toggle("on",flag.has(id));
+  if(isHalf) bd.className="badge half",bd.textContent="◐ 不全";
+  else if(wrong.has(id)) bd.className="badge wrong",bd.textContent="✗ 错题";
+  else if(fixedS.has(id)) bd.className="badge fixed",bd.textContent="✓ 已订正";
+  else if(correct.has(id)) bd.className="badge ok",bd.textContent="✓";
+  else if(flag.has(id)) bd.className="badge",bd.textContent="🚩";
+  else bd.className="badge",bd.textContent="";
+}
+
+function renderMistakes(){
+  const ids=Object.keys(INDEX).filter(id=>wrong.has(id)||flag.has(id));
+  document.getElementById("msum").textContent=
+    `📕 错题本（${wrong.size} 道待订正${flag.size?"，🚩 "+flag.size+" 道待复习":""}）`;
+  document.getElementById("mlist").innerHTML = !ids.length
+    ? '<p class="empty">还没有错题。做错的题会自动收进这里，点题目可以跳回去订正。</p>'
+    : '<ol class="mlist">'+ids.map(id=>{const r=INDEX[id];
+        const q=r.item.q.replace(/【.*?】/g,"____");
+        return `<li>${half.has(id)?"◐":"✗"} <a href="#it-${id}" data-go="${id}">${esc(q.length>34?q.slice(0,34)+"…":q)}</a>
+        <span class="where">（${r.setTitle} 第 ${r.num} 题）</span></li>`;}).join("")+'</ol>';
+  document.getElementById("markStat").textContent=
+    `错题 ${wrong.size} 道 · 已订正 ${fixedS.size} 道 · 标记 ${flag.size} 道`;
+  DATA.forEach(s=>{ let has=false; eachId(s.id,id=>{ if(wrong.has(id)||flag.has(id)) has=true; });
+    document.getElementById(s.id).classList.toggle("nowrong",!has); });
+}
+
+function eachId(setId,fn){
+  DATA.find(s=>s.id===setId).items.forEach((it,i)=>fn(`${setId}-${i}`,it));
+}
+function updateSetScore(setId){
+  let n=0; eachId(setId,id=>{ if(correct.has(id)) n++; });
+  const t=SET_TOTAL[setId];
+  document.getElementById("sc-"+setId).textContent=`本节：${n} / ${t}`+(n===t?"　🎉 全对":"");
+}
+function updateTotal(){
+  document.getElementById("totalTxt").textContent=`${correct.size} / ${TOTAL} 题答对`;
+  document.getElementById("totalBar").style.width=(correct.size/TOTAL*100)+"%";
+}
+function clearItem(id){
+  const r=INDEX[id], it=r.item;
+  delete picked[id];
+  document.querySelectorAll(`button.opt[data-id="${id}"],button.self[data-id="${id}"]`)
+    .forEach(b=>b.className=b.classList.contains("self")?"self":"opt");
+  for(let k=0;k<(it._n||0);k++){ const e=document.getElementById(`in-${id}-${k}`); if(e){ e.value=""; e.className="blank"; } }
+  const tx=document.getElementById("tx-"+id); if(tx) tx.value="";
+  document.getElementById("fb-"+id).className="fb";
+  if(it.t==="open") setShow(id,false);
+  else document.getElementById("rv-"+id).classList.remove("show");
+  correct.delete(id); half.delete(id);
+}
+function flash(id){
+  const el=document.getElementById("it-"+id); if(!el) return;
+  document.body.classList.remove("only-wrong");
+  document.getElementById("btnOnlyWrong").textContent="只看错题 🔍";
+  el.scrollIntoView({behavior:"smooth",block:"center"});
+  el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),1200);
+}
+
+document.addEventListener("click",e=>{
+  const go=e.target.closest("a[data-go]"); if(go){ flash(go.dataset.go); return; }
+  const b=e.target.closest("button"); if(!b) return;
+  const act=b.dataset.act, id=b.dataset.id;
+  if(act==="pick"){
+    picked[id]=+b.dataset.k;
+    document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach(x=>x.className="opt");
+    b.classList.add("pick"); save(); checkOne(id);
+  }
+  if(act==="self"){
+    picked[id]=b.dataset.v;
+    document.querySelectorAll(`button.self[data-id="${id}"]`).forEach(x=>x.className="self");
+    b.classList.add("pick"); save(); checkOne(id);
+  }
+  if(act==="show") setShow(id, !document.getElementById("rv-"+id).classList.contains("show"));
+  if(act==="one") checkOne(id);
+  if(act==="ans") document.getElementById("rv-"+id).classList.toggle("show");
+  if(act==="flag"){ flag.has(id)?flag.delete(id):flag.add(id); updateMarks(id); renderMistakes(); save(); }
+  if(act==="check") eachId(b.dataset.set,x=>checkOne(x));
+  if(act==="reveal"){
+    const on=b.textContent.indexOf("显示")>-1;
+    eachId(b.dataset.set,(x,it)=>{
+      if(it.t==="open") setShow(x,on);
+      else document.getElementById("rv-"+x).classList.toggle("show",on);
+    });
+    b.textContent=on?"隐藏本节答案":"显示本节答案";
+  }
+  if(act==="clear"){
+    eachId(b.dataset.set,x=>{ clearItem(x); updateMarks(x); });
+    updateSetScore(b.dataset.set); updateTotal(); renderMistakes(); save();
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter"||!e.target.classList.contains("blank")) return;
+  const id=e.target.id.slice(3,e.target.id.lastIndexOf("-"));
+  const k=+e.target.id.slice(e.target.id.lastIndexOf("-")+1);
+  const next=document.getElementById(`in-${id}-${k+1}`);
+  if(next) next.focus(); else checkOne(id);
+});
+document.addEventListener("input",e=>{
+  if(e.target.classList.contains("blank")||e.target.classList.contains("ans")) save();
+});
+document.getElementById("btnOnlyWrong").addEventListener("click",function(){
+  const on=document.body.classList.toggle("only-wrong");
+  this.textContent=on?"显示全部题目 ↩":"只看错题 🔍";
+  if(on) document.getElementById("mbox").open=false;
+});
+document.getElementById("btnRedo").addEventListener("click",()=>{
+  const ids=[...wrong];
+  if(!ids.length){ alert("现在没有错题 🎉"); return; }
+  ids.forEach(id=>{ clearItem(id); updateMarks(id); });
+  DATA.forEach(s=>updateSetScore(s.id)); updateTotal(); renderMistakes(); save(); flash(ids[0]);
+});
+document.getElementById("btnClearMarks").addEventListener("click",()=>{
+  if(!confirm("清除所有错题记录和🚩标记？（已写的答案会保留）")) return;
+  [...wrong,...fixedS,...flag,...half].forEach(id=>{
+    wrong.delete(id); fixedS.delete(id); flag.delete(id); half.delete(id); updateMarks(id); });
+  renderMistakes(); save();
+});
+render();
+</script>
+<script src="同步.js?v=202611170038" data-key="kaoyan-abs-eq-v1"></script>
+</body>
+</html>
