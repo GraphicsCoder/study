@@ -100,9 +100,9 @@ const tick = () => new Promise((r) => setImmediate(() => setImmediate(r)));
 
   a.chip.onclick();
   if (ok("点小圆点能重新打开登录框", a.shown())) {
-    a.$("synccode").value = "lisa2016";
+    a.$("synccode").value = "lisa2026";
     a.$("syncok").onclick();
-    ok("能成功登录", a.store.__sync_code__ === "lisa2016");
+    ok("能成功登录", a.store.__sync_code__ === "lisa2026");
     ok("登录后清掉「以后再说」标记", !a.store.__sync_skip_login__);
   }
 
@@ -116,7 +116,7 @@ const tick = () => new Promise((r) => setImmediate(() => setImmediate(r)));
   ok("太短时弹框不关闭", b.shown());
 
   /* 场景三：同步失败时，点小圆点要看得到原因，而不是只有 tooltip */
-  let c = launch({ store: { __sync_code__: "lisa2016" }, failFetch: true });
+  let c = launch({ store: { __sync_code__: "lisa2026" }, failFetch: true });
   await tick();
   ok("失败时小圆点显示失败", c.chip.textContent.includes("失败"));
   c.chip.onclick();
@@ -139,7 +139,7 @@ const tick = () => new Promise((r) => setImmediate(() => setImmediate(r)));
   ok("能从失败面板切到登录框", !!c.$("synccode"));
 
   /* 场景四：已登录且正常 → 点开是状态面板，能退出 */
-  let d = launch({ store: { __sync_code__: "lisa2016" } });
+  let d = launch({ store: { __sync_code__: "lisa2026" } });
   await tick();
   ok("正常时显示已同步", d.chip.textContent.includes("已同步"));
   d.chip.onclick();

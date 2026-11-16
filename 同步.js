@@ -201,7 +201,7 @@
       '名字由你自己定，不用注册、不用手机号。</p>' +
       '<label for="synccode">登录名</label>' +
       '<input id="synccode" type="text" autocomplete="off" autocapitalize="off" ' +
-      'spellcheck="false" placeholder="例如 lisa2016">' +
+      'spellcheck="false" placeholder="例如 lisa2026">' +
       '<p class="hint">至少 6 位。这个名字就是进入这份进度的唯一钥匙，' +
       '别用 <b>lisa</b>、<b>123456</b> 这种容易撞上的，建议<b>名字加数字</b>。</p>' +
       '<p class="err" id="syncerr"></p>' +
