@@ -217,7 +217,7 @@
       '<div class="btns">' +
         '<button class="primary" id="syncping">测试连接</button>' +
         '<button id="syncsave">保存</button>' +
-        '<button class="ghost" id="syncback">返回</button>' +
+        '<button class="ghost" id="syncback">' + (back ? "返回" : "关闭") + '</button>' +
       '</div>';
 
     var pane = box.querySelector("#syncpane");
@@ -304,7 +304,9 @@
       lastErr = "";
       close(); boot();
     };
-    box.querySelector("#syncback").onclick = function () { (back || open)(); };
+    // 没有上一屏时（全新设备点开小圆点，第一眼就是这个面板），
+    // 「返回」只会把同一个面板再画一遍，看上去像没反应——这时直接关掉。
+    box.querySelector("#syncback").onclick = back ? function () { back(); } : close;
     mask.classList.add("show");
   }
 

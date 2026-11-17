@@ -242,6 +242,29 @@ const content = (gh, id) => JSON.parse(gh.gists[id].files["study-progress.json"]
   await tick(10);
   ok("已有 id 时不重复创建", !gh14.log.some(x => x.startsWith("POST")), gh14.log.join(" | "));
 
+  // 15. 「返回」要真的有反应
+  //     全新设备点开小圆点，第一眼就是同步方式页，没有上一屏可回——
+  //     原来这时点「返回」会把同一个面板再画一遍，看上去像没反应。
+  let n1 = launch({ store: {}, fetchImpl: fakeGitHub() });
+  await tick();
+  n1.chip.onclick();
+  ok("没有上一屏时按钮写「关闭」", /id="syncback">关闭</.test(n1.panel()), n1.panel().slice(0, 70));
+  n1.$("syncback").onclick();
+  ok("点了真的关掉弹窗", !n1.mask.classList.contains("show"));
+
+  // 从已登录面板进来时，「返回」要回到已登录面板
+  let n2 = launch({ store: { ...GIST(), __sync_gist_id__: "ID1" },
+    fetchImpl: fakeGitHub({ gists: { ID1: { files: { "study-progress.json": { content: "{}" } } } } }) });
+  await tick(8);
+  n2.chip.onclick();
+  ok("已登录时先看到状态面板", /同步已开启/.test(n2.panel()), n2.panel().slice(0, 40));
+  n2.$("syncsrv2").onclick();
+  ok("进得去同步方式页", !!n2.$("syncghtok"));
+  ok("有上一屏时按钮写「返回」", /id="syncback">返回</.test(n2.panel()), n2.panel().slice(0, 70));
+  n2.$("syncback").onclick();
+  ok("返回到状态面板", /同步已开启/.test(n2.panel()), n2.panel().slice(0, 40));
+  ok("弹窗仍开着", n2.mask.classList.contains("show"));
+
   console.log(out.join("\n"));
   const bad = out.filter(x => x.startsWith("FAIL")).length;
   console.log(bad ? `\n${bad} 项未通过` : `\n全部 ${out.length} 项通过`);
