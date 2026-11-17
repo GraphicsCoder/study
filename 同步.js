@@ -226,8 +226,9 @@
 
     function say(cls, html){ slot.innerHTML = '<p class="' + cls + ' show">' + html + '</p>'; }
 
-    // 面板只留输入框和一行提示。怎么生成令牌、两台设备各填什么，
-    // 都写在 同步说明.md 里——配好之后那些字每次打开都要再看一遍，是噪音。
+    // 面板只留输入框和当场要用的那一句。怎么生成令牌、怎么部署 Worker，
+    // 都在 同步说明.md 里——那是给配置的人看的，不该印在每天都打开的界面上。
+    // 界面里也不提这个文件名：用户手上只有网页，提了也打不开。
     function paneGist() {
       pane.innerHTML =
         '<label for="syncghtok">GitHub 个人令牌</label>' +
@@ -236,8 +237,7 @@
         '<label for="syncgid">Gist ID<span class="opt-note">（留空则自动创建）</span></label>' +
         '<input id="syncgid" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
         'placeholder="第一台设备留空">' +
-        '<p class="hint">第二台设备填同一个账号的令牌 + 第一台那串 Gist ID。' +
-        '详见 <b>同步说明.md</b>。</p>';
+        '<p class="hint">第二台设备填同一个账号的令牌 + 第一台那串 Gist ID。</p>';
       pane.querySelector("#syncghtok").value = localStorage.getItem(GTOK) || "";
       pane.querySelector("#syncgid").value   = localStorage.getItem(GID)  || "";
     }
@@ -247,7 +247,7 @@
         '<label for="syncapi">服务器地址</label>' +
         '<input id="syncapi" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
         'placeholder="https://study-sync.xxx.workers.dev">' +
-        '<p class="hint">以 <code>https://</code> 开头，结尾不要斜杠。部署步骤见 <b>同步说明.md</b>。</p>';
+        '<p class="hint">以 <code>https://</code> 开头，结尾不要斜杠。</p>';
       pane.querySelector("#syncapi").value = localStorage.getItem(ASET) || API_DEFAULT;
     }
 
@@ -360,7 +360,7 @@
         if (o.j && o.j.ok) { fin({ ok:true, msg:"✓ 连接正常，服务器已就绪，可以登录了。" }); return; }
         var e = (o.j && o.j.err) || ("HTTP " + o.s);
         if (/STUDY/.test(e)) {
-          fin({ ok:false, msg:"地址是对的，但 <b>KV 还没绑定</b>。到这个 Worker 的 Settings 里添加 KV 绑定，变量名必须正好是 <code>STUDY</code>（说明第 4 步）。" });
+          fin({ ok:false, msg:"地址是对的，但 <b>KV 还没绑定</b>。到这个 Worker 的 Settings 里添加 KV 绑定，变量名必须正好是 <code>STUDY</code>。" });
         } else {
           fin({ ok:false, msg:"服务器返回：" + esc(e) });
         }
