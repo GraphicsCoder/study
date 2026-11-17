@@ -58,8 +58,10 @@
   var KEY = (me && me.dataset && me.dataset.key) || "";   // 导航页没有，属正常
 
   var CODE = "__sync_code__";             // 登录名，全站共用，登录一次就够
-  var SKIP = "__sync_skip_login__";       // 点过「以后再说」的时间戳，过几天会再问一次
+  var SKIP = "__sync_skip_login__";       // 推迟到什么时候再问的时间戳
   var SKIP_DAYS = 3;
+  var POPPED = "__sync_popped__";         // 本次会话已经自动弹过了，别再弹第二次
+  var autoPop = false;                    // 当前这个面板是自动弹出来的，还是用户自己点开的
 
   function tkey(k) { return "__sync_t__" + k; }           // 某份数据的本地时间戳
   function oncek(k) { return "__sync_reloaded__" + k; }   // 防刷新循环的标记
@@ -185,7 +187,13 @@
                          (human(msg) || "点一下可以手动同步、退出登录");
   }
 
-  function close() { if (mask) mask.classList.remove("show"); }
+  function close() {
+    // 自动弹出来的面板，不管用户是点按钮关的、点遮罩关的、还是按 Esc 关的，
+    // 都要记一笔「以后再说」。原来只有那个按钮记账，于是点遮罩关掉之后
+    // 下一个页面又弹——每翻一页弹一次，非常烦人。
+    if (autoPop) { autoPop = false; rawSet(SKIP, String(Date.now())); }
+    if (mask) mask.classList.remove("show");
+  }
 
   // Gist 模式靠「令牌 + Gist ID」认身份，不需要再起一个登录名；
   // Worker 模式的登录名就是 KV 的键，必须有。
@@ -196,6 +204,7 @@
   }
 
   function open() {
+    autoPop = false;                      // 这是用户自己点的，不是自动弹的
     // 失败时优先把原因摊开说清楚，别让人对着一个 tooltip 猜
     if (lastErr) return panelError();
     if (ready()) return panelLogged();
@@ -218,7 +227,7 @@
       '<div class="btns">' +
         '<button class="primary" id="syncping">测试连接</button>' +
         '<button id="syncsave">保存</button>' +
-        '<button class="ghost" id="syncback">' + (back ? "返回" : "关闭") + '</button>' +
+        '<button class="ghost" id="syncback">' + (back ? "返回" : (autoPop ? "以后再说" : "关闭")) + '</button>' +
       '</div>';
 
     var pane = box.querySelector("#syncpane");
@@ -285,6 +294,7 @@
         if (!tok) { say("err", "先填 GitHub 令牌。"); return; }
         rawSet(MODE, "gist");
         rawSet(GTOK, tok);
+        localStorage.removeItem(SKIP);
         if (gid) rawSet(GID, gid); else localStorage.removeItem(GID);
         // 没填 id 就当场建一个，把 id 显示出来——第二台设备正等着抄它
         if (!gid) {
@@ -300,9 +310,11 @@
         var url = pane.querySelector("#syncapi").value.trim().replace(/\/+$/, "");
         if (url && !/^https?:\/\//.test(url)) { say("err", "地址要以 https:// 开头。"); return; }
         rawSet(MODE, "worker");
+        localStorage.removeItem(SKIP);
         if (url && url !== API_DEFAULT) rawSet(ASET, url); else localStorage.removeItem(ASET);
       }
       lastErr = "";
+      autoPop = false;        // 已经配好了，close() 不该再记一笔「以后再说」
       close(); boot();
     };
     // 没有上一屏时（全新设备点开小圆点，第一眼就是这个面板），
@@ -662,8 +674,11 @@
       // 没登录过、或者「以后再说」已经过了几天 → 主动弹一次。
       // 旧版本这里存的是 "1"，Number("1") 很小，一样会判定成早就过期，自动修复。
       var skip = +(localStorage.getItem(SKIP) || 0);
-      if (Date.now() - skip > SKIP_DAYS * 864e5) {
+      var pop  = sessionStorage.getItem(POPPED);
+      if (!pop && Date.now() - skip > SKIP_DAYS * 864e5) {
+        try { sessionStorage.setItem(POPPED, "1"); } catch (e) {}
         setTimeout(function () {
+          autoPop = true;
           mode() === "gist" ? panelServer() : panelLogin(true);
         }, 600);
       }
