@@ -26,13 +26,25 @@
 (function () {
   "use strict";
 
-  // ↓↓↓ 部署完 Cloudflare Worker 后，把这里换成你自己的地址 ↓↓↓
-  // 必须带 https:// 开头，结尾不要斜杠。少了协议头的话浏览器会当成相对路径，
-  // 实际去请求 你的网站域名/study-sync.xxx.workers.dev，必然失败。
-  // 也可以不改代码：在页面上点小圆点 →「服务器设置」直接填，存在这台设备上。
+  // ↓↓↓ 同步后端有两种，在页面上「服务器设置」里选 ↓↓↓
+  //
+  // A. Cloudflare Worker —— 自己部署一个小服务，见 同步说明.md。
+  //    注意：*.workers.dev 在国内不少网络（公司网、部分家宽、移动数据）
+  //    连不上，实测会被解析到无关 IP。能通就用，通不了就换 B。
+  //
+  // B. GitHub Gist —— 把进度存在你自己账号下的一个「秘密 Gist」里。
+  //    不用服务器、不用域名、不花钱，走的是 api.github.com，
+  //    和这个网站本身（GitHub Pages）同一家，网站打得开它就打得开。
+  //    代价是每台设备要填一次个人令牌（只勾 gist 权限，碰不到仓库）。
   var API_DEFAULT = "https://study-sync.eden-meng.workers.dev";
 
-  var ASET = "__sync_api__";              // 界面上填的地址，优先于上面的默认值
+  var ASET  = "__sync_api__";             // Worker 地址（本机覆盖）
+  var MODE  = "__sync_mode__";            // "worker" | "gist"
+  var GTOK  = "__sync_gh_token__";        // GitHub 个人令牌
+  var GID   = "__sync_gist_id__";         // Gist id，首次保存时自动创建并记下
+  var GFILE = "study-progress.json";      // Gist 里的文件名
+
+  function mode(){ return localStorage.getItem(MODE) === "gist" ? "gist" : "worker"; }
   function api(){
     return String(localStorage.getItem(ASET) || API_DEFAULT).trim().replace(/\/+$/, "");
   }
@@ -104,6 +116,11 @@
       '#syncbox .err{color:#c2410c;font-size:13px;margin:10px 0 0;display:none}' +
       '#syncbox .err.show,#syncbox .good.show{display:block}' +
       '#syncbox .good{color:#15803d;font-size:13px;margin:10px 0 0;line-height:1.8}' +
+      '#syncbox .tabs{display:flex;gap:6px;margin:0 0 14px}' +
+      '#syncbox button.tab{flex:1;font-size:13.5px;padding:8px 6px;border-radius:9px;' +
+      'border:1px solid #d7dbe3;background:#f7f8fa;color:#6b7280;font-weight:500}' +
+      '#syncbox button.tab.on{background:#0e8a6e;border-color:#0e8a6e;color:#fff;font-weight:600}' +
+      '#syncbox .opt-note{font-weight:400;color:#9aa3b2;font-size:12px;margin-left:4px}' +
       '#syncbox .err{line-height:1.8}' +
       '#syncbox .err.show{display:block}' +
       '#syncbox .who{background:#e8f6ed;color:#15803d;border-radius:10px;padding:10px 12px;' +
@@ -165,24 +182,33 @@
 
   function close() { if (mask) mask.classList.remove("show"); }
 
+  // Gist 模式靠「令牌 + Gist ID」认身份，不需要再起一个登录名；
+  // Worker 模式的登录名就是 KV 的键，必须有。
+  function ready() {
+    return mode() === "gist"
+      ? !!(localStorage.getItem(GTOK) || "").trim()
+      : !!localStorage.getItem(CODE);
+  }
+
   function open() {
     // 失败时优先把原因摊开说清楚，别让人对着一个 tooltip 猜
     if (lastErr) return panelError();
-    localStorage.getItem(CODE) ? panelLogged() : panelLogin();
+    if (ready()) return panelLogged();
+    // 没配好：Gist 模式直接进设置页，别让人先填一个用不上的登录名
+    return mode() === "gist" ? panelServer() : panelLogin();
   }
 
-  /* 服务器设置：地址能直接在界面上改并当场测通，不用改代码再发一次版。
+  /* 服务器设置：两种后端都能在界面上配好并当场测通，不用改代码再发一次版。
      「填完只能试试看」是这套东西最熬人的地方，测一下就知道卡在哪一步。 */
   function panelServer(back) {
+    var m = mode();
     box.innerHTML =
-      '<h3>⚙️ 服务器设置</h3>' +
-      '<p>同步要先有一个自己的小服务器（Cloudflare Worker，免费）。' +
-      '把部署后拿到的地址填在这里，点「测试连接」就知道通没通。</p>' +
-      '<label for="syncapi">服务器地址</label>' +
-      '<input id="syncapi" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
-      'placeholder="https://study-sync.xxx.workers.dev">' +
-      '<p class="hint">要以 <code>https://</code> 开头，结尾不要斜杠。' +
-      '留空则用代码里的默认地址。部署步骤见 <b>同步说明.md</b>。</p>' +
+      '<h3>⚙️ 同步方式</h3>' +
+      '<div class="tabs">' +
+        '<button class="tab' + (m === "gist" ? " on" : "") + '" id="tabGist">GitHub Gist</button>' +
+        '<button class="tab' + (m === "worker" ? " on" : "") + '" id="tabWorker">自建服务器</button>' +
+      '</div>' +
+      '<div id="syncpane"></div>' +
       '<div id="synctest"></div>' +
       '<div class="btns">' +
         '<button class="primary" id="syncping">测试连接</button>' +
@@ -190,22 +216,82 @@
         '<button class="ghost" id="syncback">返回</button>' +
       '</div>';
 
-    var input = box.querySelector("#syncapi");
-    var slot  = box.querySelector("#synctest");
-    input.value = localStorage.getItem(ASET) || API_DEFAULT;
+    var pane = box.querySelector("#syncpane");
+    var slot = box.querySelector("#synctest");
+    var cur  = m;
 
     function say(cls, html){ slot.innerHTML = '<p class="' + cls + ' show">' + html + '</p>'; }
 
+    function paneGist() {
+      pane.innerHTML =
+        '<p>把进度存在你自己 GitHub 账号下的一个<b>秘密 Gist</b> 里。不用服务器、不花钱，' +
+        '走的是 <code>api.github.com</code>——这个网站打得开，它就打得开。</p>' +
+        '<label for="syncghtok">GitHub 个人令牌</label>' +
+        '<input id="syncghtok" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
+        'placeholder="ghp_… 或 github_pat_…">' +
+        '<p class="hint">去 <code>github.com/settings/tokens</code> → Generate new token (classic) → ' +
+        '<b>只勾 <code>gist</code> 这一项</b>（碰不到你的仓库）→ 生成后复制过来。<br>' +
+        '令牌只存在这台设备的浏览器里，不会上传到网站。</p>' +
+        '<label for="syncgid">Gist ID<span class="opt-note">（第一台设备留空，会自动创建）</span></label>' +
+        '<input id="syncgid" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
+        'placeholder="第一次用留空即可">' +
+        '<p class="hint">第一台设备保存后，这里会自动填上一串 id。' +
+        '<b>把它抄到第二台设备</b>（连同令牌），两边才算同一份进度。</p>';
+      pane.querySelector("#syncghtok").value = localStorage.getItem(GTOK) || "";
+      pane.querySelector("#syncgid").value   = localStorage.getItem(GID)  || "";
+    }
+
+    function paneWorker() {
+      pane.innerHTML =
+        '<p>自己部署一个 Cloudflare Worker（免费），把地址填在这里。' +
+        '<b>注意：</b><code>workers.dev</code> 在国内不少网络连不上，连不通就改用 Gist。</p>' +
+        '<label for="syncapi">服务器地址</label>' +
+        '<input id="syncapi" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
+        'placeholder="https://study-sync.xxx.workers.dev">' +
+        '<p class="hint">要以 <code>https://</code> 开头，结尾不要斜杠。部署步骤见 <b>同步说明.md</b>。</p>';
+      pane.querySelector("#syncapi").value = localStorage.getItem(ASET) || API_DEFAULT;
+    }
+
+    function show(which) {
+      cur = which;
+      box.querySelector("#tabGist").className   = "tab" + (which === "gist"   ? " on" : "");
+      box.querySelector("#tabWorker").className = "tab" + (which === "worker" ? " on" : "");
+      slot.innerHTML = "";
+      which === "gist" ? paneGist() : paneWorker();
+    }
+    show(m);
+
+    box.querySelector("#tabGist").onclick   = function () { show("gist"); };
+    box.querySelector("#tabWorker").onclick = function () { show("worker"); };
+
     box.querySelector("#syncping").onclick = function () {
-      var url = input.value.trim().replace(/\/+$/, "");
-      if (!/^https?:\/\//.test(url)) { say("err", "地址要以 https:// 开头。"); return; }
       say("hint", "正在连…");
-      ping(url, function (r) { say(r.ok ? "good" : "err", r.msg); });
+      if (cur === "gist") {
+        var tok = pane.querySelector("#syncghtok").value.trim();
+        var gid = pane.querySelector("#syncgid").value.trim();
+        if (!tok) { say("err", "先填 GitHub 令牌。"); return; }
+        pingGist(tok, gid, function (r) { say(r.ok ? "good" : "err", r.msg); });
+      } else {
+        var url = pane.querySelector("#syncapi").value.trim().replace(/\/+$/, "");
+        if (!/^https?:\/\//.test(url)) { say("err", "地址要以 https:// 开头。"); return; }
+        ping(url, function (r) { say(r.ok ? "good" : "err", r.msg); });
+      }
     };
+
     box.querySelector("#syncsave").onclick = function () {
-      var url = input.value.trim().replace(/\/+$/, "");
-      if (url && !/^https?:\/\//.test(url)) { say("err", "地址要以 https:// 开头。"); return; }
-      if (url && url !== API_DEFAULT) rawSet(ASET, url); else localStorage.removeItem(ASET);
+      if (cur === "gist") {
+        var tok = pane.querySelector("#syncghtok").value.trim();
+        var gid = pane.querySelector("#syncgid").value.trim();
+        if (!tok) { say("err", "先填 GitHub 令牌。"); return; }
+        rawSet(MODE, "gist");
+        rawSet(GTOK, tok);
+        if (gid) rawSet(GID, gid); else localStorage.removeItem(GID);
+      } else {
+        var url = pane.querySelector("#syncapi").value.trim().replace(/\/+$/, "");
+        if (url && !/^https?:\/\//.test(url)) { say("err", "地址要以 https:// 开头。"); return; }
+        rawSet(MODE, "worker");
+        if (url && url !== API_DEFAULT) rawSet(ASET, url); else localStorage.removeItem(ASET);
+      }
       lastErr = "";
       close(); boot();
     };
@@ -213,7 +299,46 @@
     mask.classList.add("show");
   }
 
-  /* 探一下服务器：分清「没部署」「KV 没绑定」「正常」三种情况 */
+  /* 探一下 Gist：令牌有没有、权限够不够、那个 id 还在不在 */
+  function pingGist(tok, gid, cb) {
+    var done = false;
+    var fin = function (r) { if (!done) { done = true; cb(r); } };
+    setTimeout(function () { fin({ ok:false, msg:"连了 15 秒没反应，检查一下网络。" }); }, 15000);
+
+    fetch("https://api.github.com/user", {
+      headers: { "Authorization": "Bearer " + tok, "Accept": "application/vnd.github+json" },
+      cache: "no-store",
+    })
+      .then(function (r) {
+        if (r.status === 401) { fin({ ok:false, msg:"令牌无效或已过期，请重新生成一个。" }); return null; }
+        if (!r.ok) { fin({ ok:false, msg:"GitHub 返回 " + r.status + "，令牌可能不对。" }); return null; }
+        // 顺带确认有没有 gist 权限：响应头里会列出这个令牌的 scope
+        var scopes = r.headers.get("x-oauth-scopes") || "";
+        if (scopes && scopes.indexOf("gist") < 0) {
+          fin({ ok:false, msg:"令牌能用，但<b>没有 gist 权限</b>。重新生成时记得勾上 <code>gist</code>。" });
+          return null;
+        }
+        return r.json();
+      })
+      .then(function (u) {
+        if (!u) return;
+        if (!gid) { fin({ ok:true, msg:"✓ 令牌有效（账号 " + esc(u.login) + "）。保存后会自动创建一个秘密 Gist。" }); return; }
+        fetch("https://api.github.com/gists/" + encodeURIComponent(gid), {
+          headers: { "Authorization": "Bearer " + tok, "Accept": "application/vnd.github+json" },
+          cache: "no-store",
+        }).then(function (r2) {
+          if (r2.ok) fin({ ok:true, msg:"✓ 令牌有效（账号 " + esc(u.login) + "），Gist 也能读到，可以用了。" });
+          else if (r2.status === 404) fin({ ok:false, msg:"令牌没问题，但<b>这个 Gist ID 找不到</b>。确认一下有没有抄错，或者是不是另一个账号创建的。" });
+          else fin({ ok:false, msg:"读 Gist 时 GitHub 返回 " + r2.status + "。" });
+        }).catch(function (e) { fin({ ok:false, msg:"读 Gist 失败：" + esc(String(e && e.message || e)) }); });
+      })
+      .catch(function (e) {
+        fin({ ok:false, msg:"<b>连不上 api.github.com。</b>检查一下网络；这个网站本身也托管在 GitHub，" +
+                            "如果网站能打开而这里连不上，多半是网络对 API 域名做了限制。" });
+      });
+  }
+
+  /* 探一下自建服务器：分清「没部署」「KV 没绑定」「正常」三种情况 */
   function ping(url, cb) {
     var done = false;
     var fin = function (r) { if (!done) { done = true; cb(r); } };
@@ -243,11 +368,13 @@
     box.innerHTML =
       '<h3>☁ 同步暂时没连上</h3>' +
       '<p><b>做题不受影响。</b>进度已经存在这台设备上，等连上了会自动补传。</p>' +
-      '<p class="hint">偶尔一次不用管。要是一直这样，换个网络再试试——' +
-      '比如把手机的 WiFi 关掉、用流量打开。</p>' +
+      '<p class="hint">' + (mode() === "gist"
+        ? '偶尔一次不用管。要是一直这样，点下面的「同步方式」重新测一下令牌。'
+        : '偶尔一次不用管。先换个网络试试——比如把手机的 WiFi 关掉、用流量打开。'
+          + '要是流量下也连不上，点「同步方式」换一种同步方式更省事。') + '</p>' +
       '<div class="btns">' +
         '<button class="primary" id="syncretry">重试</button>' +
-        '<button id="syncserver">服务器设置</button>' +
+        '<button id="syncserver">同步方式</button>' +
         '<button id="syncrelogin">换登录名</button>' +
         '<button class="ghost" id="syncclose">关闭</button>' +
       '</div>' +
@@ -262,7 +389,8 @@
       this.style.display = "none";
       box.querySelector("#syncraw").innerHTML =
         '<div class="bad">' + esc(e) + '</div>' +
-        '<p class="hint">接口：<code>' + esc(api()) + '</code></p>';
+        '<p class="hint">接口：<code>' +
+        esc(mode() === "gist" ? "api.github.com/gists" : api()) + '</code></p>';
     };
     mask.classList.add("show");
   }
@@ -283,7 +411,7 @@
         '<button class="primary" id="syncok">登录</button>' +
         '<button class="ghost" id="synclater">' + (autoPopped ? "以后再说" : "取消") + '</button>' +
       '</div>' +
-      '<p class="hint"><span class="more" id="syncsrv">⚙️ 服务器设置 / 测试连接 ›</span></p>';
+      '<p class="hint"><span class="more" id="syncsrv">⚙️ 同步方式 / 测试连接 ›</span></p>';
 
     var input = box.querySelector("#synccode");
     var err = box.querySelector("#syncerr");
@@ -319,15 +447,20 @@
     var code = localStorage.getItem(CODE) || "";
     box.innerHTML =
       '<h3>☁ 同步已开启</h3>' +
-      '<div class="who">当前登录名：<b>' + esc(code) + '</b><br>' +
-      '另一台设备用同样的名字登录，进度就会互通。</div>' +
+      (mode() === "gist"
+        ? '<div class="who">同步方式：<b>GitHub Gist</b><br>' +
+          'Gist ID：<b>' + esc(localStorage.getItem(GID) || "（保存后自动创建）") + '</b><br>' +
+          '另一台设备填<b>同样的令牌和这个 ID</b>，进度就会互通。</div>'
+        : '<div class="who">同步方式：<b>自建服务器</b><br>' +
+          '当前登录名：<b>' + esc(code) + '</b><br>' +
+          '另一台设备用同样的名字登录，进度就会互通。</div>') +
       '<p>进度是打开页面时拉取、做完题后自动上传的，平时不用管它。</p>' +
       '<div class="btns">' +
         '<button class="primary" id="syncnow">立即同步</button>' +
         '<button class="danger" id="syncout">退出登录</button>' +
         '<button class="ghost" id="syncclose">关闭</button>' +
       '</div>' +
-      '<p class="hint"><span class="more" id="syncsrv2">⚙️ 服务器设置 / 测试连接 ›</span></p>';
+      '<p class="hint"><span class="more" id="syncsrv2">⚙️ 同步方式 / 测试连接 ›</span></p>';
 
     box.querySelector("#syncnow").onclick = function () { close(); boot(); };
     box.querySelector("#syncsrv2").onclick = function () { panelServer(panelLogged); };
@@ -335,6 +468,7 @@
     box.querySelector("#syncout").onclick = function () {
       if (!confirm("退出后这台设备不再同步，已经做过的题目记录仍然留在本机。确定吗？")) return;
       localStorage.removeItem(CODE);
+      localStorage.removeItem(GTOK);      // Gist 模式下令牌才是凭证，一并清掉
       rawSet(SKIP, String(Date.now()));
       close();
       paint("off");
@@ -342,7 +476,112 @@
     mask.classList.add("show");
   }
 
-  /* ================= 拉取 / 推送 ================= */
+  /* ================= 两种后端 =================
+     对上层只暴露三件事：
+       remoteGet(code, cb)          cb({ok, blob, err})
+       remotePut(code, item, cb)    cb({ok, saved, err})      item = {key, t, v}
+       remotePing(cb)               cb({ok, msg})
+     Worker 版把合并逻辑放在服务端；Gist 版没有服务端，只能读回来、
+     在本地合并、再整份写回去——所以 remotePut 里要先 GET 一次。 */
+
+  function remoteGet(code, cb) {
+    if (mode() === "gist") return gistGet(cb);
+    fetch(api() + "/?k=" + encodeURIComponent(code), { cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { cb(j && j.ok ? { ok:true, blob:j.blob || {} }
+                                        : { ok:false, err:(j && j.err) || "服务端拒绝了请求" }); })
+      .catch(function (e) { cb({ ok:false, err:String((e && e.message) || e) }); });
+  }
+
+  function remotePut(code, item, cb) {
+    if (mode() === "gist") return gistPut(item, cb);
+    fetch(api() + "/?k=" + encodeURIComponent(code), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(item),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { cb(j && j.ok ? { ok:true, saved:j.saved }
+                                        : { ok:false, err:(j && j.err) || "保存失败" }); })
+      .catch(function (e) { cb({ ok:false, err:String((e && e.message) || e) }); });
+  }
+
+  /* ---------- GitHub Gist ---------- */
+
+  function gh(path, opt, cb) {
+    var tok = (localStorage.getItem(GTOK) || "").trim();
+    if (!tok) { cb({ ok:false, err:"还没填 GitHub 令牌" }); return; }
+    var o = opt || {};
+    o.headers = {
+      "Authorization": "Bearer " + tok,
+      "Accept": "application/vnd.github+json",
+    };
+    if (o.body) o.headers["Content-Type"] = "application/json";
+    o.cache = "no-store";
+    fetch("https://api.github.com" + path, o)
+      .then(function (r) {
+        return r.text().then(function (t) {
+          var j = null; try { j = JSON.parse(t); } catch (e) {}
+          if (r.ok) { cb({ ok:true, data:j }); return; }
+          // GitHub 的错误码翻译成人话，不然只看到 401 完全不知道干嘛
+          var msg = r.status === 401 ? "令牌无效或已过期，请重新生成"
+                  : r.status === 403 ? "令牌权限不足，需要勾选 gist 权限"
+                  : r.status === 404 ? "找不到这个 Gist（可能被删了，或令牌不是同一个账号的）"
+                  : "GitHub 返回 " + r.status + "：" + ((j && j.message) || t.slice(0, 80));
+          cb({ ok:false, status:r.status, err:msg });
+        });
+      })
+      .catch(function (e) { cb({ ok:false, err:String((e && e.message) || e) }); });
+  }
+
+  function gistGet(cb) {
+    var id = (localStorage.getItem(GID) || "").trim();
+    if (!id) { cb({ ok:true, blob:{} }); return; }     // 还没建过，等于空
+    gh("/gists/" + id, null, function (r) {
+      if (!r.ok) { cb(r); return; }
+      var f = r.data && r.data.files && r.data.files[GFILE];
+      if (!f) { cb({ ok:true, blob:{} }); return; }
+      // 文件大于 1MB 时 GitHub 只给 raw_url，这里的数据远没那么大，不处理截断
+      var blob = {};
+      try { blob = JSON.parse(f.content || "{}") || {}; } catch (e) {}
+      cb({ ok:true, blob:blob });
+    });
+  }
+
+  function gistPut(item, cb) {
+    // 没有服务端做合并，只能「读 → 合 → 写」。两台设备同时写仍可能互相覆盖，
+    // 但做题是一个人一台设备在用，这个窗口（几百毫秒）实际碰不上。
+    gistGet(function (g) {
+      if (!g.ok) { cb(g); return; }
+      var blob = g.blob || {};
+      var cur = blob[item.key];
+      if (cur && cur.t > item.t) { cb({ ok:true, saved:false }); return; }   // 远端更新，不覆盖
+      blob[item.key] = { t:item.t, v:item.v };
+
+      var body = JSON.stringify({
+        description: "学习进度同步（本文件由网页自动维护，请勿手改）",
+        files: (function () { var o = {}; o[GFILE] = { content: JSON.stringify(blob) }; return o; })(),
+      });
+      var id = (localStorage.getItem(GID) || "").trim();
+      if (id) {
+        gh("/gists/" + id, { method:"PATCH", body:body }, function (r) {
+          cb(r.ok ? { ok:true, saved:true } : r);
+        });
+      } else {
+        gh("/gists", { method:"POST", body:JSON.stringify({
+             description:"学习进度同步（本文件由网页自动维护，请勿手改）",
+             public:false,
+             files:(function(){ var o={}; o[GFILE]={content:JSON.stringify(blob)}; return o; })(),
+           }) }, function (r) {
+          if (!r.ok) { cb(r); return; }
+          rawSet(GID, r.data.id);                 // 记下来，另一台设备要填同一个 id
+          cb({ ok:true, saved:true });
+        });
+      }
+    });
+  }
+
+
 
   /**
    * 把云端整个 blob 里比本地新的部分全部落盘。
@@ -363,28 +602,28 @@
   }
 
   function boot() {
-    var code = localStorage.getItem(CODE);
-    if (!code) {
+    var code = localStorage.getItem(CODE) || "gist";   // Gist 模式用不到它，占个位
+    if (!ready()) {
       paint("off");
       // 没登录过、或者「以后再说」已经过了几天 → 主动弹一次。
       // 旧版本这里存的是 "1"，Number("1") 很小，一样会判定成早就过期，自动修复。
       var skip = +(localStorage.getItem(SKIP) || 0);
       if (Date.now() - skip > SKIP_DAYS * 864e5) {
-        setTimeout(function () { panelLogin(true); }, 600);
+        setTimeout(function () {
+          mode() === "gist" ? panelServer() : panelLogin(true);
+        }, 600);
       }
       return;
     }
-    if (!/^https?:\/\//.test(api())) {
-      paint("err", "服务器地址没填或格式不对，点小圆点进「服务器设置」");
+    if (mode() !== "gist" && !/^https?:\/\//.test(api())) {
+      paint("err", "服务器地址没填或格式不对，点小圆点进「同步方式」");
       return;
     }
 
     paint("busy");
-    fetch(api() + "/?k=" + encodeURIComponent(code), { cache: "no-store" })
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        if (!j || !j.ok) throw new Error((j && j.err) || "服务端拒绝了请求");
-
+    remoteGet(code, function (j) {
+      if (!j.ok) { paint("err", j.err); return; }
+      try {
         var hitHere = applyAll(j.blob);
 
         // 当前页的数据被云端覆盖了 → 刷新一次，页面才会拿新进度重新初始化。
@@ -407,8 +646,8 @@
           return;
         }
         paint("ok");
-      })
-      .catch(function (e) { paint("err", String((e && e.message) || e)); });
+      } catch (e) { paint("err", String((e && e.message) || e)); }
+    });
   }
 
   function payload() {
@@ -417,30 +656,24 @@
     if (raw === null) return null;
     var v;
     try { v = JSON.parse(raw); } catch (e) { return null; }
-    return JSON.stringify({ key: KEY, t: +(localStorage.getItem(tkey(KEY)) || Date.now()), v: v });
+    return { key: KEY, t: +(localStorage.getItem(tkey(KEY)) || Date.now()), v: v };
   }
 
   function push() {
-    var code = localStorage.getItem(CODE);
+    // Gist 模式没有登录名，用令牌认身份，这里给个占位值，别让下面的判空挡住
+    var code = localStorage.getItem(CODE) || "gist";
     var body = payload();
-    if (!code || !body || busy) return;
+    if (!ready() || !body || busy) return;
 
     busy = true;
     lastPush = Date.now();
     paint("busy");
-    fetch(api() + "/?k=" + encodeURIComponent(code), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: body,
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        if (!j || !j.ok) throw new Error((j && j.err) || "保存失败");
-        // saved:false 说明远端比本地新，下次打开会自动拉回来
-        paint("ok", j.saved ? "" : "远端有更新的记录，下次打开会同步过来");
-      })
-      .catch(function (e) { paint("err", String((e && e.message) || e)); })
-      .then(function () { busy = false; });
+    remotePut(code, body, function (j) {
+      busy = false;
+      if (!j.ok) { paint("err", j.err); return; }
+      // saved:false 说明远端比本地新，下次打开会自动拉回来
+      paint("ok", j.saved ? "" : "远端有更新的记录，下次打开会同步过来");
+    });
   }
 
   function schedulePush() {
@@ -466,13 +699,17 @@
     window.addEventListener("pagehide", function () {
       if (!pushTimer) return;
       clearTimeout(pushTimer);
-      var code = localStorage.getItem(CODE);
+      var code = localStorage.getItem(CODE) || "gist";
       var body = payload();
-      if (!code || !body || !navigator.sendBeacon) return;
+      if (!ready() || !body) return;
+      // Gist 要带 Authorization 头，而 sendBeacon 不支持自定义头；
+      // 它又得先 GET 再 PATCH，页面正在销毁根本跑不完。
+      // 所以 Gist 模式只能靠下次打开页面时补传——数据不会丢，只是晚一步。
+      if (mode() === "gist" || !navigator.sendBeacon) return;
       try {
         navigator.sendBeacon(
           api() + "/?k=" + encodeURIComponent(code),
-          new Blob([body], { type: "application/json" })
+          new Blob([JSON.stringify(body)], { type: "application/json" })
         );
       } catch (e) {}
     });
