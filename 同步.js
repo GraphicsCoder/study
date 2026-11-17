@@ -226,38 +226,28 @@
 
     function say(cls, html){ slot.innerHTML = '<p class="' + cls + ' show">' + html + '</p>'; }
 
+    // 面板只留输入框和一行提示。怎么生成令牌、两台设备各填什么，
+    // 都写在 同步说明.md 里——配好之后那些字每次打开都要再看一遍，是噪音。
     function paneGist() {
       pane.innerHTML =
-        '<p>把进度存在你自己 GitHub 账号下的一个<b>秘密 Gist</b> 里。不用服务器、不花钱，' +
-        '走的是 <code>api.github.com</code>——这个网站打得开，它就打得开。</p>' +
         '<label for="syncghtok">GitHub 个人令牌</label>' +
         '<input id="syncghtok" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
         'placeholder="ghp_… 或 github_pat_…">' +
-        '<p class="hint">令牌（Personal Access Token）相当于<b>给这个网页的一把钥匙</b>，' +
-        '让它替你读写 Gist，不用在这里输入 GitHub 密码。<br>' +
-        '去 <code>github.com/settings/tokens</code> → Generate new token (classic) → ' +
-        'Expiration 选 <b>No expiration</b> → <b>只勾 <code>gist</code> 这一项</b>' +
-        '（这样它碰不到你的仓库）→ 生成后那串只显示一次，立刻复制过来。<br>' +
-        '令牌只存在这台设备的浏览器里，不会上传到本网站。</p>' +
-        '<label for="syncgid">Gist ID<span class="opt-note">（第一台设备留空，会自动创建）</span></label>' +
+        '<label for="syncgid">Gist ID<span class="opt-note">（留空则自动创建）</span></label>' +
         '<input id="syncgid" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
-        'placeholder="第一次用留空即可">' +
-        '<p class="hint"><b>第一台设备</b>：留空，保存时自动创建，并把 id 显示出来。<br>' +
-        '<b>第二台设备</b>：两样都要填。令牌可以直接用第一台那串，' +
-        '也可以在<b>同一个 GitHub 账号</b>下另外生成一个（Gist 认账号，不认具体哪把钥匙）；' +
-        'Gist ID 必须是第一台那串，否则两边各存各的。</p>';
+        'placeholder="第一台设备留空">' +
+        '<p class="hint">第二台设备填同一个账号的令牌 + 第一台那串 Gist ID。' +
+        '详见 <b>同步说明.md</b>。</p>';
       pane.querySelector("#syncghtok").value = localStorage.getItem(GTOK) || "";
       pane.querySelector("#syncgid").value   = localStorage.getItem(GID)  || "";
     }
 
     function paneWorker() {
       pane.innerHTML =
-        '<p>自己部署一个 Cloudflare Worker（免费），把地址填在这里。' +
-        '<b>注意：</b><code>workers.dev</code> 在国内不少网络连不上，连不通就改用 Gist。</p>' +
         '<label for="syncapi">服务器地址</label>' +
         '<input id="syncapi" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
         'placeholder="https://study-sync.xxx.workers.dev">' +
-        '<p class="hint">要以 <code>https://</code> 开头，结尾不要斜杠。部署步骤见 <b>同步说明.md</b>。</p>';
+        '<p class="hint">以 <code>https://</code> 开头，结尾不要斜杠。部署步骤见 <b>同步说明.md</b>。</p>';
       pane.querySelector("#syncapi").value = localStorage.getItem(ASET) || API_DEFAULT;
     }
 
@@ -301,9 +291,7 @@
           ensureGist(function (r) {
             if (!r.ok) { say("err", r.err || "创建失败"); return; }
             pane.querySelector("#syncgid").value = r.id;
-            say("good", "✓ 已创建，<b>Gist ID：" + esc(r.id) + "</b><br>" +
-                        "把这串抄到第二台设备（连同令牌），两边才算同一份进度。" +
-                        "随时点小圆点也能再看到它。");
+            say("good", "✓ 已创建。<b>Gist ID：" + esc(r.id) + "</b><br>第二台设备要用这串。");
           });
           return;                       // 留在设置页，让人把 id 抄走
         }
@@ -388,15 +376,11 @@
 
     box.innerHTML =
       '<h3>☁ 同步暂时没连上</h3>' +
-      '<p><b>做题不受影响。</b>进度已经存在这台设备上，等连上了会自动补传。</p>' +
-      '<p class="hint">' + (mode() === "gist"
-        ? '偶尔一次不用管。要是一直这样，点下面的「同步方式」重新测一下令牌。'
-        : '偶尔一次不用管。先换个网络试试——比如把手机的 WiFi 关掉、用流量打开。'
-          + '要是流量下也连不上，点「同步方式」换一种同步方式更省事。') + '</p>' +
+      '<p><b>做题不受影响。</b>进度存在本机，等连上了会自动补传。</p>' +
       '<div class="btns">' +
         '<button class="primary" id="syncretry">重试</button>' +
         '<button id="syncserver">同步方式</button>' +
-        '<button id="syncrelogin">换登录名</button>' +
+        (mode() === "gist" ? "" : '<button id="syncrelogin">换登录名</button>') +
         '<button class="ghost" id="syncclose">关闭</button>' +
       '</div>' +
       '<p class="hint"><span class="more" id="syncmore">详情 ›</span></p>' +
@@ -404,7 +388,8 @@
 
     box.querySelector("#syncretry").onclick = function () { close(); lastErr = ""; boot(); };
     box.querySelector("#syncserver").onclick = function () { panelServer(panelError); };
-    box.querySelector("#syncrelogin").onclick = function () { lastErr = ""; panelLogin(); };
+    if (box.querySelector("#syncrelogin"))
+      box.querySelector("#syncrelogin").onclick = function () { lastErr = ""; panelLogin(); };
     box.querySelector("#syncclose").onclick = close;
     box.querySelector("#syncmore").onclick = function () {
       this.style.display = "none";
@@ -420,13 +405,11 @@
   function panelLogin(autoPopped) {
     box.innerHTML =
       '<h3>☁ 开启跨设备同步</h3>' +
-      '<p>在 iPad 和电脑上用<b>同一个登录名</b>，做题进度、错题本、闯关星星就互通了。<br>' +
-      '名字由你自己定，不用注册、不用手机号。</p>' +
+      '<p>两台设备用<b>同一个登录名</b>，进度就互通。</p>' +
       '<label for="synccode">登录名</label>' +
       '<input id="synccode" type="text" autocomplete="off" autocapitalize="off" ' +
       'spellcheck="false" placeholder="例如 lisa2026">' +
-      '<p class="hint">至少 6 位。这个名字就是进入这份进度的唯一钥匙，' +
-      '别用 <b>lisa</b>、<b>123456</b> 这种容易撞上的，建议<b>名字加数字</b>。</p>' +
+      '<p class="hint">至少 6 位，别用容易撞上的，建议名字加数字（如 lisa2026）。</p>' +
       '<p class="err" id="syncerr"></p>' +
       '<div class="btns">' +
         '<button class="primary" id="syncok">登录</button>' +
@@ -469,13 +452,10 @@
     box.innerHTML =
       '<h3>☁ 同步已开启</h3>' +
       (mode() === "gist"
-        ? '<div class="who">同步方式：<b>GitHub Gist</b><br>' +
-          'Gist ID：<b>' + esc(localStorage.getItem(GID) || "（保存后自动创建）") + '</b><br>' +
-          '另一台设备填<b>同样的令牌和这个 ID</b>，进度就会互通。</div>'
-        : '<div class="who">同步方式：<b>自建服务器</b><br>' +
-          '当前登录名：<b>' + esc(code) + '</b><br>' +
-          '另一台设备用同样的名字登录，进度就会互通。</div>') +
-      '<p>进度是打开页面时拉取、做完题后自动上传的，平时不用管它。</p>' +
+        ? '<div class="who">GitHub Gist<br>ID：<b>' +
+          esc(localStorage.getItem(GID) || "（保存后自动创建）") + '</b></div>'
+        : '<div class="who">自建服务器<br>登录名：<b>' + esc(code) + '</b></div>') +
+
       '<div class="btns">' +
         '<button class="primary" id="syncnow">立即同步</button>' +
         '<button class="danger" id="syncout">退出登录</button>' +
