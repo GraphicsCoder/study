@@ -230,14 +230,19 @@
         '<label for="syncghtok">GitHub 个人令牌</label>' +
         '<input id="syncghtok" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
         'placeholder="ghp_… 或 github_pat_…">' +
-        '<p class="hint">去 <code>github.com/settings/tokens</code> → Generate new token (classic) → ' +
-        '<b>只勾 <code>gist</code> 这一项</b>（碰不到你的仓库）→ 生成后复制过来。<br>' +
-        '令牌只存在这台设备的浏览器里，不会上传到网站。</p>' +
+        '<p class="hint">令牌（Personal Access Token）相当于<b>给这个网页的一把钥匙</b>，' +
+        '让它替你读写 Gist，不用在这里输入 GitHub 密码。<br>' +
+        '去 <code>github.com/settings/tokens</code> → Generate new token (classic) → ' +
+        'Expiration 选 <b>No expiration</b> → <b>只勾 <code>gist</code> 这一项</b>' +
+        '（这样它碰不到你的仓库）→ 生成后那串只显示一次，立刻复制过来。<br>' +
+        '令牌只存在这台设备的浏览器里，不会上传到本网站。</p>' +
         '<label for="syncgid">Gist ID<span class="opt-note">（第一台设备留空，会自动创建）</span></label>' +
         '<input id="syncgid" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
         'placeholder="第一次用留空即可">' +
-        '<p class="hint">第一台设备保存后，这里会自动填上一串 id。' +
-        '<b>把它抄到第二台设备</b>（连同令牌），两边才算同一份进度。</p>';
+        '<p class="hint"><b>第一台设备</b>：留空，保存时自动创建，并把 id 显示出来。<br>' +
+        '<b>第二台设备</b>：两样都要填。令牌可以直接用第一台那串，' +
+        '也可以在<b>同一个 GitHub 账号</b>下另外生成一个（Gist 认账号，不认具体哪把钥匙）；' +
+        'Gist ID 必须是第一台那串，否则两边各存各的。</p>';
       pane.querySelector("#syncghtok").value = localStorage.getItem(GTOK) || "";
       pane.querySelector("#syncgid").value   = localStorage.getItem(GID)  || "";
     }
