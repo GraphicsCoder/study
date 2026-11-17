@@ -195,6 +195,37 @@ const content = (gh, id) => JSON.parse(gh.gists[id].files["study-progress.json"]
   await tick();
   ok("Worker 模式仍走原地址", String(used).indexOf("workers.dev/?k=") > -1, used);
 
+  // 12. 保存设置时就把 Gist 建出来，并把 id 显示给用户
+  //     原来要等「第一次有进度要上传」才建，可那时设置页早关了，
+  //     第二台设备拿不到 id，用户只会看到「保存后自动创建」一直不变。
+  let gh12 = fakeGitHub({ gists: {} });
+  let l = launch({ store: { __sync_mode__: "gist" }, fetchImpl: gh12 });
+  await tick();
+  l.chip.onclick();
+  l.$("syncghtok").value = "ghp_x";
+  l.$("syncgid").value = "";                 // 留空 = 第一台设备
+  l.$("syncsave").onclick();
+  await tick(10);
+  ok("保存时就创建了 Gist", l.store.__sync_gist_id__ === "NEWID", l.store.__sync_gist_id__);
+  ok("创建用 POST", gh12.log.some(x => x.startsWith("POST https://api.github.com/gists")), gh12.log.join(" | "));
+  ok("把 id 回填到输入框", l.$("syncgid").value === "NEWID", l.$("syncgid").value);
+  ok("当场显示 id 让人抄走", /Gist ID：.*NEWID/.test(l.$("synctest")._html), l.$("synctest")._html.slice(0, 90));
+  ok("新建的 Gist 是空对象", Object.keys(content(gh12, "NEWID")).length === 0, JSON.stringify(gh12.gists.NEWID));
+
+  // 13. 导航页（没有 data-key、也没做过题）也要能把 Gist 建出来
+  //     这正是用户遇到的场景：配完设置，什么都没发生
+  let gh13 = fakeGitHub({ gists: {} });
+  let m = launch({ store: { __sync_mode__: "gist", __sync_gh_token__: "ghp_x" }, fetchImpl: gh13 });
+  await tick(10);
+  ok("没有本地进度时也补建 Gist", m.store.__sync_gist_id__ === "NEWID", m.store.__sync_gist_id__);
+  ok("补建后仍正常拉取", gh13.log.some(x => x.indexOf("GET https://api.github.com/gists/NEWID") === 0), gh13.log.join(" | "));
+
+  // 14. 已有 id 时不要重复创建
+  let gh14 = fakeGitHub({ gists: { ID1: { files: { "study-progress.json": { content: "{}" } } } } });
+  launch({ store: { ...GIST(), __sync_gist_id__: "ID1" }, fetchImpl: gh14 });
+  await tick(10);
+  ok("已有 id 时不重复创建", !gh14.log.some(x => x.startsWith("POST")), gh14.log.join(" | "));
+
   console.log(out.join("\n"));
   const bad = out.filter(x => x.startsWith("FAIL")).length;
   console.log(bad ? `\n${bad} 项未通过` : `\n全部 ${out.length} 项通过`);

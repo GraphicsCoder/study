@@ -43,6 +43,7 @@
   var GTOK  = "__sync_gh_token__";        // GitHub 个人令牌
   var GID   = "__sync_gist_id__";         // Gist id，首次保存时自动创建并记下
   var GFILE = "study-progress.json";      // Gist 里的文件名
+  var GDESC = "学习进度同步（本文件由网页自动维护，请勿手改）";
 
   function mode(){ return localStorage.getItem(MODE) === "gist" ? "gist" : "worker"; }
   function api(){
@@ -286,6 +287,18 @@
         rawSet(MODE, "gist");
         rawSet(GTOK, tok);
         if (gid) rawSet(GID, gid); else localStorage.removeItem(GID);
+        // 没填 id 就当场建一个，把 id 显示出来——第二台设备正等着抄它
+        if (!gid) {
+          say("hint", "正在创建 Gist…");
+          ensureGist(function (r) {
+            if (!r.ok) { say("err", r.err || "创建失败"); return; }
+            pane.querySelector("#syncgid").value = r.id;
+            say("good", "✓ 已创建，<b>Gist ID：" + esc(r.id) + "</b><br>" +
+                        "把这串抄到第二台设备（连同令牌），两边才算同一份进度。" +
+                        "随时点小圆点也能再看到它。");
+          });
+          return;                       // 留在设置页，让人把 id 抄走
+        }
       } else {
         var url = pane.querySelector("#syncapi").value.trim().replace(/\/+$/, "");
         if (url && !/^https?:\/\//.test(url)) { say("err", "地址要以 https:// 开头。"); return; }
@@ -548,36 +561,42 @@
     });
   }
 
+  /* 确保 Gist 已经存在：没有就建一个空的，并把 id 记下来。
+     不能等「第一次有进度要上传」才建——那时候用户早就关掉设置页了，
+     而第二台设备必须拿到这个 id 才能配上，所以保存设置时就得给出来。 */
+  function ensureGist(cb) {
+    var id = (localStorage.getItem(GID) || "").trim();
+    if (id) { cb({ ok:true, id:id, made:false }); return; }
+    gh("/gists", { method:"POST", body:JSON.stringify({
+         description: GDESC,
+         public: false,
+         files: (function () { var o = {}; o[GFILE] = { content: "{}" }; return o; })(),
+       }) }, function (r) {
+      if (!r.ok) { cb(r); return; }
+      rawSet(GID, r.data.id);
+      cb({ ok:true, id:r.data.id, made:true });
+    });
+  }
+
   function gistPut(item, cb) {
     // 没有服务端做合并，只能「读 → 合 → 写」。两台设备同时写仍可能互相覆盖，
     // 但做题是一个人一台设备在用，这个窗口（几百毫秒）实际碰不上。
-    gistGet(function (g) {
-      if (!g.ok) { cb(g); return; }
-      var blob = g.blob || {};
-      var cur = blob[item.key];
-      if (cur && cur.t > item.t) { cb({ ok:true, saved:false }); return; }   // 远端更新，不覆盖
-      blob[item.key] = { t:item.t, v:item.v };
+    ensureGist(function (e) {
+      if (!e.ok) { cb(e); return; }
+      gistGet(function (g) {
+        if (!g.ok) { cb(g); return; }
+        var blob = g.blob || {};
+        var cur = blob[item.key];
+        if (cur && cur.t > item.t) { cb({ ok:true, saved:false }); return; }   // 远端更新，不覆盖
+        blob[item.key] = { t:item.t, v:item.v };
 
-      var body = JSON.stringify({
-        description: "学习进度同步（本文件由网页自动维护，请勿手改）",
-        files: (function () { var o = {}; o[GFILE] = { content: JSON.stringify(blob) }; return o; })(),
-      });
-      var id = (localStorage.getItem(GID) || "").trim();
-      if (id) {
-        gh("/gists/" + id, { method:"PATCH", body:body }, function (r) {
+        gh("/gists/" + e.id, { method:"PATCH", body:JSON.stringify({
+             description: GDESC,
+             files: (function () { var o = {}; o[GFILE] = { content: JSON.stringify(blob) }; return o; })(),
+           }) }, function (r) {
           cb(r.ok ? { ok:true, saved:true } : r);
         });
-      } else {
-        gh("/gists", { method:"POST", body:JSON.stringify({
-             description:"学习进度同步（本文件由网页自动维护，请勿手改）",
-             public:false,
-             files:(function(){ var o={}; o[GFILE]={content:JSON.stringify(blob)}; return o; })(),
-           }) }, function (r) {
-          if (!r.ok) { cb(r); return; }
-          rawSet(GID, r.data.id);                 // 记下来，另一台设备要填同一个 id
-          cb({ ok:true, saved:true });
-        });
-      }
+      });
     });
   }
 
@@ -621,6 +640,18 @@
     }
 
     paint("busy");
+    // 从旧版本升上来、或上次创建没成功的，这里补一次；已有 id 时它直接返回
+    if (mode() === "gist" && !(localStorage.getItem(GID) || "").trim()) {
+      ensureGist(function (r) {
+        if (!r.ok) { paint("err", r.err); return; }
+        pull(code);
+      });
+      return;
+    }
+    pull(code);
+  }
+
+  function pull(code) {
     remoteGet(code, function (j) {
       if (!j.ok) { paint("err", j.err); return; }
       try {
