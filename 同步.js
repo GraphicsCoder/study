@@ -44,6 +44,7 @@
   var GID   = "__sync_gist_id__";         // Gist id，首次保存时自动创建并记下
   var GFILE = "study-progress.json";      // Gist 里的文件名
   var GDESC = "学习进度同步（本文件由网页自动维护，请勿手改）";
+  var KREG  = "__sync_keys__";            // 本机见过的页面 key，补传时要用
 
   // 默认 Gist：实测 workers.dev 在国内多种网络下都连不上，
   // 而 api.github.com 和这个网站本身（GitHub Pages）同一家，网站能开它就能开。
@@ -568,27 +569,33 @@
     });
   }
 
-  function gistPut(item, cb) {
-    // 没有服务端做合并，只能「读 → 合 → 写」。两台设备同时写仍可能互相覆盖，
-    // 但做题是一个人一台设备在用，这个窗口（几百毫秒）实际碰不上。
+  function gistPutMany(items, cb) {
+    // 没有服务端做合并，只能「读 → 合 → 写」。一次把所有待传的页面合进去，
+    // 分多次请求反而会互相覆盖。
     ensureGist(function (e) {
       if (!e.ok) { cb(e); return; }
       gistGet(function (g) {
         if (!g.ok) { cb(g); return; }
-        var blob = g.blob || {};
-        var cur = blob[item.key];
-        if (cur && cur.t > item.t) { cb({ ok:true, saved:false }); return; }   // 远端更新，不覆盖
-        blob[item.key] = { t:item.t, v:item.v };
+        var blob = g.blob || {}, wrote = false, skipped = false;
+        items.forEach(function (it) {
+          var cur = blob[it.key];
+          if (cur && cur.t > it.t) { skipped = true; return; }   // 远端更新，不覆盖
+          blob[it.key] = { t:it.t, v:it.v };
+          wrote = true;
+        });
+        if (!wrote) { cb({ ok:true, saved:false }); return; }
 
         gh("/gists/" + e.id, { method:"PATCH", body:JSON.stringify({
              description: GDESC,
              files: (function () { var o = {}; o[GFILE] = { content: JSON.stringify(blob) }; return o; })(),
            }) }, function (r) {
-          cb(r.ok ? { ok:true, saved:true } : r);
+          cb(r.ok ? { ok:true, saved: !skipped } : r);
         });
       });
     });
   }
+
+  function gistPut(item, cb) { gistPutMany([item], cb); }
 
 
 
@@ -597,9 +604,26 @@
    * 不只处理当前页：这样在导航页登录一次，所有练习的进度就都拉回来了。
    * 返回当前页的数据有没有被换掉（要不要刷新）。
    */
+  /* ---------- 哪些页面的进度归我们管 ----------
+     每个页面只知道自己的 KEY，但「把本机所有没传上去的都补传」需要知道全部。
+     所以维护一张注册表：本页加载时登记自己，拉取时把云端出现过的 key 也登记。
+     不去遍历 localStorage——那里面还有别人的东西，不该碰。 */
+  function regList() {
+    try { var a = JSON.parse(localStorage.getItem(KREG) || "[]"); return Array.isArray(a) ? a : []; }
+    catch (e) { return []; }
+  }
+  function regAdd(k) {
+    if (!k) return;
+    var a = regList();
+    if (a.indexOf(k) > -1) return;
+    a.push(k);
+    rawSet(KREG, JSON.stringify(a));
+  }
+
   function applyAll(blob) {
     var hitHere = 0;
     Object.keys(blob || {}).forEach(function (k) {
+      regAdd(k);
       var r = blob[k];
       if (!r || typeof r.t !== "number" || !isFinite(r.t)) return;
       if (r.t <= +(localStorage.getItem(tkey(k)) || 0)) return;
@@ -608,6 +632,27 @@
       if (k && k === KEY) hitHere = r.t;
     });
     return hitHere;
+  }
+
+  /* 本机所有有进度的页面，连同各自的时间戳 */
+  function localItems() {
+    var out = [];
+    regList().forEach(function (k) {
+      var raw = localStorage.getItem(k);
+      if (raw === null) return;
+      var v; try { v = JSON.parse(raw); } catch (e) { return; }
+      out.push({ key: k, t: +(localStorage.getItem(tkey(k)) || 0), v: v });
+    });
+    return out;
+  }
+
+  /* 和云端比一遍，挑出本机更新的那些 */
+  function staleOnRemote(blob) {
+    blob = blob || {};
+    return localItems().filter(function (it) {
+      var r = blob[it.key];
+      return it.t > (r ? r.t : -1);
+    });
   }
 
   function boot() {
@@ -659,13 +704,11 @@
           }
         }
 
-        // 本地比云端新 → 推上去
-        var remote = KEY ? (j.blob || {})[KEY] : null;
-        if (KEY && localStorage.getItem(KEY) !== null &&
-            +(localStorage.getItem(tkey(KEY)) || 0) > (remote ? remote.t : -1)) {
-          push();
-          return;
-        }
+        // 本机比云端新的，全部补传——不只是当前这一页。
+        // 之前只看当前页，于是「在数学页做完题、没等推送就跳去英语页」这种
+        // 再普通不过的操作，数学的进度就永远卡在本机，另一台设备看不到。
+        var todo = staleOnRemote(j.blob);
+        if (todo.length) { pushItems(todo); return; }
         paint("ok");
       } catch (e) { paint("err", String((e && e.message) || e)); }
     });
@@ -681,20 +724,41 @@
   }
 
   function push() {
-    // Gist 模式没有登录名，用令牌认身份，这里给个占位值，别让下面的判空挡住
-    var code = localStorage.getItem(CODE) || "gist";
     var body = payload();
-    if (!ready() || !body || busy) return;
+    if (!body) return;
+    pushItems([body]);
+  }
+
+  /* 一次把若干页面的进度传上去。
+     Gist 必须「读-改-写」，并发会互相覆盖，所以一次请求搞定全部；
+     Worker 的合并在服务端，逐个发即可。 */
+  function pushItems(items) {
+    var code = localStorage.getItem(CODE) || "gist";   // Gist 模式用不到，占位
+    if (!ready() || !items || !items.length || busy) return;
 
     busy = true;
     lastPush = Date.now();
     paint("busy");
-    remotePut(code, body, function (j) {
+    remotePutMany(code, items, function (j) {
       busy = false;
       if (!j.ok) { paint("err", j.err); return; }
       // saved:false 说明远端比本地新，下次打开会自动拉回来
-      paint("ok", j.saved ? "" : "远端有更新的记录，下次打开会同步过来");
+      paint("ok", j.saved === false ? "远端有更新的记录，下次打开会同步过来" : "");
     });
+  }
+
+  function remotePutMany(code, items, cb) {
+    if (mode() === "gist") return gistPutMany(items, cb);
+    // Worker：串行发，避免服务端同时改同一条记录
+    var i = 0, anySkipped = false;
+    (function step() {
+      if (i >= items.length) { cb({ ok:true, saved: !anySkipped }); return; }
+      remotePut(code, items[i++], function (r) {
+        if (!r.ok) { cb(r); return; }
+        if (r.saved === false) anySkipped = true;
+        step();
+      });
+    })();
   }
 
   function schedulePush() {
@@ -708,6 +772,7 @@
   /* ================= 挂钩本页的保存动作 ================= */
 
   if (KEY) {
+    regAdd(KEY);
     localStorage.setItem = function (k, v) {
       rawSet(k, v);
       if (k === KEY) {
@@ -716,16 +781,25 @@
       }
     };
 
-    // 页面被关掉 / 切走时补推一次，sendBeacon 在页面销毁时也能送出去
+    // 页面切到后台就立刻冲一次，不等那 1.2 秒的防抖——
+    // 「做完最后一题马上切走」是最常见的动作，等不起。
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "hidden" && pushTimer) {
+        clearTimeout(pushTimer); pushTimer = null;
+        push();
+      }
+    });
+
     window.addEventListener("pagehide", function () {
       if (!pushTimer) return;
       clearTimeout(pushTimer);
+      pushTimer = null;
       var code = localStorage.getItem(CODE) || "gist";
       var body = payload();
       if (!ready() || !body) return;
-      // Gist 要带 Authorization 头，而 sendBeacon 不支持自定义头；
-      // 它又得先 GET 再 PATCH，页面正在销毁根本跑不完。
-      // 所以 Gist 模式只能靠下次打开页面时补传——数据不会丢，只是晚一步。
+      // Gist 要带 Authorization 头，sendBeacon 不支持自定义头，而且它得先 GET
+      // 再 PATCH，页面正在销毁跑不完。好在任何一个页面下次打开时都会把本机
+      // 所有没传上去的一起补传（见 staleOnRemote），数据不会丢，只是晚一步。
       if (mode() === "gist" || !navigator.sendBeacon) return;
       try {
         navigator.sendBeacon(
