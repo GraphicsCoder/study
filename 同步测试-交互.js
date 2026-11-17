@@ -48,8 +48,9 @@ function makeDoc() {
   return doc;
 }
 
+// 登录名面板是 Worker 模式专属的流程，显式声明，别依赖默认后端
 function launch({ store = {}, failFetch = false } = {}) {
-  const s = { ...store };
+  const s = Object.assign({ __sync_mode__: "worker" }, store);
   const ls = {
     getItem: (k) => (k in s ? s[k] : null),
     setItem: (k, v) => { s[k] = String(v); },

@@ -26,16 +26,16 @@
 (function () {
   "use strict";
 
-  // ↓↓↓ 同步后端有两种，在页面上「服务器设置」里选 ↓↓↓
+  // ↓↓↓ 同步后端有两种，在页面上「同步方式」里选 ↓↓↓
   //
-  // A. Cloudflare Worker —— 自己部署一个小服务，见 同步说明.md。
-  //    注意：*.workers.dev 在国内不少网络（公司网、部分家宽、移动数据）
-  //    连不上，实测会被解析到无关 IP。能通就用，通不了就换 B。
-  //
-  // B. GitHub Gist —— 把进度存在你自己账号下的一个「秘密 Gist」里。
+  // A. GitHub Gist（默认）—— 把进度存在你自己账号下的一个「秘密 Gist」里。
   //    不用服务器、不用域名、不花钱，走的是 api.github.com，
   //    和这个网站本身（GitHub Pages）同一家，网站打得开它就打得开。
   //    代价是每台设备要填一次个人令牌（只勾 gist 权限，碰不到仓库）。
+  //
+  // B. Cloudflare Worker —— 自己部署一个小服务，见 同步说明.md。
+  //    注意：*.workers.dev 在国内不少网络（公司网、家宽、移动数据）都连不上，
+  //    实测会被解析到无关 IP。所以它不再是默认选项，确认自己网络能通再用。
   var API_DEFAULT = "https://study-sync.eden-meng.workers.dev";
 
   var ASET  = "__sync_api__";             // Worker 地址（本机覆盖）
@@ -45,7 +45,10 @@
   var GFILE = "study-progress.json";      // Gist 里的文件名
   var GDESC = "学习进度同步（本文件由网页自动维护，请勿手改）";
 
-  function mode(){ return localStorage.getItem(MODE) === "gist" ? "gist" : "worker"; }
+  // 默认 Gist：实测 workers.dev 在国内多种网络下都连不上，
+  // 而 api.github.com 和这个网站本身（GitHub Pages）同一家，网站能开它就能开。
+  // 已经配过 Worker 的设备，MODE 里存着 "worker"，不受影响。
+  function mode(){ return localStorage.getItem(MODE) === "worker" ? "worker" : "gist"; }
   function api(){
     return String(localStorage.getItem(ASET) || API_DEFAULT).trim().replace(/\/+$/, "");
   }
@@ -206,7 +209,7 @@
     box.innerHTML =
       '<h3>⚙️ 同步方式</h3>' +
       '<div class="tabs">' +
-        '<button class="tab' + (m === "gist" ? " on" : "") + '" id="tabGist">GitHub Gist</button>' +
+        '<button class="tab' + (m === "gist" ? " on" : "") + '" id="tabGist">GitHub Gist（推荐）</button>' +
         '<button class="tab' + (m === "worker" ? " on" : "") + '" id="tabWorker">自建服务器</button>' +
       '</div>' +
       '<div id="syncpane"></div>' +

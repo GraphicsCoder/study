@@ -171,24 +171,40 @@ const content = (gh, id) => JSON.parse(gh.gists[id].files["study-progress.json"]
   await tick(10);
   ok("认出 Gist ID 找不到", /找不到/.test(i.$("synctest")._html), i.$("synctest")._html.slice(0, 60));
 
-  // 10. 从 Worker 模式切到 Gist 并保存
+  // 10. 全新设备：默认就该是 Gist，并且直接进设置页
   let j = launch({ store: {}, fetchImpl: fakeGitHub() });
   await tick();
-  j.chip.onclick();                 // 空配置 → 默认 worker 模式 → 登录面板
-  ok("默认仍是登录面板", !!j.$("synccode"), j.panel().slice(0, 40));
-  j.$("syncsrv").onclick();         // 进同步方式页
-  ok("默认停在自建服务器页", !!j.$("syncapi"), j.panel().slice(0, 40));
-  j.$("tabGist").onclick();         // 切到 Gist
-  ok("能切到 Gist 页", !!j.$("syncghtok"));
+  j.chip.onclick();
+  ok("全新设备默认走 Gist", !!j.$("syncghtok"), j.panel().slice(0, 50));
+  ok("不先要求填登录名", !j.$("synccode"));
+  ok("Gist 标签是选中的", /class="tab on" id="tabGist"/.test(j.panel()), j.panel().slice(0, 90));
   j.$("syncghtok").value = "ghp_new"; j.$("syncgid").value = "MYID";
   j.$("syncsave").onclick();
   ok("保存模式为 gist", j.store.__sync_mode__ === "gist", j.store.__sync_mode__);
   ok("保存令牌和 ID", j.store.__sync_gh_token__ === "ghp_new" && j.store.__sync_gist_id__ === "MYID");
 
-  // 11. Worker 模式不受影响
+  // 10b. 还能切回自建服务器，老用户不被挡住
+  let j2 = launch({ store: {}, fetchImpl: fakeGitHub() });
+  await tick();
+  j2.chip.onclick();
+  j2.$("tabWorker").onclick();
+  ok("能切到自建服务器页", !!j2.$("syncapi"), j2.panel().slice(0, 50));
+  j2.$("syncapi").value = "https://mine.workers.dev";
+  j2.$("syncsave").onclick();
+  ok("切回 worker 会记下来", j2.store.__sync_mode__ === "worker", j2.store.__sync_mode__);
+
+  // 10c. 已经配过 Worker 的设备，升级后不该被改掉
+  let j3 = launch({ store: { __sync_mode__: "worker", __sync_code__: "lisa2026" },
+    fetchImpl: () => Promise.resolve({ ok: true, status: 200, headers: { get: () => null },
+      json: () => Promise.resolve({ ok: true, blob: {} }), text: () => Promise.resolve("{}") }) });
+  await tick();
+  j3.chip.onclick();
+  ok("老用户仍停在 Worker", /自建服务器/.test(j3.panel()), j3.panel().slice(0, 60));
+
+  // 11. Worker 模式不受影响（要显式声明，默认已经是 Gist 了）
   let used = null;
   launch({
-    store: { __sync_code__: "lisa2026" },
+    store: { __sync_mode__: "worker", __sync_code__: "lisa2026" },
     fetchImpl: u => { used = u; return Promise.resolve({ ok: true, status: 200, headers: { get: () => null },
       json: () => Promise.resolve({ ok: true, blob: {} }), text: () => Promise.resolve("{}") }); },
   });

@@ -17,7 +17,10 @@ function makeEl() {
   return el;
 }
 
+// 这套测的是 Worker 传输层，所以显式声明模式——不要依赖「默认是哪个后端」，
+// 那是会变的（现在默认已经是 Gist）。
 function run({ dataKey, store = {}, session = {}, remoteBlob = {}, failFetch = false }) {
+  store = Object.assign({ __sync_mode__: "worker" }, store);
   const log = { reloaded: false, posted: [], painted: [], popped: false };
 
   const ls = {

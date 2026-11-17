@@ -26,7 +26,7 @@ function makeDoc(){
 }
 
 function launch({store={}, fetchImpl}={}){
-  const s={...store};
+  const s=Object.assign({__sync_mode__:"worker"}, store);
   const ls={getItem:k=>k in s?s[k]:null,setItem:(k,v)=>{s[k]=String(v)},removeItem:k=>{delete s[k]}};
   const doc=makeDoc();
   const ctx={document:doc,window:{addEventListener(){}},localStorage:ls,
