@@ -54,6 +54,15 @@
   details.guide h4{margin:16px 0 6px;font-size:15px;color:#2c45a8}
   .rule{background:var(--brand-soft);border-radius:10px;padding:11px 14px;margin:8px 0 14px;font-size:14.5px;line-height:1.95}
   .pitfall{background:var(--warn-soft);border-left:4px solid #e9a23b;border-radius:8px;padding:11px 14px;margin:8px 0 14px;font-size:14px;line-height:1.9}
+  /* 四步法：编号 + 标题 + 一句话 */
+  .flow{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
+  .flow>div{flex:1;min-width:190px;background:var(--brand-soft);border-radius:10px;
+    padding:11px 13px 12px;position:relative}
+  .flow .n{display:inline-flex;align-items:center;justify-content:center;
+    width:20px;height:20px;border-radius:50%;background:var(--brand);color:#fff;
+    font-size:12px;font-weight:700;margin-right:7px;vertical-align:1px}
+  .flow b{font-size:15px;color:#2c45a8}
+  .flow p{margin:6px 0 0;font-size:13.5px;line-height:1.85;color:#3b455c}
   .three{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
   .three div{flex:1;min-width:190px;background:var(--brand-soft);border-radius:10px;padding:11px 14px;font-size:14px}
   .three .k{font-size:15px;font-weight:700;color:#2c45a8;margin-bottom:4px}
@@ -136,6 +145,18 @@
   button.primary:hover{filter:brightness(1.07)}
   button.flag{padding:7px 10px;line-height:1}
   button.flag.on{background:var(--warn-soft);border-color:#e9a23b}
+  /* 💡 思路：点了才出现，只给方向不给答案 */
+  .hint{display:none;margin:8px 0 0 26px;font-size:14px;line-height:1.95;
+    background:#fff8ec;border-left:4px solid #e9a23b;border-radius:8px;padding:9px 13px;color:#7a4a10}
+  .hint.show{display:block}
+
+  /* 解析的推理链：左边标签，右边内容 */
+  .chain{display:block;margin-top:8px}
+  .chain .step{display:flex;gap:10px;align-items:flex-start;margin:6px 0;font-size:13.5px;line-height:1.9}
+  /* 标签做成小药丸，和正文拉开距离——贴在一起读起来像连成了一句话 */
+  .chain .k{flex:none;width:62px;color:#0f6b4f;font-weight:600;white-space:nowrap;cursor:help;
+    background:#ffffffcc;border-radius:6px;padding:1px 6px;text-align:center;box-sizing:border-box}
+  .chain .v{flex:1;color:#2f3a4d;min-width:0}
   .fb{margin:8px 0 0 26px;font-size:14px;display:none}
   .fb.show{display:block}
   .fb .good{color:var(--ok)} .fb .bad{color:var(--no)} .fb .note{color:var(--warn)}
@@ -163,6 +184,8 @@
     details.guide summary,details.mistakes summary{font-size:15px}
     .rule,.pitfall{font-size:13.5px;padding:10px 11px}
     .three div{min-width:100%}
+    .flow>div{min-width:100%}
+    .flow p{font-size:13px}
     table{font-size:12.5px}
     th,td{padding:5px 6px}
     nav.jump{gap:6px}
@@ -176,7 +199,10 @@
     .q{font-size:15px}
     .q .n{min-width:20px}
     .opts,.row,.selfbar{margin-left:4px}
-    .fb,.reveal{margin-left:4px}
+    .fb,.reveal,.hint{margin-left:4px}
+    .hint{font-size:13.5px;padding:9px 11px}
+    .chain .step{gap:7px;font-size:13px}
+    .chain .k{width:56px;padding:1px 4px}
     .reveal{padding:10px 11px;font-size:14px}
     textarea.ans{width:calc(100% - 4px);margin-left:4px}
     button.opt{font-size:14px;padding:9px 11px}
@@ -188,7 +214,7 @@
   @media print{
     body{background:#fff}
     nav.jump,.tools,.setbar button,.row button,.selfbar,header.top .score-bar,details.mistakes{display:none}
-    .reveal{display:block !important}
+    .reveal,.hint{display:block !important}
     section.set{break-inside:avoid;border:0;padding:0}
   }
 </style>
@@ -208,16 +234,36 @@
 </header>
 
 <details class="guide" open>
-  <summary>📐 方法总纲（先看这里）</summary>
+  <summary>🧭 解题思路总纲（先看这里）</summary>
 
-  <h4>① 三条路，看题选路</h4>
-  <div class="three">
-    <div><div class="k">A. 去绝对值</div>按绝对值内部的符号<b>分段讨论</b>，每段解出来后<b>必须回代检验是否落在该段内</b>。式子简单、绝对值不多时最快。</div>
-    <div><div class="k">B. 数形结合</div>把方程化成 <span class="m">f(x) = a</span>，画出 <span class="m">y = f(x)</span>，再看水平线 <span class="m">y = a</span> 与它的<b>交点个数</b>。含参问根数的首选。</div>
-    <div><div class="k">C. 换元</div>只出现 <span class="m">|x|</span> 和 <span class="m">x²</span> 时，令 <span class="m">t = |x| ≥ 0</span>，化成 <b>t 的二次方程</b>，再把 t 的根数翻译回 x 的根数。</div>
+  <h4>① 统一打法：四步，哪道题都这么走</h4>
+  <div class="flow">
+    <div><span class="n">1</span><b>定形</b><p>把方程整理成「<b>只含 x 的一边</b> = <b>只含 a 的一边</b>」。
+      能分离参数就分离；分不开（右边是 <span class="m">ax</span> 这种）就把它当成一条<b>随 a 转动的直线</b>。</p></div>
+    <div><span class="n">2</span><b>画形</b><p>画出 <span class="m">y = f(x)</span>。有绝对值就<b>翻折</b>。
+      只需三样东西：<b>零点</b>在哪、<b>极值点</b>在哪、<b>两端</b>往哪走。</p></div>
+    <div><span class="n">3</span><b>扫线</b><p>让 <span class="m">y = a</span>（或那条直线）<b>从下往上扫</b>，
+      记下交点个数在哪几个高度<b>发生跳变</b>。这几个高度就是分类的临界值。</p></div>
+    <div><span class="n">4</span><b>验端点</b><p>把每个临界的 a <b>单独代回去数一遍</b>。
+      分数基本都丢在这一步——答案常常是「<b>一个孤立点 ∪ 一个区间</b>」。</p></div>
+  </div>
+  <div class="rule">
+    <b>为什么非要画图？</b>因为题目问的是「<b>根的个数</b>」，不是「根是多少」。
+    个数 = 交点个数，而交点个数一眼就能数出来；硬解方程反而要分一堆情况，还容易漏。
   </div>
 
-  <h4>② 换元法的关键：t 的根数 ≠ x 的根数</h4>
+  <h4>② 选路：看到什么样子，走哪条</h4>
+  <table>
+    <tr><th>方程长这样</th><th>走哪条路</th><th>第一步做什么</th></tr>
+    <tr><td><span class="m">|一次式| = 常数</span></td><td>直接定号</td><td>先问右边能不能为负、能不能为零</td></tr>
+    <tr class="hl"><td><span class="m">|x−u| + |x−v| = a</span></td><td>距离之<b>和</b></td><td>求两点间距 = 谷底高度，谷底是<b>一整段</b></td></tr>
+    <tr><td><span class="m">|x−u| − |x−v| = a</span></td><td>距离之<b>差</b></td><td>两端是<b>水平射线</b>，先确认它永远给不出两解</td></tr>
+    <tr class="hl"><td><span class="m">|二次式| = a</span></td><td>翻折 + 扫水平线</td><td>配方求零点和<b>峰高</b></td></tr>
+    <tr><td>只含 <span class="m">x²</span> 和 <span class="m">|x|</span></td><td>换元 <span class="m">t = |x| ≥ 0</span></td><td>先写死 <span class="m">t ≥ 0</span>，再想 t 的根怎么翻译回 x</td></tr>
+    <tr><td>右边含 x（如 <span class="m">ax</span>、<span class="m">ax+1</span>）</td><td>定点 + 转动直线</td><td>找直线<b>恒过哪个点</b>，再看斜率转到哪</td></tr>
+  </table>
+
+  <h4>③ 换元法的关键：t 的根数 ≠ x 的根数</h4>
   <div class="rule">
     令 <span class="m">t = |x|</span>，则每一个 <b><span class="m">t > 0</span> 对应 2 个 x</b>（<span class="m">x = ±t</span>），
     <b><span class="m">t = 0</span> 只对应 1 个 x</b>，<b><span class="m">t &lt; 0</span> 要舍去</b>。<br>
@@ -231,7 +277,7 @@
   于是又变成「一条抛物线 + 一条水平线」，<b>只不过左半边 <span class="m">t &lt; 0</span> 整片作废</b>：</p>
   <div id="figT"></div>
 
-  <h4>③ 必须背熟：<span class="m">|f(x)| = a</span> 的根数表（以 <span class="m">f(x) = x² − 2x</span> 为例）</h4>
+  <h4>④ 必须背熟：<span class="m">|f(x)| = a</span> 的根数表（以 <span class="m">f(x) = x² − 2x</span> 为例）</h4>
   <p style="font-size:13.5px;color:#667085;margin:0 0 8px">
   <span class="m">y = |x² − 2x|</span>：把抛物线在 x 轴下方的部分<b>翻折上去</b>，
   得到两个零点 <span class="m">x = 0, 2</span>，中间鼓起一个峰，<b>峰高 = 原顶点纵坐标的绝对值 = 1</b>。
@@ -251,7 +297,7 @@
     一个在最上面（高过峰顶），中间被 4 个根和 3 个根隔开了。<span class="m">a = 0</span> 这一支，十个人里有八个会漏。
   </div>
 
-  <h4>④ 通用的峰高怎么算</h4>
+  <h4>⑤ 通用的峰高怎么算</h4>
   <div class="rule">
     设 <span class="m">f(x) = x² + px + q</span> 有两个不同实根，则 <span class="m">y = |f(x)|</span> 的峰高就是
     <b><span class="m">|f(−p/2)|</span></b>，即原抛物线顶点纵坐标的绝对值。<br>
@@ -260,7 +306,7 @@
     <b>若 <span class="m">f</span> 本身没有实根</b>（判别式 &lt; 0），则 <span class="m">|f(x)| = f(x)</span> 全程为正，图像不翻折，根数表完全不同，要重新讨论。
   </div>
 
-  <h4>⑤ 一字之差，图形天壤之别：距离之「和」与距离之「差」</h4>
+  <h4>⑥ 一字之差，图形天壤之别：距离之「和」与距离之「差」</h4>
   <div class="figrow" id="figDist"></div>
   <div class="rule">
     左图底部是一段<b>水平的谷底</b>，所以 <span class="m">a</span> 等于最小值时是<b>无穷多解</b>，
@@ -270,13 +316,19 @@
     看一眼图就能定性，比硬分段快得多。
   </div>
 
+  <h4>⑦ 写完先别交：照着这五条过一遍</h4>
   <div class="pitfall">
-    <b>五个高频失分点</b><br>
-    ① <b>忘了右边必须非负</b>：<span class="m">|g(x)| = h(a)</span> 必须先要求 <span class="m">h(a) ≥ 0</span>，否则无解；<br>
-    ② <b>分段解完不检验</b>：在 <span class="m">x ≥ 2</span> 这一段解出 <span class="m">x = 1</span>，必须舍掉；<br>
-    ③ <b>漏掉孤立解</b>：答案常是「<span class="m">a = 0</span> 或 <span class="m">a &gt; 1</span>」这种<b>点 ∪ 区间</b>的形式；<br>
-    ④ <b>换元后只数 t 的个数</b>：<span class="m">t</span> 的两个正根对应 <b>4 个</b> x，不是 2 个；<br>
-    ⑤ <b>端点等号想当然</b>：<span class="m">a = 1</span> 时擦顶是 3 个根不是 2 个，所以写 <span class="m">a ≥ 1</span> 就错了。
+    这五条不是「知识点」，是<b>动作</b>——每条都要真去做一遍，不是读一眼。<br><br>
+    <b>□ 右边能不能是负的？</b> <span class="m">|g(x)| = h(a)</span> 先要求 <span class="m">h(a) ≥ 0</span>；
+    等于 0 时往往是<b>重根</b>，只算一个。<br>
+    <b>□ 分段解出的根，回代了吗？</b> 在 <span class="m">x ≥ 2</span> 这一段解出 <span class="m">x = 1</span>，
+    必须舍掉。<b>解一段，验一段。</b><br>
+    <b>□ 换元后翻译回 x 了吗？</b> <span class="m">t &gt; 0</span> 给 <b>2 个</b> x，<span class="m">t = 0</span> 给 <b>1 个</b>，
+    <span class="m">t &lt; 0</span> 舍。t 的两个正根是 <b>4 个</b> x，不是 2 个。<br>
+    <b>□ 临界的 a 逐个代回去数了吗？</b> 峰高、判别式为零、两根重合——这几个值<b>一个一个</b>代，
+    别想当然。<span class="m">a = 1</span> 擦顶是 3 个根，写 <span class="m">a ≥ 1</span> 就错了。<br>
+    <b>□ 答案只写了一个区间？</b> 回头想想有没有漏掉<b>孤立点</b>。
+    这类题的标准答案形状常常是「<span class="m">a = 0</span> 或 <span class="m">a &gt; 1</span>」。
   </div>
 </details>
 
@@ -446,10 +498,30 @@ const F = {
 };
 const C = {g:"#15803d", o:"#c2410c", r:"#be123c", p:"#7c3aed", b:"#3b5bdb"};
 
+/* 把解析渲染成一条推理链：看到什么 → 所以走哪条路 → 怎么推 → 拿什么验。
+   这类题真正难的不是算，是「拿到题知道往哪想」，所以把想的过程摊开写。 */
+const WHY_ROWS = [
+  ["see",   "🔍 看到", "题面给了什么信号"],
+  ["pick",  "🧭 定策", "所以走哪条路"],
+  ["run",   "✍️ 动手", "推导主干"],
+  ["check", "✅ 自检", "拿什么验、坑在哪"],
+];
+function whyHtml(w){
+  if(!w) return "";
+  if(typeof w === "string") return `<span class="why">${w}</span>`;   // 兼容老格式
+  return `<div class="chain">` + WHY_ROWS.map(r =>
+    w[r[0]] ? `<div class="step"><span class="k" title="${r[2]}">${r[1]}</span>`
+            + `<span class="v">${w[r[0]]}</span></div>` : "").join("")
+    + `</div>` + (w.fig || "");
+}
+
 /* 把图挂到对应题目的解析后面：有 fig 字段就追加一张 */
 function attachFigures(){
   DATA.forEach(set => set.items.forEach(it => {
-    if(it.fig) it.why += FIG.wrap(it.fig);
+    if(!it.fig) return;
+    const svg = FIG.wrap(it.fig);
+    if(typeof it.why === "string") it.why += svg;
+    else it.why.fig = svg;
   }));
 }
 
@@ -461,12 +533,18 @@ const DATA = [
   {t:"choice", lv:"基础",
    q:`若关于 x 的方程 |x − 3| = a 有两个不同的实根，则实数 a 的取值范围是`,
    opts:[`a > 0`, `a ≥ 0`, `a > 3`, `a ≠ 3`], a:0,
-   why:`右边是距离，必须 a ≥ 0 才可能有解。a = 0 时方程成了 |x−3| = 0，只有 x = 3 这一个根；a > 0 时 x = 3 ± a 是两个不同的根。所以要两个不同实根必须 a > 0。选 a ≥ 0 的，就是把 a = 0 时的重根当成了两个。`},
+   think:`右边是个常数。先问三件事：右边能不能为负？等于 0 时几个根？大于 0 时几个根？`,
+   why:{see:`左边是「x 到一个定点的距离」，右边只含参数、不含 x。`, pick:`式子最简单，不必画图，直接按 a 的符号分三段讨论。`,
+        run:`a &lt; 0：距离不可能为负，无解；a = 0：|x−3| = 0 只有 x = 3，一个根；a &gt; 0：x = 3 ± a，两个不同根。`,
+        check:`坑全在 a = 0：它给的是一个重根，不是两个。题目要「两个<b>不同</b>实根」，所以必须严格 a &gt; 0。`}},
 
   {t:"choice", lv:"基础",
    q:`若关于 x 的方程 |2x + 1| = a − 2 有两个不同的实根，则实数 a 的取值范围是`,
    opts:[`a > 2`, `a ≥ 2`, `a > 0`, `a > −2`], a:0,
-   why:`套同一个模子：要两个不同实根，右边必须严格大于 0，即 a − 2 > 0，得 a > 2。左边系数 2 只影响根的位置（x = (−1 ± (a−2))/2），不影响根的个数。`},
+   think:`和上一题同一个模子，只是右边换成了含 a 的式子——先把它当成一个整体看。`,
+   why:{see:`左边仍是一次式的绝对值，右边 a − 2 是一个整体。`, pick:`把 a − 2 当成上一题里的那个「a」，结论直接搬过来，不用重新推一遍。`,
+        run:`两个不同实根 ⟺ a − 2 &gt; 0 ⟺ a &gt; 2。`,
+        check:`左边的系数 2 只改变根的位置（x = (−1 ± (a−2))/2），不改变根的<b>个数</b>——别被它带偏。`}},
 
   {t:"choice", lv:"中等",
    q:`若关于 x 的方程 |x + 1| + |x − 3| = a 有两个不同的实根，则实数 a 的取值范围是`,
@@ -474,12 +552,18 @@ const DATA = [
    fig:{xr:[-3.4,5.4], yr:[-0.6,8], f:F.sumDist(-1,3), h:230,
         lines:[{a:3, c:C.g, label:"a=3"},{a:4, c:C.o, label:"a=4"},{a:6, c:C.p, label:"a=6"}],
         cap:`绿线 <b>a=3</b> 低于谷底，无解；橙线 <b>a=4</b> 正好是谷底，整段 [−1,3] 都是解（无穷多）；紫线 <b>a=6</b> 高过谷底，左右各一个交点，恰两解。`},
-   why:`几何意义：左边是数轴上 x 到 −1 和到 3 的距离之和。当 x 落在区间 [−1, 3] 内时，这个和恒等于 4（最小值）；走出区间，每远离 1 个单位就多 2。所以：a < 4 无解；a = 4 时整个闭区间 [−1,3] 上的点全是解，是无穷多个解，不是两个；a > 4 时左右各一个，恰好两个。端点必须取严格不等号。`},
+   think:`两个绝对值相加。先别急着分段，想想它的几何意义是什么。`,
+   why:{see:`左边是「x 到 −1 的距离」加上「x 到 3 的距离」。`, pick:`距离之和有现成的几何结论，比老实分段快得多。`,
+        run:`x 落在 [−1, 3] 内时这个和恒等于 4（两点间距），走出区间每远离 1 个单位就多 2。于是 a &lt; 4 无解；a = 4 时整段 [−1,3] 都是解；a &gt; 4 时左右各一个。`,
+        check:`a = 4 给的是<b>无穷多解</b>，不是两解。凡是「最小值处」都要单独验一次。`}},
 
   {t:"fill", lv:"中等",
    q:`方程 |x − 1| + |x + 2| = a 有两个不同的实根，则 a 的取值范围是 a > 【　】。`,
    as:[[`3`]],
-   why:`两点 1 和 −2 之间的距离是 3，所以左边的最小值是 3，且在整个闭区间 [−2, 1] 上恒为 3。a = 3 时是无穷多解，a > 3 时恰有两解。`},
+   think:`和上题同构。左边的最小值是多少？在哪些点上取到？`,
+   why:{see:`两个定点是 1 和 −2。`, pick:`直接套「距离之和」的结论，不用再分段。`,
+        run:`最小值 = 两点间距 = |1 − (−2)| = 3，且在整个闭区间 [−2, 1] 上恒为 3。a &gt; 3 时左右各一解。`,
+        check:`a = 3 对应无穷多解，所以必须严格大于，不能取等号。`}},
 
   {t:"choice", lv:"易错",
    q:`关于 x 的方程 |x − 1| − |x + 2| = a 有两个不同的实根，则实数 a`,
@@ -487,7 +571,10 @@ const DATA = [
    fig:{xr:[-5.4,4.4], yr:[-4.2,4.2], f:F.difDist(1,-2), h:230,
         lines:[{a:3, c:C.o, label:"a=3"},{a:1, c:C.g, label:"a=1"},{a:-3, c:C.p, label:"a=−3"}],
         cap:`两端是水平射线：橙线 <b>a=3</b> 和紫线 <b>a=−3</b> 各自压在一整条射线上，无穷多解；绿线 <b>a=1</b> 只能交中间那段单调斜线，恰一解。<b>没有任何高度能切出两个交点。</b>`},
-   why:`把左边 g(x) 分三段写出来：x ≤ −2 时恒为 3；−2 < x < 1 时为 −1 − 2x，从 3 严格减到 −3；x ≥ 1 时恒为 −3。所以水平线 y = a 与它的交点只有三种情况：a = 3 或 a = −3 时交在一整条射线上（无穷多解）；−3 < a < 3 时因为中间段严格单调，恰好一个交点；|a| > 3 时没有交点。永远不可能恰好两个。和「距离之和」不同，<b>距离之差</b>的图像两端是平的，这是本质区别。`}
+   think:`这次中间是减号不是加号。先把两端的走向弄清楚——这一步直接决定全部结论。`,
+   why:{see:`同样两个绝对值，但中间是减法。`, pick:`「和」的图像是 V 型谷，「差」的图像是台阶。形状不同，结论不能照搬，必须分段写出来。`,
+        run:`x ≤ −2 时恒为 3；−2 &lt; x &lt; 1 时为 −1 − 2x，从 3 严格减到 −3；x ≥ 1 时恒为 −3。于是 |a| &gt; 3 无解；a = ±3 压在一整条射线上是无穷多解；−3 &lt; a &lt; 3 时中间段严格单调，恰一解。`,
+        check:`三种情况数一遍，<b>没有任何 a 能给出恰好两解</b>。两端是水平射线，这是「差」区别于「和」的要害。`}}
   ]
 },
 {
@@ -501,7 +588,10 @@ const DATA = [
         lines:[{a:0, c:C.g, label:"a=0"},{a:0.5, c:C.o, label:"a=0.5"},
                {a:1, c:C.r, label:"a=1"},{a:1.8, c:C.p, label:"a=1.8"}],
         cap:`数一数每条线上的点：绿 <b>2 个</b>、橙 <b>4 个</b>、红 <b>3 个</b>、紫 <b>2 个</b>。两个「2 个根」的情形被中间隔开，所以答案不是一个区间。`},
-   why:`y = |x² − 2x| 的图像：零点 x = 0, 2，中间翻折起来一个峰，峰高 = |顶点纵坐标| = |(1)² − 2(1)| = 1。水平线从下往上扫：a < 0 没有交点；a = 0 恰好是 x 轴，交于两个零点，<b>2 个根</b>；0 < a < 1 穿过峰腰，左右各两个，4 个根；a = 1 擦过峰顶，3 个根；a > 1 高过峰顶，只剩外侧两个，<b>2 个根</b>。所以答案是 a = 0 或 a > 1，一个孤立点加一个开区间。`},
+   think:`把绝对值看成「翻折」：先画 y = x² − 2x，把 x 轴下方翻上来，再让水平线从下往上扫。`,
+   why:{see:`左边是二次式的绝对值，右边是纯参数。`, pick:`数形结合的标准场景——画一次图，所有 a 的情况一次看全，比逐段讨论省事得多。`,
+        run:`x² − 2x 零点 0 和 2，顶点 (1, −1) ⟹ 翻折后峰高 1。水平线自下而上：a &lt; 0 无交点；a = 0 交于两个零点；0 &lt; a &lt; 1 交 4 个；a = 1 擦峰顶 3 个；a &gt; 1 只剩外侧 2 个。`,
+        check:`两个「2 个根」分别在最低和最高处，中间被 4 个、3 个隔开，所以答案是<b>孤立点 ∪ 区间</b>，不是一个区间。`}},
 
   {t:"choice", lv:"必会",
    q:`若关于 x 的方程 |x² − 4| = a 有两个不同的实根，则实数 a 的取值范围是`,
@@ -510,7 +600,10 @@ const DATA = [
         lines:[{a:0, c:C.g, label:"a=0"},{a:2, c:C.o, label:"a=2"},
                {a:4, c:C.r, label:"a=4"},{a:5.5, c:C.p, label:"a=5.5"}],
         cap:`峰高变成 4（顶点 (0,−4)），其余完全同构：绿 2 个、橙 4 个、红 3 个、紫 2 个。`},
-   why:`同一个模型，只是峰高变了：y = x² − 4 的顶点是 (0, −4)，翻折后峰高 4，零点 x = ±2。于是 a = 0 时 2 个根，0 < a < 4 时 4 个，a = 4 时 3 个，a > 4 时 2 个。答案 a = 0 或 a > 4。`},
+   think:`和上题同一个模型。只要算出两样东西：零点在哪、峰有多高。`,
+   why:{see:`又是「二次式的绝对值 = 参数」。`, pick:`直接套上题的根数表，只需把峰高换掉。`,
+        run:`x² − 4 顶点 (0, −4) ⟹ 峰高 4，零点 ±2。于是 a = 0 两根，0 &lt; a &lt; 4 四根，a = 4 三根，a &gt; 4 两根。`,
+        check:`峰高永远等于 |顶点纵坐标|。别去背具体数字，背这个公式。`}},
 
   {t:"fill", lv:"中等",
    q:`方程 |x² − 2x − 3| = a 有两个不同的实根，则 a = 0 或 a > 【　】。`,
@@ -518,7 +611,10 @@ const DATA = [
    fig:{xr:[-2.4,4.4], yr:[-1,6.5], f:F.absQuad(-2,-3),
         lines:[{a:0, c:C.g, label:"a=0"},{a:4, c:C.r, label:"a=4"},{a:5.5, c:C.p, label:"a=5.5"}],
         cap:`顶点 (1,−4) ⟹ 峰高 4。红线正好擦顶是 3 个根，紫线高过峰顶才是 2 个根。`},
-   why:`x² − 2x − 3 = (x − 1)² − 4，顶点 (1, −4)，所以峰高是 4，零点 x = −1, 3。a > 4 时水平线高过峰顶，恰两个交点。`},
+   think:`还是那两样：零点、峰高。配方最快。`,
+   why:{see:`二次式的绝对值等于参数。`, pick:`套模型，先配方求顶点。`,
+        run:`x² − 2x − 3 = (x − 1)² − 4 ⟹ 顶点 (1, −4)，峰高 4，零点 −1 和 3。a &gt; 4 时水平线高过峰顶，恰两个交点。`,
+        check:`a = 4 正好擦顶，那是 3 个根，所以这里不能取等号。`}},
 
   {t:"choice", lv:"对比",
    q:`若关于 x 的方程 |x² − 2x| = a 恰有三个不同的实根，则 a =`,
@@ -526,7 +622,10 @@ const DATA = [
    fig:{xr:[-1.3,3.3], yr:[-0.5,2.2], f:F.absQuad(-2,0), h:210,
         lines:[{a:1, c:C.r, label:"a=1"}],
         cap:`水平线正好擦过峰顶：峰顶 1 个 + 外侧 2 个 = <b>3 个</b>。`},
-   why:`三个根只出现在一个瞬间：水平线正好擦过峰顶。此时峰顶那个点算一个根，外侧两个点各算一个，共 3 个。峰高是 1，所以 a = 1。把根数表背下来，这类题是送分的。`},
+   think:`三是奇数。4 个、2 个交点都是左右成对出现的——奇数只可能出现在什么位置？`,
+   why:{see:`问的是恰好三个根。`, pick:`用图看：根数只在水平线经过「特殊高度」时才发生跳变。`,
+        run:`唯一能出现奇数个交点的时刻，是水平线正好擦过峰顶：峰顶贡献 1 个，外侧两支各 1 个，共 3 个。峰高是 1，故 a = 1。`,
+        check:`把根数表背熟，这类题是送分的：0 → 2 → 4 → 3 → 2，只有擦顶那一瞬是 3。`}},
 
   {t:"choice", lv:"对比",
    q:`若关于 x 的方程 |x² − 2x| = a 恰有四个不同的实根，则实数 a 的取值范围是`,
@@ -534,7 +633,10 @@ const DATA = [
    fig:{xr:[-1.3,3.3], yr:[-0.5,2.2], f:F.absQuad(-2,0), h:210,
         lines:[{a:0.5, c:C.o, label:"a=0.5"}],
         cap:`严格卡在 x 轴与峰顶之间时，左右两段各贡献 2 个交点，共 <b>4 个</b>。`},
-   why:`水平线必须<b>严格</b>卡在 x 轴和峰顶之间：碰到 x 轴（a = 0）掉成 2 个根，碰到峰顶（a = 1）掉成 3 个根。所以两端都取不到，是开区间 0 < a < 1。`},
+   think:`四个根 = 左右两支各贡献两个。水平线要卡在哪两条线之间？`,
+   why:{see:`问的是恰好四个根。`, pick:`还是扫水平线，找根数为 4 的那一段。`,
+        run:`必须严格卡在 x 轴与峰顶之间：碰到 x 轴（a = 0）掉成 2 个，碰到峰顶（a = 1）掉成 3 个。故 0 &lt; a &lt; 1。`,
+        check:`两端都取不到，是开区间。根数在端点处会跳变，端点必须逐个代回去验。`}},
 
   {t:"open", lv:"综合",
    q:`讨论方程 |x² − 4x + 3| = a 的实根个数（对 a 分类）。`,
@@ -549,7 +651,10 @@ const DATA = [
         lines:[{a:0, c:C.g, label:"a=0"},{a:0.5, c:C.o, label:"a=0.5"},
                {a:1, c:C.r, label:"a=1"},{a:2, c:C.p, label:"a=2"}],
         cap:`零点 1 和 3，顶点 (2,−1) ⟹ 峰高 1。绿 2 个、橙 4 个、红 3 个、紫 2 个。`},
-   why:`这是 |二次| = a 的标准讨论，五段缺一不可。阅卷时 a = 0 与 a = 1 两个临界点是给分点，合并到区间里去就要扣分。`}
+   think:`讨论题的分段点，就是图上根数发生跳变的那几个高度。先求零点和峰高，分段点自然浮出来。`,
+   why:{see:`要求对 a 做完整分类。`, pick:`先定形（配方），再扫线，按根数变化的临界值切段。`,
+        run:`(x − 2)² − 1 ⟹ 零点 1、3，顶点 (2, −1)，峰高 1。五段：a &lt; 0 无根；a = 0 两根；0 &lt; a &lt; 1 四根；a = 1 三根；a &gt; 1 两根。`,
+        check:`a = 0 与 a = 1 是两个给分点，合并进区间就要扣分。写完数一下：<b>段数 = 临界值个数 + 1</b>。`}}
   ]
 },
 {
@@ -563,22 +668,34 @@ const DATA = [
         lines:[{a:1, c:C.p, label:"−a=1 (a=−1)"},{a:0, c:C.g, label:"−a=0 (a=0)"},
                {a:-0.5, c:C.o, label:"−a=−0.5"},{a:-1, c:C.r, label:"−a=−1 (a=1)"}],
         cap:`换元后看 <b>y = t² − 2t 与 y = −a</b>，左半边作废（那里的交点画成空心灰点）。紫线（a=−1）舍掉一个负根后只剩 <b>1 个</b>正交点 ⟹ x 有 2 个；红线（a=1）切在顶点 t=1 ⟹ x 有 2 个；绿线（a=0）交于 t=0 和 t=2 ⟹ x 有 1+2=<b>3</b> 个；橙线两个正交点 ⟹ x 有 <b>4</b> 个。`},
-   why:`注意 x² = |x|²，令 t = |x| ≥ 0，方程化为 t² − 2t + a = 0，根为 t = 1 ± √(1 − a)（需 a ≤ 1）。要原方程恰有 2 个不同实根，只有两种可能：<b>(i) t 恰有一个正根</b>——两根之积 a < 0 时一正一负，负根舍去，剩一个正根，给出 x = ±t 两个根；<b>(ii) t 有一个正的二重根</b>——判别式为 0 即 a = 1，此时 t = 1，给出 x = ±1 两个根。其余情形：a = 0 时 t = 0 或 2，共 3 个根；0 < a < 1 时两个正根，共 4 个根；a > 1 时无解。所以答案 a < 0 或 a = 1。漏掉 a = 1 是最常见的错。`},
+   think:`只出现 x² 和 |x|，没有单独的 x——这是换元的标志。换完之后，t 的根数不等于 x 的根数。`,
+   why:{see:`x² = |x|²，所以整个方程只含 |x| 这一个量。`, pick:`令 t = |x| ≥ 0 化成二次方程，但必须把 t 的根数翻译回 x 的根数。`,
+        run:`t² − 2t + a = 0。x 恰两根只有两条路：(i) t 恰一个正根 ⟺ 两根之积 a &lt; 0；(ii) t 有一个正的二重根 ⟺ 判别式为 0 即 a = 1（此时 t = 1，x = ±1）。`,
+        check:`其余情形逐个验：a = 0 → t = 0 或 2 → 1 + 2 = 3 个根；0 &lt; a &lt; 1 → 两正根 → 4 个；a &gt; 1 → 无解。<b>漏掉 a = 1 是最常见的失分点。</b>`}},
 
   {t:"choice", lv:"中等",
    q:`若关于 x 的方程 x² − |x| + a = 0 有两个不同的实根，则实数 a 的取值范围是`,
    opts:[`a < 0 或 a = 1/4`, `a < 0`, `a = 1/4`, `0 < a < 1/4`], a:0,
-   why:`令 t = |x| ≥ 0，得 t² − t + a = 0，判别式 1 − 4a。同样两条路：(i) 一正一负根 ⟺ 两根之积 a < 0；(ii) 正的二重根 ⟺ 判别式 1 − 4a = 0，即 a = 1/4，此时 t = 1/2 > 0，合法，给出 x = ±1/2。注意这里的二重根临界值是 1/4 不是 1——系数变了，临界值就跟着变，不能照搬上一题。`},
+   think:`同一套换元。两条路还是那两条，但临界值要重算，别照搬上题的 1。`,
+   why:{see:`仍然只含 x² 与 |x|。`, pick:`换元 t = |x| ≥ 0。`,
+        run:`t² − t + a = 0。(i) 一正一负 ⟺ 两根之积 a &lt; 0；(ii) 正的二重根 ⟺ 判别式 1 − 4a = 0 即 a = 1/4，此时 t = 1/2 &gt; 0，合法。`,
+        check:`二重根算出来后一定要验 <b>t &gt; 0</b>——若二重根是负的就得舍掉，不能留在答案里。`}},
 
   {t:"choice", lv:"易错",
    q:`若关于 x 的方程 x² + a|x| + 1 = 0 有两个不同的实根，则实数 a =`,
    opts:[`−2`, `a < −2`, `a ≤ −2`, `2`], a:0,
-   why:`令 t = |x| ≥ 0，得 t² + at + 1 = 0。两根之积为 1 > 0，说明两根<b>同号</b>，不可能一正一负，所以「一正一负」这条路堵死了，只剩二重根一条路：判别式 a² − 4 = 0 得 a = ±2；又两根之和为 −a 必须为正，故 a < 0，取 a = −2。此时 t = 1，x = ±1，恰两个根。若 a < −2，t 有两个不同正根，对应 <b>4 个</b> x，不是 2 个。这题专治「看到判别式就写 ≥ 0」。`},
+   think:`先看两根之积。它直接决定「一正一负」这条路通不通。`,
+   why:{see:`换元后常数项是 1。`, pick:`换元 t = |x| ≥ 0，再用韦达定理先判根的符号。`,
+        run:`t² + at + 1 = 0，两根之积 = 1 &gt; 0 ⟹ 两根同号，「一正一负」这条路堵死。只剩二重根：判别式 a² − 4 = 0 得 a = ±2；又两根之和 −a 必须为正，故 a = −2，t = 1，x = ±1。`,
+        check:`若 a &lt; −2，t 有两个不同正根 ⟹ x 有 <b>4</b> 个根，不是 2 个。看到判别式就顺手写 ≥ 0 的，正是在这里翻车。`}},
 
   {t:"fill", lv:"中等",
    q:`方程 x² − 4|x| + a = 0 有四个不同的实根，则 【　】 < a < 【　】。`,
    as:[[`0`],[`4`]],
-   why:`令 t = |x|，得 t² − 4t + a = 0。四个 x 根 ⟺ t 有<b>两个不同的正根</b>：判别式 16 − 4a > 0 得 a < 4；两根之积 a > 0；两根之和 4 > 0 自动满足。故 0 < a < 4。`},
+   think:`四个 x 根，反推过去：t 要有几个根？什么符号？`,
+   why:{see:`问的是四根。`, pick:`换元后用「t &gt; 0 给 2 个 x」反推 t 需要满足的条件。`,
+        run:`t² − 4t + a = 0 要有两个不同正根：判别式 16 − 4a &gt; 0 ⟹ a &lt; 4；两根之积 a &gt; 0；两根之和 4 &gt; 0 自动满足。故 0 &lt; a &lt; 4。`,
+        check:`判别式、两根之积、两根之和，三个条件缺一不可。少写一个就可能把负根算进来。`}},
 
   {t:"open", lv:"综合",
    q:`讨论方程 x² − 2|x| + a = 0 的实根个数（对 a 分类）。`,
@@ -594,7 +711,10 @@ const DATA = [
         lines:[{a:1, c:C.p, label:"a=−1"},{a:0, c:C.g, label:"a=0"},
                {a:-0.5, c:C.o, label:"a=0.5"},{a:-1, c:C.r, label:"a=1"}],
         cap:`水平线的高度是 <b>−a</b>。线从上往下扫：先只交到右半支（x 有 2 个根），到 t=0 时多一个零根（3 个），再往下切出两个正根（4 个），直到切于顶点（2 个），更低就无交点。`},
-   why:`换元题的采分点有两个：一是写明 t ≥ 0 的限制，二是写明 t 与 x 的根数对应。只写 t 的讨论、不翻译回 x，即使分类全对也拿不到满分。`}
+   think:`讨论题先把「t 的根数 → x 的根数」这张对照表写出来，分类自然就出来了。`,
+   why:{see:`要求完整分类。`, pick:`换元，按判别式和根的符号切段。`,
+        run:`t² − 2t + a = 0，Δ = 4 − 4a。a &gt; 1 无实根 → 0 个；a = 1 二重正根 → 2 个；0 &lt; a &lt; 1 两正根 → 4 个；a = 0 → t = 0 或 2 → 3 个；a &lt; 0 一正一负 → 2 个。`,
+        check:`采分点有两个：写明 <b>t ≥ 0</b> 的限制，写明 <b>t 与 x 的根数对应</b>。只讨论 t 不翻译回 x，分类再全也拿不到满分。`}}
   ]
 },
 {
@@ -608,7 +728,10 @@ const DATA = [
         lines:[{m:0.5,b:0, c:C.g, label:"a=0.5"},{m:1,b:0, c:C.r, label:"a=1"},
                {m:1.6,b:0, c:C.p, label:"a=1.6"}],
         cap:`V 形顶点在 (2,0)，直线绕原点转。绿线（0&lt;a&lt;1）同时穿过左右两条边 ⟹ <b>2 个</b>交点；红线 a=1 与右边那条边<b>平行</b>，只剩左边 1 个；a 再大仍只有 1 个。`},
-   why:`分段。当 x ≥ 2：x − 2 = ax ⟹ x(1 − a) = 2 ⟹ x = 2/(1−a)，要求它确实 ≥ 2，解得 0 ≤ a < 1。当 x < 2：2 − x = ax ⟹ x = 2/(1+a)，要求它确实 < 2，解得 a > 0（或 a < −1，此时根为负数也满足 x < 2）。两段都有根才凑够两个：取交集得 0 < a < 1。从图上看更直观：y = |x−2| 是一个顶点在 (2,0) 的 V 形，y = ax 是过原点、斜率为 a 的直线；斜率从 0 转到 1 的过程中直线能同时切到 V 的两条边，到 a = 1 时与右支平行，只剩一个交点。`},
+   think:`右边不再是常数，而是一条绕原点转的直线。要么分段解，要么看斜率转到哪。`,
+   why:{see:`左边是 V 形，右边是过原点的直线。`, pick:`两条路都行：分段解方程再回代检验（稳），或直接看图数交点（快）。`,
+        run:`x ≥ 2 时 x − 2 = ax ⟹ x = 2/(1−a)，要求 ≥ 2 得 0 ≤ a &lt; 1；x &lt; 2 时 2 − x = ax ⟹ x = 2/(1+a)，要求 &lt; 2 得 a &gt; 0。两段都有根才凑够两个，取交集 0 &lt; a &lt; 1。`,
+        check:`<b>每段解出的根必须落回该段</b>——这是分段法的命门。再用图复核一遍：a = 1 时直线与右支平行，只剩一个交点。`}},
 
   {t:"choice", lv:"中等",
    q:`若关于 x 的方程 |x| = ax + 1 有两个不同的实根，则实数 a 的取值范围是`,
@@ -617,7 +740,10 @@ const DATA = [
         lines:[{m:0,b:1, c:C.g, label:"a=0"},{m:0.7,b:1, c:C.o, label:"a=0.7"},
                {m:1,b:1, c:C.r, label:"a=1"},{m:1.5,b:1, c:C.p, label:"a=1.5"}],
         cap:`直线恒过定点 (0,1)。只有斜率严格介于 −1 和 1 之间（绿、橙）时才能同时穿过 V 的两条边；a=1 时与右边那条边平行（红），只剩 1 个交点。`},
-   why:`当 x ≥ 0：x = ax + 1 ⟹ x = 1/(1−a)，要求 ≥ 0 且 a ≠ 1，得 a < 1。当 x < 0：−x = ax + 1 ⟹ x = −1/(1+a)，要求 < 0 且 a ≠ −1，得 a > −1。两边都要有根，取交集 −1 < a < 1。图像上：y = |x| 是顶点在原点的 V 形（两条边斜率分别是 1 和 −1），y = ax + 1 是过定点 (0,1) 转动的直线，只有当斜率严格介于 −1 和 1 之间时，才能同时穿过 V 的左右两条边。`},
+   think:`直线恒过一个定点。先找到它，再想斜率在什么范围内才能同时穿过 V 的两条边。`,
+   why:{see:`右边是过 (0, 1) 的直线，左边是顶点在原点的 V。`, pick:`定点 + 斜率，图形直接给出答案；分段法用来复核。`,
+        run:`x ≥ 0：x = ax + 1 ⟹ x = 1/(1−a)，要求 ≥ 0 且 a ≠ 1 ⟹ a &lt; 1；x &lt; 0：−x = ax + 1 ⟹ x = −1/(1+a)，要求 &lt; 0 且 a ≠ −1 ⟹ a &gt; −1。交集 −1 &lt; a &lt; 1。`,
+        check:`V 的两条边斜率分别是 1 和 −1，直线斜率必须<b>严格</b>介于两者之间——等于时平行，少一个交点。`}},
 
   {t:"open", lv:"较难",
    q:`讨论方程 |x² − 2x| = ax 的实根个数，并指出恰有两个不同实根时 a 的取值范围。`,
@@ -638,7 +764,10 @@ const DATA = [
         lines:[{m:1,b:0, c:C.o, label:"a=1"},{m:2,b:0, c:C.r, label:"a=2"},
                {m:3,b:0, c:C.p, label:"a=3"},{m:-3,b:0, c:C.g, label:"a=−3"}],
         cap:`直线恒过原点，而原点正好在曲线上 ⟹ <b>x=0 永远是根</b>。橙线 a=1 共 3 个交点；红线 a=2 恰好经过 (0,0) 与 (4,8)，是 <b>2 个</b>（原来的 2−a 退化到了原点）；紫线 a=3 也是 2 个；绿线 a=−3 在左侧交一个，加原点共 2 个。`},
-   why:`这题的三个坑：(1) 漏掉 x = 0 这个恒成立的根；(2) 两边约去 x 时忘了 x < 0 的情形会让右边变号；(3) a = 2 时两个根撞在一起，必须去重，否则会误判成 3 个根。最后答案里 a ≥ 2 的等号能取，正是因为这次去重。`}
+   think:`两边都含 x。先把 x = 0 代进去看看——这一步决定整道题的结构。`,
+   why:{see:`右边是过原点的直线，而原点正好落在曲线上。`, pick:`先把 x = 0 这个恒成立的根单独拎出来，再对 x &gt; 0、x &lt; 0 分别约去 x。`,
+        run:`x &gt; 0 约去 x 得 |x−2| = a（需 a ≥ 0）：a = 0 给 x = 2；a &gt; 0 给 x = 2 + a 与 x = 2 − a（后者需 a &lt; 2）。x &lt; 0 时约去负数，得 |x−2| = −a（需 a ≤ 0），此段 x − 2 &lt; 0 故 x = 2 + a，需 &lt; 0 即 a &lt; −2。汇总（含 x = 0）：a &lt; −2 两根；−2 ≤ a &lt; 0 一根；a = 0 两根；0 &lt; a &lt; 2 三根；a = 2 时 2 − a 与 0 重合，两根；a &gt; 2 两根。`,
+        check:`三个坑：漏掉 x = 0；约去 x 时忘了 x &lt; 0 会让右边变号；a = 2 时两根重合必须<b>去重</b>。答案里 a ≥ 2 的等号能取，正是因为这次去重。`}}
   ]
 },
 {
@@ -648,7 +777,10 @@ const DATA = [
   {t:"choice", lv:"易错",
    q:`小王解「方程 x² − 2|x| + a = 0 有两个不同实根，求 a」，答案写了「a < 0」。他漏掉了哪一种情形？`,
    opts:[`t 有正的二重根，即 a = 1`, `t 有两个正根，即 0 < a < 1`, `t = 0 的情形，即 a = 0`, `他没有漏，答案就是 a < 0`], a:0,
-   why:`令 t = |x| 后，「x 恰有两个根」有两条路：t 恰一个正根（对应 a < 0），或 t 有一个正的二重根（判别式为 0，a = 1，此时 x = ±1 确实是两个根）。小王只走了第一条。注意 B 选项给出的是 4 个 x 根，C 选项给出的是 3 个（t = 0 贡献 1 个、t = 2 贡献 2 个），都不是 2 个。`},
+   think:`「恰两个 x 根」在换元之后一共有几条路？他走了哪一条，还剩哪一条？`,
+   why:{see:`这是前面那道 x² − 2|x| + a = 0 的同一个方程。`, pick:`回到「t 的根数 → x 的根数」对照表，把所有能给出 2 个 x 根的 t 情形列全。`,
+        run:`两条路：t 恰一个正根（a &lt; 0），或 t 有一个正的二重根（a = 1，x = ±1）。小王只写了前者。`,
+        check:`另外两个选项逐个验：两个正根给的是 4 个 x 根；t = 0 的情形给的是 3 个（t = 0 贡献 1 个、t = 2 贡献 2 个）。逐项验证比凭直觉可靠。`}},
 
   {t:"choice", lv:"易错",
    q:`下列关于方程 |x² − 2x| = a 的说法，正确的是`,
@@ -656,12 +788,18 @@ const DATA = [
          `实根个数随 a 的增大而单调减少`,
          `实根个数只可能是 0 个、2 个或 4 个`,
          `它与方程 x² − 2x = a 的实根个数总是相同`], a:0,
-   why:`A 对：答案是 a = 0 或 a > 1，即 {0} ∪ (1, +∞)，一个孤立点并上一个开区间，不是区间。<br>B 错：根数随 a 增大依次是 0 → 2 → 4 → 3 → 2，先增后减，并不单调。<br>C 错：a = 1 时水平线擦过峰顶，恰好 3 个根，奇数个是存在的。<br>D 错：去掉绝对值后 x² − 2x = a 是普通二次方程，a = 0 时 2 根、a = −1 时 1 根、a < −1 时无根，与带绝对值的完全不同。`},
+   think:`四个选项分别在考根数表的哪一行？拿表逐条去对。`,
+   why:{see:`问的是对 |x² − 2x| = a 的整体性质判断。`, pick:`把根数随 a 变化的全过程写出来：0 → 2 → 4 → 3 → 2，再逐项核对。`,
+        run:`答案集合是 {0} ∪ (1, +∞)，一个孤立点并上一个开区间，所以「不是一个区间」这条成立。`,
+        check:`其余三项各被一条事实证伪：根数先增后减、并不单调；a = 1 时是 3 个根，奇数是存在的；去掉绝对值后的 x² − 2x = a 根数完全不同。`}},
 
   {t:"fill", lv:"中等",
    q:`方程 |x² − 1| = a 恰有三个不同实根，则 a = 【　】。`,
    as:[[`1`]],
-   why:`y = x² − 1 顶点 (0, −1)，翻折后峰高为 1，零点 x = ±1。水平线擦过峰顶时恰有三个交点，故 a = 1。`},
+   think:`三个根只在一个位置出现——前面已经见过两次了。`,
+   why:{see:`又是「|二次| = a 问奇数个根」。`, pick:`直接用「擦峰顶 = 3 个根」的结论，只需求峰高。`,
+        run:`x² − 1 顶点 (0, −1) ⟹ 峰高 1，零点 ±1。故 a = 1。`,
+        check:`换个二次式峰高就变，但「3 个根 ⟺ a = 峰高」这条结论不变。`}},
 
   {t:"choice", lv:"综合",
    q:`若关于 x 的方程 |x² − 2x| = ax 有两个不同的实根，则实数 a 的取值范围是`,
@@ -669,7 +807,10 @@ const DATA = [
    fig:{xr:[-3.4,5.4], yr:[-1,6], f:F.absQuad(-2,0), h:230,
         lines:[{m:2,b:0, c:C.r, label:"a=2"},{m:-2.5,b:0, c:C.g, label:"a=−2.5"}],
         cap:`a=2（红）与 a=−2.5（绿）都恰好 2 个交点，但它们分别落在答案的两段上。`},
-   why:`完整讨论见专项四最后一题。三个关键：x = 0 恒为一根；a = 2 时另一支的根 2 − a = 0 与它重合、去重后仍是两个根，所以等号能取；−2 ≤ a < 0 时只剩 x = 0 一个根。`},
+   think:`和专项四最后一道是同一个方程。关键只有三点：x = 0、约去 x 时的符号、重根去重。`,
+   why:{see:`曲线与过原点的直线。`, pick:`直接用已经讨论过的结论，重点放在复核端点上。`,
+        run:`a &lt; −2 或 a = 0 或 a ≥ 2。`,
+        check:`a = 2 时 2 − a 退化成 0，与恒为根的 x = 0 重合，去重后仍是两个根——所以等号能取。−2 ≤ a &lt; 0 时只剩 x = 0 一个根，要排除。`}},
 
   {t:"open", lv:"综合",
    q:`已知方程 |x² − 2x| = a 恰有两个不同实根，求 a 的取值范围，并说明为什么答案不是一个区间。`,
@@ -682,7 +823,10 @@ const DATA = [
         lines:[{a:0, c:C.g, label:"a=0"},{a:0.5, c:C.o, label:"a=0.5"},
                {a:1, c:C.r, label:"a=1"},{a:1.8, c:C.p, label:"a=1.8"}],
         cap:`「2 个根」出现在<b>最低</b>（绿）和<b>最高</b>（紫）两处，中间被 4 个根、3 个根隔断——这就是答案拼不成一个区间的原因。`},
-   why:`很多人算对了 a > 1 却漏掉 a = 0，根源就是默认「答案应该是一个区间」。把根数随 a 变化的全过程写出来，这个洞自然就补上了。`}
+   think:`「答案应该是一个区间」是个先入为主的直觉。把根数随 a 变化的全过程画出来，直觉自己就破了。`,
+   why:{see:`要求解释答案的结构，而不只是给出答案。`, pick:`数形结合，把五段根数写全，再看「2 个根」出现在哪几段。`,
+        run:`峰高 1，零点 0 和 2。根数依次为：a &lt; 0 → 0；a = 0 → 2；0 &lt; a &lt; 1 → 4；a = 1 → 3；a &gt; 1 → 2。故答案为 a = 0 或 a &gt; 1。`,
+        check:`两个「2 个根」一个在最低（贴着 x 轴）、一个在最高（高过峰顶），中间被 4 个根和 3 个根隔断，自然拼不成一个区间。`}}
   ]
 }
 ];
@@ -806,9 +950,9 @@ function render(){
         body=`<div class="opts" id="op-${id}">`+it.opts.map((o,k)=>
           `<button class="opt" data-act="pick" data-id="${id}" data-k="${k}">`
           +`${String.fromCharCode(65+k)}．<span class="m">${esc(o)}</span></button>`).join("")+`</div>`;
-        rv=`<b>${String.fromCharCode(65+it.a)}．${esc(it.opts[it.a])}</b><span class="why">${it.why}</span>`;
+        rv=`<b>${String.fromCharCode(65+it.a)}．${esc(it.opts[it.a])}</b>${whyHtml(it.why)}`;
       }else if(it.t==="fill"){
-        rv=`<b>${it.as.map(a=>esc(a[0])).join("　，　")}</b><span class="why">${it.why}</span>`;
+        rv=`<b>${it.as.map(a=>esc(a[0])).join("　，　")}</b>${whyHtml(it.why)}`;
       }else{
         body=`<textarea class="ans" id="tx-${id}" placeholder="先自己把分类讨论写完整，再点下面对照……"></textarea>
           <div class="selfbar" id="sb-${id}"><span class="lab">对照之后，自己评一下：</span>
@@ -818,7 +962,7 @@ function render(){
           </div>`;
         rv=`<b>参考解答：</b><span class="step">${esc(it.ref).replace(/\n/g,"<br>")}</span>`
           +`<b>得分点：</b><ul>`+it.points.map(x=>`<li>${esc(x)}</li>`).join("")+`</ul>`
-          +`<span class="why">${it.why}</span>`;
+          +whyHtml(it.why);
       }
 
       const mainBtn = it.t==="open"
@@ -829,8 +973,10 @@ function render(){
       div.innerHTML=head+body+`
         <div class="row">
           ${mainBtn}
+          ${it.think?`<button data-act="hint" data-id="${id}">💡 思路</button>`:""}
           <button class="flag" data-act="flag" data-id="${id}" title="标记这道题，之后要复习">🚩</button>
         </div>
+        <div class="hint" id="hi-${id}">💡 ${it.think||""}</div>
         <div class="fb" id="fb-${id}"></div>
         <div class="reveal" id="rv-${id}">${it.t==="open"?"":"<b>答案：</b>"}${rv}</div>`;
       sec.appendChild(div);
@@ -892,9 +1038,9 @@ function checkOne(id){
         b.className="opt"+(k===it.a?" good":(k===sel?" bad":""));
       });
       if(sel===it.a){ correct.add(id); res=true;
-        fb.innerHTML='<span class="good">✓ 正确</span> <span class="why">'+it.why+'</span>'; }
+        fb.innerHTML='<span class="good">✓ 正确</span> '+whyHtml(it.why)+''; }
       else{ correct.delete(id); res=false;
-        fb.innerHTML='<span class="bad">✗ 应选 '+String.fromCharCode(65+it.a)+'</span> <span class="why">'+it.why+'</span>'; }
+        fb.innerHTML='<span class="bad">✗ 应选 '+String.fromCharCode(65+it.a)+'</span> '+whyHtml(it.why)+''; }
     }
   }else if(it.t==="fill"){
     let all=true, empty=true, firstBad=-1;
@@ -907,9 +1053,9 @@ function checkOne(id){
     });
     if(empty){ fb.innerHTML='<span class="note">还没填哦～</span>'; correct.delete(id); }
     else if(all){ correct.add(id); res=true;
-      fb.innerHTML='<span class="good">✓ 正确</span> <span class="why">'+it.why+'</span>'; }
+      fb.innerHTML='<span class="good">✓ 正确</span> '+whyHtml(it.why)+''; }
     else{ correct.delete(id); res=false;
-      fb.innerHTML='<span class="bad">✗ 第 '+(firstBad+1)+' 个空不对。</span> <span class="why">'+it.why+'</span>'; }
+      fb.innerHTML='<span class="bad">✗ 第 '+(firstBad+1)+' 个空不对。</span> '+whyHtml(it.why)+''; }
   }else{
     const v=picked[id];
     if(v===undefined){ fb.innerHTML='<span class="note">先点「对照参考解答」，再自己评一下～</span>'; correct.delete(id); }
@@ -979,6 +1125,12 @@ function clearItem(id){
   for(let k=0;k<(it._n||0);k++){ const e=document.getElementById(`in-${id}-${k}`); if(e){ e.value=""; e.className="blank"; } }
   const tx=document.getElementById("tx-"+id); if(tx) tx.value="";
   document.getElementById("fb-"+id).className="fb";
+  const hi=document.getElementById("hi-"+id);
+  if(hi){
+    hi.classList.remove("show");
+    const hb=document.querySelector(`button[data-act="hint"][data-id="${id}"]`);
+    if(hb) hb.textContent="💡 思路";
+  }
   if(it.t==="open") setShow(id,false);
   else document.getElementById("rv-"+id).classList.remove("show");
   correct.delete(id); half.delete(id);
@@ -1006,6 +1158,12 @@ document.addEventListener("click",e=>{
     b.classList.add("pick"); save(); checkOne(id);
   }
   if(act==="show") setShow(id, !document.getElementById("rv-"+id).classList.contains("show"));
+  if(act==="hint"){
+    const el=document.getElementById("hi-"+id);
+    const on=!el.classList.contains("show");
+    el.classList.toggle("show",on);
+    b.textContent = on ? "收起思路" : "💡 思路";
+  }
   if(act==="one") checkOne(id);
   if(act==="ans") document.getElementById("rv-"+id).classList.toggle("show");
   if(act==="flag"){ flag.has(id)?flag.delete(id):flag.add(id); updateMarks(id); renderMistakes(); save(); }
@@ -1052,7 +1210,7 @@ document.getElementById("btnClearMarks").addEventListener("click",()=>{
 });
 render();
 </script>
-<script src="同步.js?v=202611171258" data-key="kaoyan-abs-eq-v1"></script>
+<script src="同步.js?v=202611171448" data-key="kaoyan-abs-eq-v1"></script>
 <script src="回到顶部.js"></script>
 </body>
 </html>
