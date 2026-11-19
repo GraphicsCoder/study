@@ -270,13 +270,23 @@
     return { score: 0, lives: LIVES, combo: 0, bestCombo: 0, solved: 0, wrong: 0, missed: 0, over: false };
   }
 
-  // 连击最多按 5 算：再往上翻分会让「开局手气好」压过「一直在认真算」
-  function hitScore(combo) { return 10 + Math.min(combo, 5) * 5; }
+  /* 难度系数：后面的关题更难、掉得也更有压力，一题值的分得跟上。
+     不然刷分最划算的办法是守着第 1 关做 20 以内加减，那就本末倒置了。
+     每过一关 +0.2，第 1 关 ×1.0，第 12 关 ×3.2。 */
+  function levelMul(level) {
+    var lv = Math.max(1, Math.min(MAX_LEVEL, level | 0 || 1));
+    return 1 + (lv - 1) * .2;
+  }
 
-  function catchRight(s) {
+  // 连击最多按 5 算：再往上翻分会让「开局手气好」压过「一直在认真算」
+  function hitScore(combo, level) {
+    return Math.round((10 + Math.min(combo, 5) * 5) * levelMul(level));
+  }
+
+  function catchRight(s, level) {
     s.combo += 1;
     s.bestCombo = Math.max(s.bestCombo, s.combo);
-    s.score += hitScore(s.combo);
+    s.score += hitScore(s.combo, level == null ? levelFor(s.solved) : level);
     s.solved += 1;
     return s;
   }
@@ -337,7 +347,7 @@ function praisePhrase(combo) {
     catchHalf: catchHalf, dropCount: dropCount, lanes: lanes, dropOffsets: dropOffsets,
     levelFor: levelFor, fallSecs: fallSecs, solvedForLevel: solvedForLevel, unlockTo: unlockTo,
     stageOf: stageOf, stepInStage: stepInStage, STAGES: STAGES, LEVELS_PER_STAGE: LEVELS_PER_STAGE,
-    newGame: newGame, hitScore: hitScore,
+    newGame: newGame, hitScore: hitScore, levelMul: levelMul,
     praisePhrase: praisePhrase, PRAISE: PRAISE, PRAISE_HOT: PRAISE_HOT, PRAISE_FIRE: PRAISE_FIRE,
     catchRight: catchRight, catchWrong: catchWrong, missRound: missRound,
   };

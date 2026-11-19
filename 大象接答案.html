@@ -34,6 +34,10 @@
   .row{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap;justify-content:center}
   .stat{font-size:15px;color:#cfe9e0;margin-top:10px;line-height:2}
   .stat em{font-style:normal;color:#fff;font-weight:700;font-size:17px}
+  /* 结算页：分数和最长连对是这局的主角，其余的缩成一行小字 */
+  .stat .big{font-size:40px;font-weight:800;color:#ffd166;line-height:1.3}
+  .stat .combo{font-size:17px;color:#fff;margin:2px 0 8px}
+  .stat .combo em{color:#ff9f45;font-size:20px}
   a.home{position:fixed;left:calc(env(safe-area-inset-left) + 10px);top:calc(env(safe-area-inset-top) + 10px);
     z-index:5;color:rgba(255,255,255,.75);text-decoration:none;font-size:14px;
     background:rgba(0,0,0,.18);padding:6px 12px;border-radius:99px}
@@ -99,7 +103,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191805"></script>
+<script src="接答案逻辑.js?v=202611191824"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -277,13 +281,15 @@ function newRound() {
 
 function resolve(ok, value) {
   if (ok) {
-    L.catchRight(S.g);
+    const lvNow = L.levelFor(S.g.solved);
+    const gain = L.hitScore(S.g.combo + 1, lvNow);
+    L.catchRight(S.g, lvNow);
     sndGood(Math.min(S.g.combo, 6));
     const word = L.praisePhrase(S.g.combo);
     speakPraise(word, S.g.combo);
     pop(word, S.g.combo);                 // 同一句话：耳朵听到的和眼睛看到的对得上
     burst(S.ele.x, GROUND() - 30, "#ffd166", 26);
-    float(S.ele.x, GROUND() - 70, "+" + L.hitScore(S.g.combo), "#ffd166", 30);
+    float(S.ele.x, GROUND() - 70, "+" + gain, "#ffd166", 30);
     if (S.g.combo >= 3) float(S.ele.x, GROUND() - 110, "🔥 " + S.g.combo, "#ff9f45", 22);
     S.ele.hop = 1; S.ele.trunk = 1;
     const before = L.levelFor(S.g.solved - 1), now = L.levelFor(S.g.solved);
@@ -561,7 +567,9 @@ function drawHud() {
   ctx.textAlign = "left";
   ctx.fillText("❤".repeat(S.g.lives) || "—", 16, headBottom() - 18);
   ctx.textAlign = "right";
-  ctx.fillText(S.g.score + " 分", W - 16, headBottom() - 18);
+  // 分数旁边挂着当前倍率：知道「往上打更值钱」，才愿意往上打
+  const mul = L.levelMul(L.levelFor(S.g.solved));
+  ctx.fillText(S.g.score + " 分" + (mul > 1 ? "  ×" + mul.toFixed(1) : ""), W - 16, headBottom() - 18);
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255,255,255,.55)";
   const lv = L.levelFor(S.g.solved);
@@ -631,15 +639,22 @@ function gameOver() {
   S.mode = "over";
   if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
   save.plays = (save.plays || 0) + 1;
-  const best = Math.max(save.best || 0, S.g.score);
-  const isBest = S.g.score > (save.best || 0) && S.g.score > 0;
-  save.best = best;
+  // 先把「原来的纪录」记下来再更新，否则一比就永远是「刷新了纪录」
+  const prevBest = save.best || 0, prevCombo = save.bestCombo || 0;
+  const bestCombo = S.g.bestCombo;
+  const isBest = S.g.score > prevBest && S.g.score > 0;
+  const isComboBest = bestCombo > prevCombo && bestCombo > 0;
+  save.best = Math.max(prevBest, S.g.score);
+  save.bestCombo = Math.max(prevCombo, bestCombo);
   persist();
   $("overtitle").textContent = isBest ? "🏆 新纪录！" : "这局结束";
+  const lvEnd = L.levelFor(S.g.solved);
   $("overstat").innerHTML =
-    "得分 <em>" + S.g.score + "</em>　答对 <em>" + S.g.solved + "</em> 题<br>" +
-    "最长连对 <em>" + S.g.bestCombo + "</em>　到了第 <em>" + L.levelFor(S.g.solved) + "</em> 关<br>" +
-    "最高分 <em>" + save.best + "</em>";
+    '<div class="big">' + S.g.score + " 分</div>" +
+    '<div class="combo">🔥 最长连对 <em>' + bestCombo + "</em> 题" +
+    (isComboBest ? "　<b>刷新了连对纪录</b>" : "") + "</div>" +
+    "答对 <em>" + S.g.solved + "</em> 题　打到 <em>第 " + lvEnd + " 关</em>（" + L.stageOf(lvEnd).name + "）<br>" +
+    "最高分 <em>" + save.best + "</em>　历史最长连对 <em>" + (save.bestCombo || 0) + "</em> 题";
   setTimeout(() => layer("over", true), 650);     // 让最后那下动画播完再盖上
 }
 
@@ -713,6 +728,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191805" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191824" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>

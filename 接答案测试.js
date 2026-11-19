@@ -159,11 +159,36 @@ t("再快也有下限，超出关卡范围不会更快", () => {
 
 t("接对了加分、连击累加，连击上限按 5 算", () => {
   const s = G.newGame();
-  G.catchRight(s);
-  assert(s.score === G.hitScore(1) && s.combo === 1 && s.solved === 1, JSON.stringify(s));
-  for (let i = 0; i < 10; i++) G.catchRight(s);
+  G.catchRight(s, 1);
+  assert(s.score === G.hitScore(1, 1) && s.combo === 1 && s.solved === 1, JSON.stringify(s));
+  for (let i = 0; i < 10; i++) G.catchRight(s, 1);
   assert(s.combo === 11 && s.bestCombo === 11, JSON.stringify(s));
-  assert(G.hitScore(11) === G.hitScore(5), "连到 11 不该比连到 5 还值钱");
+  assert(G.hitScore(11, 1) === G.hitScore(5, 1), "连到 11 不该比连到 5 还值钱");
+});
+
+t("难度系数：同样的连击，关卡越高一题越值钱", () => {
+  let last = 0;
+  for (let lv = 1; lv <= G.MAX_LEVEL; lv++) {
+    const v = G.hitScore(5, lv);
+    assert(v > last, "第 " + lv + " 关没比上一关值钱");
+    last = v;
+  }
+  assert(G.levelMul(1) === 1, "第 1 关是 1 倍");
+  assert(G.levelMul(999) === G.levelMul(G.MAX_LEVEL), "超出范围按封顶算");
+  assert(Math.abs(G.levelMul(G.MAX_LEVEL) - 3.2) < 1e-9, "最高是 3.2 倍");
+});
+
+t("守着第 1 关刷分不划算：同样题数，后面的关卡分更高", () => {
+  const farm = G.newGame();
+  for (let i = 0; i < 20; i++) G.catchRight(farm, 1);        // 一直待在第 1 关
+  const climb = G.newGame();
+  for (let i = 0; i < 20; i++) G.catchRight(climb);          // 正常往上打
+  assert(climb.score > farm.score * 1.3, "刷第 1 关 " + farm.score + "，往上打才 " + climb.score);
+});
+
+t("分数都是整数，屏幕上不该出现 37.5 分", () => {
+  for (let lv = 1; lv <= G.MAX_LEVEL; lv++)
+    for (let c = 1; c <= 8; c++) assert(Number.isInteger(G.hitScore(c, lv)), lv + " 关连 " + c + " 得 " + G.hitScore(c, lv));
 });
 
 t("接错扣一颗心并断连击，三颗扣完就结束", () => {
