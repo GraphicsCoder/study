@@ -18,6 +18,7 @@ function makeDoc() {
         if (c.tag === "script") { if (doc._onScript) doc._onScript(c); if (c.onload) c.onload(); }
         return c; },
       contains() { return true; },
+      setAttribute() {}, play() { this._played = true; },
       addEventListener() {}, querySelector(s) { return byId[s.replace("#", "")] || null; }, focus() {},
       classList: { _s: new Set(), add(c) { this._s.add(c); }, remove(c) { this._s.delete(c); },
                    contains(c) { return this._s.has(c); } },
@@ -35,7 +36,7 @@ function makeDoc() {
   return doc;
 }
 
-function open(store, hash, fetchFn, lazyQR) {
+function open(store, hash, fetchFn, lazyQR, cam) {
   const s = { ...store };
   const doc = makeDoc();
   const qrCalls = [];
@@ -56,16 +57,36 @@ function open(store, hash, fetchFn, lazyQR) {
     history: { replaceState(a, b, url) { hist.push(url); loc.href = url; loc.hash = ""; } },
     setTimeout: (fn, ms) => { if (ms !== 15000 && ms !== 600) fn(); return 0; },
     clearTimeout: () => {},
+    setInterval: (fn) => { ticks.push(fn); return ticks.length; },
+    clearInterval: (id) => { cleared.push(id); },
     fetch: fetchFn || (() => new Promise(() => {})),
   };
+  // 摄像头那一路：cam = { codes:[...扫到的内容], deny:true }
+  const ticks = [], cleared = [], stopped = [], clip = [];
+  const track = { stop() { stopped.push(1); } };
+  if (cam) {
+    ctx.navigator.mediaDevices = {
+      getUserMedia: () => cam.deny
+        ? Promise.reject(Object.assign(new Error("no"), { name: "NotAllowedError" }))
+        : Promise.resolve({ getTracks: () => [track] }),
+    };
+    ctx.BarcodeDetector = function () {
+      return { detect: () => Promise.resolve((cam.codes || []).map(v => ({ rawValue: v }))) };
+    };
+  }
+  ctx.navigator.clipboard = { writeText: t => { clip.push(t); return Promise.resolve(); } };
   const fakeQR = { svg(text, opt) { qrCalls.push([text, opt]); return "<svg>码</svg>"; } };
   if (lazyQR) doc._onScript = () => { ctx.window.QR = fakeQR; };
   else ctx.window.QR = fakeQR;
   vm.createContext(ctx); vm.runInContext(SRC, ctx);
   return {
-    store: s, hist, qrCalls, doc,
+    store: s, hist, qrCalls, doc, clip, stopped, cleared,
+    tick: () => ticks.forEach(f => f()),
     $: id => doc._byId[id],
     panel: () => (doc._byId.syncmask.children[0] || {})._html || "",
+    // 面板里的子区块（输入框那一片、提示那一行）是各自 set innerHTML 的，
+    // 要看全文得把它们拼起来
+    html: () => Object.keys(doc._byId).map(k => doc._byId[k]._html || "").join(""),
     chip: () => doc._byId.syncchip,
     shown: () => doc._byId.syncmask.classList.contains("show"),
     scripts: () => doc.head.children.filter(c => c.tag === "script").map(c => c.src),
@@ -150,6 +171,82 @@ const tick = (n = 6) => new Promise(r => { let i = 0; const go = () => (++i >= n
   d = open({}, "#s=" + TOK + "~" + GID);
   await tick();
   ok("扫码面板和自动登录框不会打架", !/开启跨设备同步|同步方式/.test(d.panel()), d.panel().slice(0, 120));
+
+  /* ---------- 第二台：把链接粘进设置里 ---------- */
+
+  d = open({}, "", null, true);
+  d.chip().onclick();                           // 全新设备 → 直接进「同步方式」
+  ok("Gist 面板上有「配置链接」这一格", /syncpaste/.test(d.html()), d.html().slice(0, 200));
+  d.$("syncpaste").value = "https://x.github.io/study/index.html#s=" + TOK + "~" + GID;
+  d.$("syncpaste").oninput();
+  ok("粘一条链接就自动拆成令牌 + Gist ID",
+     d.$("syncghtok").value === TOK && d.$("syncgid").value === GID,
+     d.$("syncghtok").value + " / " + d.$("syncgid").value);
+  ok("拆完把粘贴框清空，不把令牌留在输入框里", d.$("syncpaste").value === "", d.$("syncpaste").value);
+
+  d = open({}, "", null, true);
+  d.chip().onclick();
+  d.$("syncpaste").value = "https://x.github.io/study/";
+  d.$("syncpaste").oninput();
+  ok("粘错东西会说清楚，而且不动下面两格",
+     !d.$("syncghtok").value && !d.$("syncgid").value && /不像配置链接/.test(d.html()),
+     d.html().slice(0, 200));
+
+  /* ---------- 第二台：这台设备自己开摄像头扫 ---------- */
+
+  d = open({}, "", null, true);
+  d.chip().onclick();
+  ok("没有 BarcodeDetector 的设备（比如 iPad 的 Safari）不画摄像头入口",
+     !/syncscanbtn/.test(d.html()), d.html().slice(0, 200));
+
+  d = open({}, "", null, true, { codes: ["https://x.github.io/study/index.html#s=" + TOK + "~" + GID] });
+  d.chip().onclick();
+  ok("能扫的设备才给这条路", /syncscanbtn/.test(d.html()), d.html().slice(0, 200));
+  d.$("syncscanbtn").onclick();
+  await tick();
+  d.tick();                                     // 跑一帧识别
+  await tick();
+  ok("扫到之后把两格填好", d.$("syncghtok").value === TOK && d.$("syncgid").value === GID,
+     d.$("syncghtok").value + " / " + d.$("syncgid").value);
+  ok("扫到就关摄像头，不让它一直亮着", d.stopped.length === 1, "stop 调了 " + d.stopped.length + " 次");
+
+  /* 扫到的要是别的二维码（超市小票、公众号），就当没看见，接着扫 */
+  d = open({}, "", null, true, { codes: ["https://example.com/hello"] });
+  d.chip().onclick();
+  d.$("syncscanbtn").onclick();
+  await tick();
+  d.tick();
+  await tick();
+  ok("扫到不相干的码不会乱填", !d.$("syncghtok").value, d.$("syncghtok").value);
+  ok("也不会就此收工，摄像头还开着继续扫", d.stopped.length === 0, "stop 调了 " + d.stopped.length + " 次");
+
+  /* 关面板必须连摄像头一起关——点遮罩、按 Esc 都算关 */
+  d = open({}, "", null, true, { codes: [] });
+  d.chip().onclick();
+  d.$("syncscanbtn").onclick();
+  await tick();
+  d.$("syncstop").onclick();
+  ok("点取消会关掉摄像头", d.stopped.length === 1, "stop 调了 " + d.stopped.length + " 次");
+
+  /* 不给权限时要给出退路，而不是只报一句失败 */
+  d = open({}, "", null, true, { deny: true });
+  d.chip().onclick();
+  d.$("syncscanbtn").onclick();
+  await tick();
+  ok("不给摄像头权限时，告诉人还能用系统相机或粘链接",
+     /权限/.test(d.html()) && /系统相机|粘/.test(d.html()), d.html().slice(0, 300));
+
+  /* ---------- 第一台：复制链接 ---------- */
+
+  d = open(CONFIGURED, "", null, true);
+  d.chip().onclick();
+  d.$("syncqrbtn").onclick();
+  await tick();
+  d.$("syncqrcopy").onclick();
+  await tick();
+  ok("复制出来的就是二维码里那一串",
+     d.clip.length === 1 && d.clip[0] === d.qrCalls[0][0], JSON.stringify(d.clip));
+  ok("复制之后提醒一句别留在聊天记录里", /删掉/.test(d.html()), d.html().slice(0, 300));
 
   /* ---------- 源码层面的约束 ---------- */
 

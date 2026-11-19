@@ -137,6 +137,11 @@
       '#syncbox .qr{text-align:center;margin:0 0 10px;color:#6b7280;font-size:13px}' +
       '#syncbox .qr svg{width:100%;max-width:260px;height:auto;border-radius:8px;' +
       'border:1px solid #e5e7eb;background:#fff}' +
+      // 摄像头取景框：固定高度，免得视频一进来面板跳一下
+      '#syncbox .cam{text-align:center;margin:0 0 10px;color:#6b7280;font-size:13px;' +
+      'min-height:180px;background:#f3f5f9;border-radius:10px;display:flex;' +
+      'align-items:center;justify-content:center;overflow:hidden}' +
+      '#syncbox .cam video{width:100%;max-height:260px;object-fit:cover;border-radius:10px}' +
       '#syncbox .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}' +
       '#syncbox button{font-family:inherit;font-size:14px;padding:10px 15px;border-radius:10px;' +
       'cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#1f2430}' +
@@ -197,6 +202,9 @@
     // 都要记一笔「以后再说」。原来只有那个按钮记账，于是点遮罩关掉之后
     // 下一个页面又弹——每翻一页弹一次，非常烦人。
     if (autoPop) { autoPop = false; rawSet(SKIP, String(Date.now())); }
+    // 摄像头得跟着面板一起关：点遮罩、按 Esc 也算关，漏掉的话摄像头
+    // 指示灯会一直亮着，谁看了都发毛
+    if (camStop) camStop();
     if (mask) mask.classList.remove("show");
   }
 
@@ -233,6 +241,81 @@
      - 落地后立刻把 # 从地址栏抹掉，否则它会留在历史记录和书签里。 */
 
   var scanned = null;                     // 扫码带进来的设置，等用户确认
+  var camStop = null;                     // 摄像头的关闭钩子，面板一关就得调
+
+  // 从一段文本里拆出令牌和 Gist ID。扫码落地、手动粘贴、摄像头扫到的，
+  // 都走这一个函数，省得三处各写一遍正则、各漏各的边界
+  function parseLink(s) {
+    var m = /#s=([A-Za-z0-9_\-]+)~([A-Za-z0-9]+)$/.exec(String(s == null ? "" : s).trim());
+    return m ? { tok: m[1], gid: m[2] } : null;
+  }
+
+  // 这台设备能不能自己扫：要有 BarcodeDetector（iOS Safari 至今没有），
+  // 还要能开摄像头（http 下 getUserMedia 直接不存在）
+  function canScan() {
+    try {
+      return typeof BarcodeDetector !== "undefined" &&
+             !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    } catch (e) { return false; }
+  }
+
+  function panelCam(onFound, back) {
+    box.innerHTML =
+      '<h3>📷 扫第一台设备的码</h3>' +
+      '<p>在第一台上点小圆点 → <b>📱 新设备扫码</b>，把那张图对准摄像头。</p>' +
+      '<div class="cam" id="synccam">正在打开摄像头…</div>' +
+      '<p class="err" id="syncerr"></p>' +
+      '<div class="btns"><button class="ghost" id="syncstop">取消</button></div>';
+    mask.classList.add("show");
+
+    var slot = box.querySelector("#synccam");
+    var err  = box.querySelector("#syncerr");
+    var timer = null, stream = null, dead = false;
+
+    var stop = function () {
+      dead = true;
+      if (timer) { clearInterval(timer); timer = null; }
+      if (stream) { try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} stream = null; }
+      camStop = null;
+    };
+    camStop = stop;
+    box.querySelector("#syncstop").onclick = function () { stop(); back ? back() : close(); };
+
+    var fail = function (msg) {
+      stop();
+      slot.innerHTML = "";
+      err.className = "err show";
+      err.innerHTML = msg;
+    };
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then(function (s) {
+        if (dead) { try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} return; }
+        stream = s;
+        var v = document.createElement("video");
+        v.setAttribute("playsinline", "");      // 不加这个，iOS 会把视频抢成全屏播放
+        v.muted = true;
+        v.srcObject = s;
+        slot.innerHTML = "";
+        slot.appendChild(v);
+        v.play();
+        var det = new BarcodeDetector({ formats: ["qr_code"] });
+        timer = setInterval(function () {
+          det.detect(v).then(function (list) {
+            for (var i = 0; i < (list || []).length; i++) {
+              var hit = parseLink(list[i].rawValue);
+              if (hit) { stop(); onFound(hit); return; }
+            }
+          }).catch(function () {});           // 每帧都可能失败（还没对上焦），不吭声
+        }, 300);
+      })
+      .catch(function (e) {
+        var n = (e && e.name) || "";
+        fail(n === "NotAllowedError"
+          ? "浏览器没给摄像头权限。可以改用第一台那张码配合系统相机扫，或者把链接粘到上面那格里。"
+          : "打不开摄像头（" + esc(n || String(e)) + "）。用系统相机扫那张码也一样。");
+      });
+  }
 
   function scanLink() {
     var tok = (localStorage.getItem(GTOK) || "").trim();
@@ -264,12 +347,25 @@
         ? '<p>用新设备的<b>相机</b>对着扫，点一下弹出来的链接，设置会自动填好。</p>' +
           '<div class="qr" id="syncqr">正在生成…</div>' +
           '<p class="hint">⚠️ 这张图里有你的 GitHub 令牌，<b>等于一把钥匙</b>。' +
-          '只给自己的设备扫，别拍照发群里。面板关掉就没了。</p>'
+          '只给自己的设备扫，别拍照发群里。面板关掉就没了。</p>' +
+          '<p class="hint" id="syncqrtip"></p>'
         : '<p>还没配好 Gist，生成不了。先在「同步方式」里填令牌、保存一次。</p>') +
       '<div class="btns">' +
+        (url ? '<button id="syncqrcopy">复制链接</button>' : "") +
         '<button class="primary" id="syncqrback">完成</button>' +
       '</div>';
     box.querySelector("#syncqrback").onclick = back ? function () { back(); } : close;
+    if (box.querySelector("#syncqrcopy")) box.querySelector("#syncqrcopy").onclick = function () {
+      // 两台设备不在一起（或者相机实在扫不出来）时，把这串发过去，
+      // 在那台的「同步方式」里粘进「配置链接」那一格，效果一样。
+      var tip = box.querySelector("#syncqrtip");
+      var done = function (t) { if (tip) tip.innerHTML = t; };
+      try {
+        navigator.clipboard.writeText(url).then(
+          function () { done('已复制。<b>这串等于钥匙</b>，发完记得在聊天记录里删掉。'); },
+          function () { done("复制失败，用上面那张码吧。"); });
+      } catch (e) { done("这个浏览器不让脚本复制，用上面那张码吧。"); }
+    };
     mask.classList.add("show");
 
     if (!url) return;
@@ -289,11 +385,11 @@
 
   // 扫码落地：先把地址栏擦干净，再问要不要用
   function takeScan() {
-    var m = /^#s=([A-Za-z0-9_\-]+)~([A-Za-z0-9]+)$/.exec(location.hash || "");
-    if (!m) return;
+    var hit = parseLink(location.hash || "");
+    if (!hit) return;
     try { history.replaceState(null, "", location.href.split("#")[0]); }
     catch (e) { location.hash = ""; }
-    scanned = { tok: m[1], gid: m[2] };
+    scanned = hit;
   }
 
   function panelScan() {
@@ -358,15 +454,48 @@
     // 界面里也不提这个文件名：用户手上只有网页，提了也打不开。
     function paneGist() {
       pane.innerHTML =
+        '<label for="syncpaste">配置链接<span class="opt-note">（第一台给的，粘进来就行）</span></label>' +
+        '<input id="syncpaste" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
+        'placeholder="https://…/index.html#s=…">' +
+        '<p class="hint" id="syncscanrow"></p>' +
         '<label for="syncghtok">GitHub 个人令牌</label>' +
         '<input id="syncghtok" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
         'placeholder="ghp_… 或 github_pat_…">' +
         '<label for="syncgid">Gist ID<span class="opt-note">（留空则自动创建）</span></label>' +
         '<input id="syncgid" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ' +
         'placeholder="第一台设备留空">' +
-        '<p class="hint">第二台设备填同一个账号的令牌 + 第一台那串 Gist ID。</p>';
+        '<p class="hint">第一台设备：两格都留空，只填令牌，保存后会自动建一个。</p>';
       pane.querySelector("#syncghtok").value = localStorage.getItem(GTOK) || "";
       pane.querySelector("#syncgid").value   = localStorage.getItem(GID)  || "";
+
+      // 粘贴链接就自动拆成令牌 + Gist ID 填进下面两格：微信、隔空投送、
+      // 甚至相机扫出来后复制过来的，都是这一串，省得人工拆
+      var paste = pane.querySelector("#syncpaste");
+      var fill = function () {
+        var v = parseLink(paste.value);
+        if (!v) { if (paste.value.trim()) say("err", "这串不像配置链接。它应该带着 <code>#s=</code> 那一段。"); return; }
+        pane.querySelector("#syncghtok").value = v.tok;
+        pane.querySelector("#syncgid").value   = v.gid;
+        paste.value = "";                       // 拆完就清掉，不把令牌留在输入框里
+        say("good", "✓ 已拆好：令牌和 Gist ID 都填上了，点「保存」就行。");
+      };
+      paste.oninput = fill;
+      paste.onchange = fill;
+
+      // 这台设备自己能扫码的话（安卓 / 带摄像头的电脑），再给一条更省事的路。
+      // iPad 的 Safari 没有 BarcodeDetector，这里就不画这个按钮——
+      // 画了点下去只能报错，不如没有，那条路上它用系统相机扫。
+      if (canScan()) {
+        var row = pane.querySelector("#syncscanrow");
+        row.innerHTML = '<span class="more" id="syncscanbtn">📷 用这台设备的摄像头扫 ›</span>';
+        row.querySelector("#syncscanbtn").onclick = function () {
+          panelCam(function (v) {
+            pane.querySelector("#syncghtok").value = v.tok;
+            pane.querySelector("#syncgid").value   = v.gid;
+            say("good", "✓ 扫到了，令牌和 Gist ID 都填上了，点「保存」就行。");
+          }, function () { panelServer(back); });
+        };
+      }
     }
 
     function paneWorker() {
