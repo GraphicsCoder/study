@@ -99,7 +99,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191759"></script>
+<script src="接答案逻辑.js?v=202611191804"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -254,27 +254,23 @@ const layer = (id, on) => $(id).classList.toggle("show", on);
 
 const GROUND = () => H - Math.max(96, H * .16);     // 大象站的那条线
 const ITEM_R = () => Math.max(26, Math.min(40, W / 10));
+const SWAY = 4;        // 左右摇摆的幅度。再大就会吃掉球之间留好的最小间距
 
 function newRound() {
   const lv = L.levelFor(S.g.solved);
-  S.round = L.makeRound(lv, Math.random);
-  const n = S.round.drops.length;
   const r = ITEM_R();
-  const pad = r + 10;
+  // 能排几个球由屏幕说了算：排不下就少掉一个，宁可三个也不要挤成一排——
+  // 挤在一起时，大象横着过去的路上会先撞到旁边那个错的
+  const n = L.dropCount(lv, W, r);
+  S.round = L.makeRound(lv, Math.random, n);
+  const xs = L.lanes(n, W, r, Math.random);
+  const ys = L.dropOffsets(n, r, Math.random);
   const secs = L.fallSecs(lv);
-  // 均分到 n 条「道」上，道内再随机挪一点，免得每次都排成一样的队形
-  S.items = S.round.drops.map((v, i) => {
-    const laneW = (W - pad * 2) / n;
-    // 夹在边上一点：球出一半在屏幕外，看着像 bug，也真的接不到
-    const x = Math.max(pad, Math.min(W - pad,
-      pad + laneW * i + laneW / 2 + (Math.random() - .5) * laneW * .35));
-    return {
-      v, x, r,
-      y: -r - i * (H * .22) * Math.random() - r,      // 错开一点出场，不要整排平着压下来
-      vy: (GROUND() + r * 2) / secs,
-      sway: Math.random() * 6.28, hue: 0, dead: 0, caught: 0,
-    };
-  });
+  S.items = S.round.drops.map((v, i) => ({
+    v, r, x: xs[i], y: ys[i],
+    vy: (GROUND() + r * 2) / secs,
+    sway: Math.random() * 6.28, hue: 0, dead: 0, caught: 0,
+  }));
   // 正确答案不画成特殊颜色（那就不用算了），颜色按位置轮着来
   S.items.forEach((it, i) => it.hue = [48, 14, 190, 330][i % 4]);
 }
@@ -418,8 +414,11 @@ function step(dt) {
     it.sway += dt * 2;
     alive++;
     // 接住判定：篮口比大象本体宽一点，宁可宽松——这个年纪的手没那么准
-    const dx = Math.abs(it.x + Math.sin(it.sway) * 6 - S.ele.x);
-    if (it.y + it.r >= ground - 18 && it.y - it.r < ground + 26 && dx < it.r + 46) {
+    // 只认「真的罩住了」：球心离大象中线 catchHalf 以内。
+    // 原来那个兜比球还宽一圈，三个球挨近时，去接中间那个的路上
+    // 会先把旁边的错答案勾进来
+    const dx = Math.abs(it.x + Math.sin(it.sway) * SWAY - S.ele.x);
+    if (it.y + it.r >= ground - 18 && it.y - it.r < ground + 26 && dx < L.catchHalf(it.r)) {
       it.dead = .001; it.caught = 1;
       if (!S.round.done) { S.round.done = 1; resolve(it.v === S.round.ans, it.v); }
     } else if (it.y - it.r > H) {
@@ -460,7 +459,7 @@ function draw(dt) {
   // 掉下来的数字
   S.items.forEach(it => {
     if (it.dead > .25) return;
-    const x = it.x + Math.sin(it.sway) * 6;
+    const x = it.x + Math.sin(it.sway) * SWAY;
     const fade = it.dead ? Math.max(0, 1 - it.dead * 4) : 1;
     const pop = it.caught ? 1 + it.dead * 3 : 1;
     ctx.globalAlpha = fade;
@@ -714,6 +713,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191759" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191804" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>

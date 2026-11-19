@@ -250,5 +250,68 @@ t("解锁只升不降，也不会越界", () => {
   assert(G.unlockTo(1, 999) === G.MAX_LEVEL, "封顶");
   assert(G.unlockTo(0, 0) === 1, "最少解锁到第 1 关");
 });
+/* ---------------- 球摆在哪儿（手机上「去接中间那个却撞到旁边」的那档事） ---------------- */
+
+const SCREENS = [320, 360, 390, 414, 430, 540, 768, 1024];
+const radiusOf = w => Math.max(26, Math.min(40, w / 10));
+
+t("任意两个球之间，大象站哪儿都只罩得住一个", () => {
+  SCREENS.forEach(w => {
+    const r = radiusOf(w), half = G.catchHalf(r);
+    for (let lv = 1; lv <= G.MAX_LEVEL; lv++) {
+      const n = G.dropCount(lv, w, r);
+      for (let i = 0; i < 50; i++) {
+        const xs = G.lanes(n, w, r, rng(lv * 97 + i)).slice().sort((a, b) => a - b);
+        for (let k = 1; k < xs.length; k++) {
+          // 留 8px 给球自己的左右摇摆
+          assert(xs[k] - xs[k - 1] >= half * 2 + 8,
+                 w + "px 屏幕上两个球只隔了 " + Math.round(xs[k] - xs[k - 1]) + "，接球半宽是 " + half);
+        }
+      }
+    }
+  });
+});
+
+t("球不会排到屏幕外面去", () => {
+  SCREENS.forEach(w => {
+    const r = radiusOf(w);
+    const n = G.dropCount(6, w, r);
+    G.lanes(n, w, r, rng(w)).forEach(x => {
+      assert(x - r >= 0 && x + r <= w, w + "px 屏幕上球跑到了 " + Math.round(x));
+    });
+  });
+});
+
+t("窄屏少掉一个球，宽屏才上四个", () => {
+  assert(G.dropCount(6, 320, radiusOf(320)) === 3, "320 的屏幕还排 4 个就挤了");
+  assert(G.dropCount(6, 1024, radiusOf(1024)) === 4, "大屏幕该上满 4 个");
+  assert(G.dropCount(1, 1024, radiusOf(1024)) === 3, "前两关只上 3 个");
+  SCREENS.forEach(w => {
+    const n = G.dropCount(6, w, radiusOf(w));
+    assert(n >= 2 && n <= 4, w + "px 上排了 " + n + " 个");
+  });
+});
+
+t("要几个球就出几个数，答案照样只有一个", () => {
+  [2, 3, 4].forEach(n => {
+    for (let i = 0; i < 80; i++) {
+      const r = G.makeRound(8, rng(n * 31 + i), n);
+      assert(r.drops.length === n, "要 " + n + " 个却给了 " + r.drops.length);
+      assert(r.drops.filter(d => d === r.ans).length === 1, JSON.stringify(r));
+    }
+  });
+});
+
+t("出场高度彼此错开：两个球不会同时压到大象头上", () => {
+  [3, 4].forEach(n => {
+    const r = 36;
+    for (let i = 0; i < 80; i++) {
+      const ys = G.dropOffsets(n, r, rng(i + 7)).slice().sort((a, b) => a - b);
+      for (let k = 1; k < ys.length; k++)
+        assert(ys[k] - ys[k - 1] >= r * 1.5, "两个球只差 " + Math.round(ys[k] - ys[k - 1]) + " 像素就一起到了");
+      ys.forEach(y => assert(y < 0, "球该从屏幕上方掉下来"));
+    }
+  });
+});
 console.log("\n" + (fail ? "失败 " + fail + " 项，" : "全部 ") + (pass + fail) + " 项" + (fail ? "" : "通过"));
 process.exit(fail ? 1 : 0);

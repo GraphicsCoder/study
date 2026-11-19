@@ -160,7 +160,7 @@
   }
 
   // 一轮 = 一道题 + 要掉下来的几个数（含正确答案，已打乱）
-  function makeRound(level, rnd) {
+  function makeRound(level, rnd, howMany) {
     rnd = rnd || Math.random;
     level = Math.max(1, Math.min(MAX_LEVEL, level | 0 || 1));
     var sets = makersFor(level);
@@ -168,12 +168,68 @@
     var list = (rnd() < .8 || sets.all === sets.main) ? sets.main : sets.all;
     var m = pick(rnd, list);
     var r = m(rnd, level);
-    var count = level <= 2 ? 3 : 4;                 // 掉下来几个数
+    var count = Math.max(2, Math.min(4, howMany | 0 || (level <= 2 ? 3 : 4)));
     var drops = [r.ans].concat(decoysFor(r.ans, rnd, count - 1));
     for (var i = drops.length - 1; i > 0; i--) {
       var j = rndInt(rnd, 0, i), t = drops[i]; drops[i] = drops[j]; drops[j] = t;
     }
     return { q: r.q, ans: r.ans, drops: drops, level: level };
+  }
+
+
+  /* ---------------- 球摆在哪儿 ----------------
+     手机上踩到的问题：三个球挨得近，正确答案又在中间，大象横着过去的路上
+     会先撞到旁边那个错的——人明明算对了，却被判错。
+
+     三条一起治：
+     1. 接球判定收窄到「真的罩住了」：只认球心离大象中线 catchHalf 以内，
+        而不是原来那种比球还宽一圈的大兜
+     2. 相邻两个球的中心至少隔开 2*catchHalf + 一点余量，这样大象站在任何
+        位置，最多只罩得住一个球
+     3. 屏幕窄到排不下就少掉一个球，宁可三个也不要挤成一排
+
+     接球半宽按球的大小走：球大，兜也该大一点，但永远不超过半个间距。 */
+
+  function catchHalf(r) { return Math.round(r * .55 + 16); }
+
+  // 这块屏幕最多能排几个球
+  function dropCount(level, width, r) {
+    var want = level <= 2 ? 3 : 4;
+    var gap = catchHalf(r) * 2 + 12;                 // 相邻球心最小间距
+    var pad = r + 10;
+    for (var n = want; n > 2; n--) {
+      if (pad * 2 + (n - 1) * Math.max(gap, 2 * r + 10) <= width) return n;
+    }
+    return 2;
+  }
+
+  // n 个球的横坐标：均分之后给一点点抖动，但抖动幅度不会吃掉最小间距
+  function lanes(n, width, r, rnd) {
+    rnd = rnd || Math.random;
+    var pad = r + 10;
+    var span = width - pad * 2;
+    var step = n > 1 ? span / (n - 1) : 0;
+    var need = Math.max(catchHalf(r) * 2 + 12, 2 * r + 10);
+    var jitter = Math.max(0, Math.min(step * .18, (step - need) / 2));
+    var out = [];
+    for (var i = 0; i < n; i++) {
+      var x = pad + step * i + (n > 1 ? (rnd() - .5) * 2 * jitter : span / 2);
+      out.push(Math.max(pad, Math.min(width - pad, x)));   // 抖动不许把球挤出屏幕
+    }
+    return out;
+  }
+
+  /* 出场高度：两个球不要同时压到大象头上——那样再怎么躲也会撞。
+     按「一个球直径多一点」为单位依次往上排，再整体打乱分配给各条道。 */
+  function dropOffsets(n, r, rnd) {
+    rnd = rnd || Math.random;
+    var unit = r * 2.2;   // 再大就变成「排队一个个掉」，一轮拖太久
+    var out = [];
+    for (var i = 0; i < n; i++) out.push(-(r + 4) - i * unit - rnd() * r);
+    for (var j = out.length - 1; j > 0; j--) {
+      var k = Math.floor(rnd() * (j + 1)), t = out[j]; out[j] = out[k]; out[k] = t;
+    }
+    return out;
   }
 
   /* ---------------- 难度 ---------------- */
@@ -277,6 +333,7 @@ function praisePhrase(combo) {
   var API = {
     LIVES: LIVES, PER_LEVEL: PER_LEVEL, MAX_LEVEL: MAX_LEVEL,
     makeRound: makeRound, decoysFor: decoysFor,
+    catchHalf: catchHalf, dropCount: dropCount, lanes: lanes, dropOffsets: dropOffsets,
     levelFor: levelFor, fallSecs: fallSecs, solvedForLevel: solvedForLevel, unlockTo: unlockTo,
     stageOf: stageOf, stepInStage: stepInStage, STAGES: STAGES, LEVELS_PER_STAGE: LEVELS_PER_STAGE,
     newGame: newGame, hitScore: hitScore,
