@@ -42,12 +42,14 @@
     box-shadow:none;border-radius:99px}
   #pausebtn:active{transform:none}
   /* 选关：一个阶段一行，锁住的也画出来——看得见「还有什么」才有奔头 */
-  #pick{max-height:52vh;overflow:auto;width:100%;max-width:340px;-webkit-overflow-scrolling:touch}
+  /* 三个格子铺满整行：原来是固定 84px 靠左排，窄屏上 340px 的框里只占
+     268px，整块看着往左偏。改成等分网格，宽窄屏都是对称的 */
+  #pick{max-height:52vh;overflow:auto;width:100%;max-width:330px;-webkit-overflow-scrolling:touch}
   #pick .st{font-size:13px;color:#9fc9bb;margin:12px 0 6px;text-align:left}
-  #pick .lvrow{display:flex;gap:8px;justify-content:flex-start;flex-wrap:wrap}
+  #pick .lvrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   /* box-shadow 要显式关掉：.layer button 那条给所有按钮垫了一道黄色厚边，
      关卡格子套上去会变成一排立体砖块 */
-  #pick .lv{width:84px;padding:10px 0;border-radius:12px;border:2px solid rgba(255,255,255,.18);
+  #pick .lv{width:100%;padding:10px 0;border-radius:12px;border:2px solid rgba(255,255,255,.18);
     background:rgba(255,255,255,.08);color:#fff;font-size:15px;font-weight:700;cursor:pointer;
     box-shadow:none;transform:none}
   #pick .lv:active{transform:scale(.96);box-shadow:none}
@@ -97,7 +99,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191745"></script>
+<script src="接答案逻辑.js?v=202611191755"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -684,6 +686,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191745" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191755" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>
