@@ -55,6 +55,7 @@
   <p>天上掉数字，<b>按住屏幕左右拖</b>，让大象接住<b>算对的那个</b>。<br>
      接错掉一颗心，漏掉不扣心。</p>
   <button id="go">开始</button>
+  <div class="row"><button class="ghost" id="voicebtn"></button></div>
   <div class="stat" id="startstat"></div>
 </div>
 
@@ -72,7 +73,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191654"></script>
+<script src="接答案逻辑.js?v=202611191702"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -94,6 +95,7 @@ try { save = JSON.parse(localStorage.getItem(SAVE_KEY) || "{}"); } catch (e) { s
 save.best = save.best || 0;              // 最高分
 save.solved = save.solved || 0;          // 累计答对多少题
 save.plays = save.plays || 0;            // 玩过多少局
+if (save.voice === undefined) save.voice = true;   // 接对时的语音鼓励
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
 
 /* ---------------- 画布 ---------------- */
@@ -132,6 +134,45 @@ function tone(freq, dur, type, vol) {
 const sndGood = n => { tone(520 + n * 40, .12, "triangle", .14); setTimeout(() => tone(780 + n * 50, .16, "triangle", .12), 90); };
 const sndBad  = () => { tone(200, .22, "sawtooth", .1); setTimeout(() => tone(140, .26, "sawtooth", .09), 110); };
 const sndMiss = () => tone(300, .1, "sine", .07);
+
+/* ---------------- 夸一句 ----------------
+   接对了来一句「你真棒」。挑的是系统里的中文女声：孩子更吃这一套，
+   而且比纯音效更像「有人在旁边陪着玩」。
+
+   三件事是踩过才知道的：
+   - 每次都要先 cancel()。连对的时候两句叠在一起会糊成一团，而且 iOS 上
+     排队排久了会整个卡死不再出声
+   - 声音列表是异步到的，onvoiceschanged 之后要重挑一次
+   - 不是每次都夸：连着夸十句就成了背景噪音，反而没人听。平时七成概率，
+     连对三次以上必夸 */
+
+const PRAISE = ["你真棒", "太厉害了", "答对啦", "好样的", "真聪明", "就是它", "漂亮"];
+const PRAISE_HOT = ["连对啦，厉害", "太强了", "停不下来了", "好厉害呀"];
+let voices = [];
+function loadVoices() { try { voices = speechSynthesis.getVoices() || []; } catch (e) { voices = []; } }
+if (window.speechSynthesis) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+
+// 优先挑中文女声；挑不到就让系统自己看着办，别硬塞一个英文声念中文
+function pickVoice() {
+  const zh = voices.filter(v => /^zh/i.test(v.lang || ""));
+  const female = zh.filter(v => /ting|xiao|hui|mei|yun|female|女/i.test(v.name || ""));
+  return female[0] || zh[0] || null;
+}
+
+function praise(combo) {
+  if (!save.voice || !window.speechSynthesis) return;
+  if (combo < 3 && Math.random() > .7) return;
+  const list = combo >= 3 ? PRAISE_HOT : PRAISE;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(list[Math.random() * list.length | 0]);
+    const v = pickVoice();
+    if (v) u.voice = v;
+    u.lang = (v && v.lang) || "zh-CN";
+    u.rate = 1.05; u.pitch = 1.25;        // 稍微快一点、亮一点，像在起哄
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
 const sndUp   = () => { [0, 90, 180].forEach((d, i) => setTimeout(() => tone(600 + i * 180, .14, "triangle", .12), d)); };
 
 /* ---------------- 状态 ---------------- */
@@ -187,6 +228,7 @@ function resolve(ok, value) {
   if (ok) {
     L.catchRight(S.g);
     sndGood(Math.min(S.g.combo, 6));
+    praise(S.g.combo);
     burst(S.ele.x, GROUND() - 30, "#ffd166", 26);
     float(S.ele.x, GROUND() - 70, "+" + L.hitScore(S.g.combo), "#ffd166", 30);
     if (S.g.combo >= 3) float(S.ele.x, GROUND() - 110, "🔥 连对 " + S.g.combo, "#ff9f45", 22);
@@ -442,6 +484,7 @@ function start() {
 
 function gameOver() {
   S.mode = "over";
+  if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
   save.plays = (save.plays || 0) + 1;
   const best = Math.max(save.best || 0, S.g.score);
   const isBest = S.g.score > (save.best || 0) && S.g.score > 0;
@@ -455,7 +498,19 @@ function gameOver() {
   setTimeout(() => layer("over", true), 650);     // 让最后那下动画播完再盖上
 }
 
+function refreshVoiceBtn() {
+  $("voicebtn").textContent = save.voice ? "🔊 夸奖语音：开" : "🔈 夸奖语音：关";
+}
+$("voicebtn").onclick = () => {
+  save.voice = !save.voice;
+  persist();
+  refreshVoiceBtn();
+  if (save.voice) praise(1);          // 开的时候出个声，省得人不知道有没有生效
+  else if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
+};
+
 function refreshStart() {
+  refreshVoiceBtn();
   $("startstat").innerHTML = save.best
     ? "最高分 <em>" + save.best + "</em>　累计答对 <em>" + (save.solved || 0) + "</em> 题"
     : "";
@@ -474,12 +529,13 @@ $("resume").onclick = () => { S.mode = "play"; layer("paused", false); };
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden" && S.mode === "play") {
     S.mode = "pause"; layer("paused", true);
+    if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
   }
 });
 
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191654" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191702" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>
