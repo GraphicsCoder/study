@@ -56,6 +56,7 @@
 
   var me = document.currentScript;
   var KEY = (me && me.dataset && me.dataset.key) || "";   // 导航页没有，属正常
+  var SELF = (me && me.src) || "";                        // 拿来拼 二维码.js 的地址
 
   var CODE = "__sync_code__";             // 登录名，全站共用，登录一次就够
   var SKIP = "__sync_skip_login__";       // 推迟到什么时候再问的时间戳
@@ -132,6 +133,10 @@
       '#syncbox .err.show{display:block}' +
       '#syncbox .who{background:#e8f6ed;color:#15803d;border-radius:10px;padding:10px 12px;' +
       'font-size:13.5px;margin:0 0 14px;word-break:break-all}' +
+      // 二维码：撑满面板宽度，但不超过 260，太大了反而要把 iPad 举远才扫得全
+      '#syncbox .qr{text-align:center;margin:0 0 10px;color:#6b7280;font-size:13px}' +
+      '#syncbox .qr svg{width:100%;max-width:260px;height:auto;border-radius:8px;' +
+      'border:1px solid #e5e7eb;background:#fff}' +
       '#syncbox .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}' +
       '#syncbox button{font-family:inherit;font-size:14px;padding:10px 15px;border-radius:10px;' +
       'cursor:pointer;border:1px solid #e5e7eb;background:#fff;color:#1f2430}' +
@@ -210,6 +215,118 @@
     if (ready()) return panelLogged();
     // 没配好：Gist 模式直接进设置页，别让人先填一个用不上的登录名
     return mode() === "gist" ? panelServer() : panelLogin();
+  }
+
+  /* ================= 扫码把第二台设备配好 =================
+
+     第二台设备原来要手输两样东西：一串四十位的令牌，和一串三十二位的
+     Gist ID。在 iPad 上对着另一块屏幕抄这两串，是这套同步里最劝退的一步。
+
+     现在第一台设备生成一张二维码，里面是本站的网址加一段 #s=令牌~GistID。
+     第二台用系统相机扫一下就打开网页，页面自己把设置填好。
+     不用装 App，也不用在网页里申请摄像头权限——相机扫出网址直接跳转，
+     这是 iPad 上唯一一条不折腾的路。
+
+     两点是有意为之：
+     - 参数放在 # 后面。# 后面的内容浏览器不会发给服务器，所以令牌
+       从头到尾没离开过这两台设备，GitHub Pages 的日志里也不会有。
+     - 落地后立刻把 # 从地址栏抹掉，否则它会留在历史记录和书签里。 */
+
+  var scanned = null;                     // 扫码带进来的设置，等用户确认
+
+  function scanLink() {
+    var tok = (localStorage.getItem(GTOK) || "").trim();
+    var gid = (localStorage.getItem(GID)  || "").trim();
+    if (!tok || !gid) return "";
+    // 落地页统一用导航页：它一定存在，而且不带 data-key，不会误触发某一页的同步
+    var base = location.href.split("#")[0].replace(/[^/]*$/, "") + "index.html";
+    return base + "#s=" + tok + "~" + gid;
+  }
+
+  // 二维码脚本按需加载：九个页面里只有点开这个面板的那一次才会用到它
+  function loadQR(cb) {
+    if (window.QR) { cb(true); return; }
+    if (!SELF) { cb(false); return; }
+    var q = SELF.indexOf("?");
+    var s = document.createElement("script");
+    // 和 同步.js 共用一个版本号，这样 刷新版本号.py 不用再认一个文件
+    s.src = SELF.replace(/[^/?]*(\?.*)?$/, "") + encodeURIComponent("二维码.js") + (q > 0 ? SELF.slice(q) : "");
+    s.onload  = function () { cb(!!window.QR); };
+    s.onerror = function () { cb(false); };
+    document.head.appendChild(s);
+  }
+
+  function panelQR(back) {
+    var url = scanLink();
+    box.innerHTML =
+      '<h3>📱 新设备扫这个码</h3>' +
+      (url
+        ? '<p>用新设备的<b>相机</b>对着扫，点一下弹出来的链接，设置会自动填好。</p>' +
+          '<div class="qr" id="syncqr">正在生成…</div>' +
+          '<p class="hint">⚠️ 这张图里有你的 GitHub 令牌，<b>等于一把钥匙</b>。' +
+          '只给自己的设备扫，别拍照发群里。面板关掉就没了。</p>'
+        : '<p>还没配好 Gist，生成不了。先在「同步方式」里填令牌、保存一次。</p>') +
+      '<div class="btns">' +
+        '<button class="primary" id="syncqrback">完成</button>' +
+      '</div>';
+    box.querySelector("#syncqrback").onclick = back ? function () { back(); } : close;
+    mask.classList.add("show");
+
+    if (!url) return;
+    var slot = box.querySelector("#syncqr");
+    loadQR(function (ok) {
+      if (!box.contains(slot)) return;               // 面板已经被关掉了
+      if (!ok) { slot.innerHTML = '<p class="err show">二维码脚本没加载出来，刷新一下页面再试。</p>'; return; }
+      try {
+        // 纠错级别用 L：屏幕对屏幕扫，不会有污损折角，省下的容量换更稀疏的点，
+        // 隔着一块玻璃更容易对上焦
+        slot.innerHTML = window.QR.svg(url, { ecl: "L", scale: 4 });
+      } catch (e) {
+        slot.innerHTML = '<p class="err show">' + esc(String(e && e.message || e)) + '</p>';
+      }
+    });
+  }
+
+  // 扫码落地：先把地址栏擦干净，再问要不要用
+  function takeScan() {
+    var m = /^#s=([A-Za-z0-9_\-]+)~([A-Za-z0-9]+)$/.exec(location.hash || "");
+    if (!m) return;
+    try { history.replaceState(null, "", location.href.split("#")[0]); }
+    catch (e) { location.hash = ""; }
+    scanned = { tok: m[1], gid: m[2] };
+  }
+
+  function panelScan() {
+    var s = scanned;
+    box.innerHTML =
+      '<h3>📱 扫到了一份同步设置</h3>' +
+      '<p>启用之后，这台设备和原来那台共用一份进度。</p>' +
+      '<div class="who">GitHub Gist<br>ID：<b>' + esc(s.gid) + '</b></div>' +
+      '<div id="synctest"><p class="hint">正在确认这份设置能不能用…</p></div>' +
+      '<div class="btns">' +
+        '<button class="primary" id="syncuse">启用同步</button>' +
+        '<button class="ghost" id="syncdrop">不用</button>' +
+      '</div>';
+
+    var slot = box.querySelector("#synctest");
+    pingGist(s.tok, s.gid, function (r) {
+      if (!box.contains(slot)) return;
+      slot.innerHTML = '<p class="' + (r.ok ? "good" : "err") + ' show">' + r.msg + '</p>';
+    });
+
+    box.querySelector("#syncuse").onclick = function () {
+      rawSet(MODE, "gist");
+      rawSet(GTOK, s.tok);
+      rawSet(GID, s.gid);
+      localStorage.removeItem(SKIP);
+      scanned = null;
+      lastErr = "";
+      autoPop = false;
+      close();
+      boot();
+    };
+    box.querySelector("#syncdrop").onclick = function () { scanned = null; close(); boot(); };
+    mask.classList.add("show");
   }
 
   /* 服务器设置：两种后端都能在界面上配好并当场测通，不用改代码再发一次版。
@@ -302,7 +419,9 @@
           ensureGist(function (r) {
             if (!r.ok) { say("err", r.err || "创建失败"); return; }
             pane.querySelector("#syncgid").value = r.id;
-            say("good", "✓ 已创建。<b>Gist ID：" + esc(r.id) + "</b><br>第二台设备要用这串。");
+            say("good", "✓ 已创建。<b>Gist ID：" + esc(r.id) + "</b><br>" +
+                        "第二台设备不用抄这串：关掉这个面板，点小圆点 → <b>📱 新设备扫码</b>，" +
+                        "拿新设备的相机扫一下就行。");
           });
           return;                       // 留在设置页，让人把 id 抄走
         }
@@ -473,12 +592,16 @@
 
       '<div class="btns">' +
         '<button class="primary" id="syncnow">立即同步</button>' +
+        (mode() === "gist" && (localStorage.getItem(GID) || "").trim()
+          ? '<button id="syncqrbtn">📱 新设备扫码</button>' : "") +
         '<button class="danger" id="syncout">退出登录</button>' +
         '<button class="ghost" id="syncclose">关闭</button>' +
       '</div>' +
       '<p class="hint"><span class="more" id="syncsrv2">⚙️ 同步方式 / 测试连接 ›</span></p>';
 
     box.querySelector("#syncnow").onclick = function () { close(); boot(); };
+    if (box.querySelector("#syncqrbtn"))
+      box.querySelector("#syncqrbtn").onclick = function () { panelQR(panelLogged); };
     box.querySelector("#syncsrv2").onclick = function () { panelServer(panelLogged); };
     box.querySelector("#syncclose").onclick = close;
     box.querySelector("#syncout").onclick = function () {
@@ -668,6 +791,9 @@
   }
 
   function boot() {
+    // 扫码进来的，先问清楚再说。这一步要在「没登录就自动弹登录框」之前，
+    // 不然两个面板会抢同一个弹层
+    if (scanned) { paint("off"); panelScan(); return; }
     var code = localStorage.getItem(CODE) || "gist";   // Gist 模式用不到它，占个位
     if (!ready()) {
       paint("off");
@@ -824,6 +950,9 @@
       } catch (e) {}
     });
   }
+
+  // 地址栏里的令牌越早抹掉越好，所以这一步不等 DOMContentLoaded
+  takeScan();
 
   if (document.body) { ui(); boot(); }
   else document.addEventListener("DOMContentLoaded", function () { ui(); boot(); });
