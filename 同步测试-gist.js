@@ -109,7 +109,7 @@ const content = (gh, id) => JSON.parse(gh.gists[id].files["study-progress.json"]
   // 2. 本地较新 → 写回，且不能抹掉别人的数据
   gh = fakeGitHub({ gists: { ID1: { files: { "study-progress.json": { content: JSON.stringify({
     "prep-practice-v1": { t: 2000, v: { keep: true } },
-    "math-tdsjs-v1": { t: 10, v: { old: 1 } },
+    "math-tdsjs-v1": { t: 10, v: {} },     // 云端这页还是空的，本机做过题
   }) } } } } });
   launch({ store: { ...GIST(), __sync_gist_id__: "ID1", "math-tdsjs-v1": '{"mine":1}', "__sync_t__math-tdsjs-v1": "9999" }, fetchImpl: gh });
   await tick(12);

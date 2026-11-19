@@ -219,7 +219,10 @@ const tick = (n = 14) => new Promise(r => { let i = 0; const go = () => (++i >= 
   const newest = cloud.progress()[MATH];
   let a7 = A.open(MATH);
   await tick();
-  ok("A 打开后拿到 B 的新数据", JSON.parse(A.store[MATH]).correct[0] === "b-newer", A.store[MATH]);
+  // A 本机那条 "z" 和 B 那条 "b-newer" 都该留着：两边做的题谁也不丢
+  ok("A 打开后把 B 的新数据合进来",
+     JSON.parse(A.store[MATH]).correct.indexOf("b-newer") > -1 &&
+     JSON.parse(A.store[MATH]).correct.indexOf("z") > -1, A.store[MATH]);
   ok("A 没有把旧数据盖回云端",
      cloud.progress()[MATH].t === newest.t, JSON.stringify(cloud.progress()[MATH]));
 

@@ -850,8 +850,10 @@
         var blob = g.blob || {}, wrote = false, skipped = false;
         items.forEach(function (it) {
           var cur = blob[it.key];
-          if (cur && cur.t > it.t) { skipped = true; return; }   // 远端更新，不覆盖
-          blob[it.key] = { t:it.t, v:it.v };
+          var merged = mergeRec(it, cur);
+          if (cur && same(merged.v, cur.v) && (cur.t || 0) >= (merged.t || 0)) { skipped = true; return; }
+          blob[it.key] = { t: merged.t, v: merged.v };
+          if (merged.d) blob[it.key].d = merged.d;
           wrote = true;
         });
         if (!wrote) { cb({ ok:true, saved:false }); return; }
@@ -897,12 +899,91 @@
       regAdd(k);
       var r = blob[k];
       if (!r || typeof r.t !== "number" || !isFinite(r.t)) return;
-      if (r.t <= +(localStorage.getItem(tkey(k)) || 0)) return;
-      rawSet(k, JSON.stringify(r.v));
-      rawSet(tkey(k), String(r.t));
-      if (k && k === KEY) hitHere = r.t;
+
+      var raw = localStorage.getItem(k), mine = null;
+      if (raw !== null) {
+        try {
+          mine = { t: +(localStorage.getItem(tkey(k)) || 0),
+                   d: +(localStorage.getItem(dkey(k)) || 0), v: JSON.parse(raw) };
+        } catch (e) { mine = null; }
+      }
+
+      var merged = mergeRec(mine, r);
+      // 本机这份已经包含云端那份了（常见：自己刚推上去的），什么都不用动
+      if (mine && same(merged.v, mine.v) && (mine.t || 0) >= (merged.t || 0)) return;
+
+      rawSet(k, JSON.stringify(merged.v));
+      rawSet(tkey(k), String(merged.t));
+      if (merged.d) rawSet(dkey(k), String(merged.d));
+      // 当前页的内容真变了才值得刷新；只是时间戳对齐就别折腾人
+      if (k && k === KEY && !(mine && same(merged.v, mine.v))) hitHere = merged.t;
     });
     return hitHere;
+  }
+
+  /* ================= 两边都做了题，怎么合 =================
+
+     原来是「整页谁新谁赢」。两台设备同时停在同一页各做各的，后保存的那份
+     会把另一份整个盖掉——不是没同步，是同步成了一台的。
+
+     现在按内容合：
+     - 数组（做对的题号、错题本、标记）取并集，两边做过的题都留着
+     - 对象（每题选了哪个、填空填了什么）按题号合，同一题两边都填过，
+       以保存时间晚的那份为准
+     - 其余（数字、字符串）同样以晚的为准
+
+     「清空重做」是唯一不能靠并集解决的：并集会把刚清掉的题又拼回来。
+     所以保存时顺手判断一下这次是不是变少了（有东西被删掉），是就记一个
+     「清空时间」。合并时，如果一边的清空时间比另一边的保存时间还晚，
+     说明另一边拿的是清空前的旧货，直接整份让位，不做并集。 */
+
+  function dkey(k) { return "__sync_d__" + k; }           // 某份数据上次「变少」的时间
+
+  function isObj(x) { return !!x && typeof x === "object" && !Array.isArray(x); }
+
+  // 元素可能是对象（比如 {id, 答案}），按 JSON 去重，别用 indexOf
+  function unionArr(a, b) {
+    var out = [], seen = {};
+    [a, b].forEach(function (arr) {
+      (arr || []).forEach(function (x) {
+        var k = typeof x === "object" ? JSON.stringify(x) : typeof x + ":" + x;
+        if (seen[k]) return;
+        seen[k] = 1;
+        out.push(x);
+      });
+    });
+    return out;
+  }
+
+  function mergeVal(a, b, aNewer) {
+    if (a === undefined) return b;
+    if (b === undefined) return a;
+    if (Array.isArray(a) && Array.isArray(b)) return unionArr(a, b);
+    if (isObj(a) && isObj(b)) {
+      var out = {}, k;
+      for (k in a) if (Object.prototype.hasOwnProperty.call(a, k)) out[k] = a[k];
+      for (k in b) if (Object.prototype.hasOwnProperty.call(b, k))
+        out[k] = Object.prototype.hasOwnProperty.call(a, k) ? mergeVal(a[k], b[k], aNewer) : b[k];
+      return out;
+    }
+    return aNewer ? a : b;
+  }
+
+  /* 两份记录合成一份。入参都是 {t, v, d}，d 是「上次变少」的时间，可以没有 */
+  function mergeRec(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    if ((a.d || 0) > (b.t || 0)) return a;        // a 清空过，b 是清空前的旧货
+    if ((b.d || 0) > (a.t || 0)) return b;
+    return {
+      t: Math.max(a.t || 0, b.t || 0),
+      d: Math.max(a.d || 0, b.d || 0),
+      v: mergeVal(a.v, b.v, (a.t || 0) >= (b.t || 0)),
+    };
+  }
+
+  function same(x, y) {
+    try { return JSON.stringify(x) === JSON.stringify(y); } catch (e) { return false; }
   }
 
   /* 本机所有有进度的页面，连同各自的时间戳 */
@@ -912,17 +993,19 @@
       var raw = localStorage.getItem(k);
       if (raw === null) return;
       var v; try { v = JSON.parse(raw); } catch (e) { return; }
-      out.push({ key: k, t: +(localStorage.getItem(tkey(k)) || 0), v: v });
+      out.push({ key: k, t: +(localStorage.getItem(tkey(k)) || 0),
+                 d: +(localStorage.getItem(dkey(k)) || 0), v: v });
     });
     return out;
   }
 
-  /* 和云端比一遍，挑出本机更新的那些 */
+  /* 和云端比一遍，挑出「本机这份合进去之后云端会变」的那些 */
   function staleOnRemote(blob) {
     blob = blob || {};
     return localItems().filter(function (it) {
       var r = blob[it.key];
-      return it.t > (r ? r.t : -1);
+      if (!r) return true;
+      return !same(mergeRec(it, r).v, r.v);
     });
   }
 
@@ -1025,7 +1108,8 @@
     if (raw === null) return null;
     var v;
     try { v = JSON.parse(raw); } catch (e) { return null; }
-    return { key: KEY, t: +(localStorage.getItem(tkey(KEY)) || Date.now()), v: v };
+    return { key: KEY, t: +(localStorage.getItem(tkey(KEY)) || Date.now()),
+             d: +(localStorage.getItem(dkey(KEY)) || 0), v: v };
   }
 
   function push() {
@@ -1076,12 +1160,28 @@
 
   /* ================= 挂钩本页的保存动作 ================= */
 
+  // 这次保存是不是「变少了」。合并取并集，所以删除必须单独认出来，
+  // 否则「清空重做」会被另一台设备的旧数据原样拼回来。
+  function countItems(v) {
+    if (Array.isArray(v)) { var n = 0; v.forEach(function (x) { n += 1 + countItems(x); }); return n; }
+    if (isObj(v)) { var m = 0, k; for (k in v) if (Object.prototype.hasOwnProperty.call(v, k)) m += 1 + countItems(v[k]); return m; }
+    return 0;
+  }
+  function shrank(oldRaw, newRaw) {
+    if (oldRaw === null || oldRaw === undefined) return false;
+    try { return countItems(JSON.parse(oldRaw)) > countItems(JSON.parse(newRaw)); }
+    catch (e) { return false; }
+  }
+
   if (KEY) {
     regAdd(KEY);
     localStorage.setItem = function (k, v) {
+      var before = k === KEY ? localStorage.getItem(k) : null;
       rawSet(k, v);
       if (k === KEY) {
-        rawSet(tkey(KEY), String(Date.now()));
+        var now = Date.now();
+        if (shrank(before, v)) rawSet(dkey(KEY), String(now));
+        rawSet(tkey(KEY), String(now));
         schedulePush();
       }
     };

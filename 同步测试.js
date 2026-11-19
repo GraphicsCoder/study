@@ -115,7 +115,8 @@ function ok(name, cond, extra) { T.push({ name, pass: !!cond, extra }); }
     store: { [CODE]: "family123", "math-tdsjs-v1": '{"old":1}', "__sync_t__math-tdsjs-v1": "100" },
     remoteBlob: { "math-tdsjs-v1": { t: 9000, v: { fresh: 1 } } },
   });
-  ok("当前页落盘新数据", r.ls["math-tdsjs-v1"] === '{"fresh":1}');
+  // 合并语义：云端的新内容拼进本机那份，而不是整份盖掉
+  ok("当前页把云端的新内容合进来", r.ls["math-tdsjs-v1"] === '{"old":1,"fresh":1}', r.ls["math-tdsjs-v1"]);
   ok("当前页更新要刷新", r.log.reloaded);
 
   // 5. 同一时间戳已刷新过 → 不再重复刷新（防循环）
@@ -127,13 +128,14 @@ function ok(name, cond, extra) { T.push({ name, pass: !!cond, extra }); }
   });
   ok("同一份数据不重复刷新", !r.log.reloaded);
 
-  // 6. 本地比云端新 → 推上去
+  // 6. 本机有、云端没有的内容 → 推上去
   r = await run({
     dataKey: "math-tdsjs-v1",
     store: { [CODE]: "family123", "math-tdsjs-v1": '{"mine":1}', "__sync_t__math-tdsjs-v1": "8000" },
-    remoteBlob: { "math-tdsjs-v1": { t: 100, v: { stale: 1 } } },
+    remoteBlob: { "math-tdsjs-v1": { t: 100, v: {} } },
   });
-  ok("本地较新则上传", r.log.posted.length === 1 && r.log.posted[0].v.mine === 1, JSON.stringify(r.log.posted));
+  ok("云端缺的内容会补上去", r.log.posted.length === 1 && r.log.posted[0].v.mine === 1, JSON.stringify(r.log.posted));
+  ok("本机这份没被云端的旧货改动，就不用刷新", !r.log.reloaded, r.ls["math-tdsjs-v1"]);
 
   // 7. 导航页（没有 data-key）：能拉取，但不上传
   r = await run({
