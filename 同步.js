@@ -73,6 +73,8 @@
   var busy = false;
   var lastPush = 0;
   var lastErr = "";                       // 最近一次失败原因，点小圆点时展开给人看
+  var lastPull = 0;                       // 上次去云端取数据的时间
+  var MIN_PULL = 15000;                   // 回到前台时，离上次取不足这么久就不重复取
   var MIN_GAP = 10000;                    // 两次推送至少隔 10 秒
 
   /* ================= 界面 ================= */
@@ -961,7 +963,35 @@
     pull(code);
   }
 
+  /* ================= 回到前台就再取一次 =================
+
+     原来只在页面加载时拉一次云端。于是这个场景必然看不到更新：
+     第二台设备的页面早就开着（iPad 上标签页会一直留着，锁屏再解锁、
+     从别的 App 切回来，都不算重新加载），这时第一台刚做完的题推上去了，
+     第二台却还停在打开那一刻的状态，刷新之前永远看不到。
+
+     所以：页面回到前台、或者从「后退/前进」的缓存里被恢复出来时，
+     再取一次。离上次取不到 15 秒就算了，免得来回切 App 时猛刷接口。 */
+
+  function refresh() {
+    if (!ready() || busy || scanned) return;
+    if (mask && mask.classList.contains("show")) return;   // 面板开着，别在人眼前刷新
+    if (Date.now() - lastPull < MIN_PULL) return;
+    boot();
+  }
+
+  function watchForeground() {
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") refresh();
+    });
+    // iOS Safari 从「上一页」退回来时整页是从缓存里恢复的，不会重新执行脚本，
+    // 只会发 pageshow(persisted)
+    window.addEventListener("pageshow", function (e) { if (e && e.persisted) refresh(); });
+    window.addEventListener("focus", refresh);
+  }
+
   function pull(code) {
+    lastPull = Date.now();
     remoteGet(code, function (j) {
       if (!j.ok) { paint("err", j.err); return; }
       try {
@@ -1088,6 +1118,6 @@
   // 地址栏里的令牌越早抹掉越好，所以这一步不等 DOMContentLoaded
   takeScan();
 
-  if (document.body) { ui(); boot(); }
-  else document.addEventListener("DOMContentLoaded", function () { ui(); boot(); });
+  if (document.body) { ui(); watchForeground(); boot(); }
+  else document.addEventListener("DOMContentLoaded", function () { ui(); watchForeground(); boot(); });
 })();

@@ -72,6 +72,8 @@ function Device(name, cloud) {
         /* 模拟页面保存一次进度（练习页就是这么存的） */
         answer(payload) { ls.setItem(dataKey, JSON.stringify(payload)); },
         hide() { doc.visibilityState = "hidden"; (doc._on.visibilitychange || []).forEach(f => f()); },
+        show() { doc.visibilityState = "visible"; (doc._on.visibilitychange || []).forEach(f => f()); },
+        back() { (doc._on.pageshow || []).forEach(f => f({ persisted: true })); },
         chipText: () => doc._byId.syncchip.textContent,
       };
     },
@@ -220,6 +222,43 @@ const tick = (n = 14) => new Promise(r => { let i = 0; const go = () => (++i >= 
   ok("A 打开后拿到 B 的新数据", JSON.parse(A.store[MATH]).correct[0] === "b-newer", A.store[MATH]);
   ok("A 没有把旧数据盖回云端",
      cloud.progress()[MATH].t === newest.t, JSON.stringify(cloud.progress()[MATH]));
+
+  /* ---- 场景七：第二台的页面一直开着，回到前台要能看到新进度 ----
+     这是实际用下来最常撞上的：iPad 上标签页从来不关，锁屏解锁、从别的
+     App 切回来都不算重新加载。原来只在加载时拉一次，于是第一台刚做完的
+     题，第二台不手动刷新就永远看不到。 */
+  tickClock(60000);
+  let b4 = B.open(MATH);                     // B 打开页面，先拿到当时的状态
+  await tick();
+  tickClock(60000);
+  let a8 = A.open(MATH);                     // A 这会儿又做了一题
+  await tick();
+  a8.answer({ correct: ["after-b-opened"] });
+  a8.flush();
+  await tick();
+  ok("A 的新进度已经在云端", cloud.progress()[MATH].v.correct[0] === "after-b-opened",
+     JSON.stringify(cloud.progress()[MATH]));
+  ok("B 这时还是旧的（它没重新加载过）",
+     JSON.parse(B.store[MATH]).correct[0] !== "after-b-opened", B.store[MATH]);
+
+  tickClock(60000);
+  b4.show();                                 // 从别的 App 切回来
+  await tick();
+  ok("回到前台会再取一次，B 看到新进度",
+     JSON.parse(B.store[MATH]).correct[0] === "after-b-opened", B.store[MATH]);
+  ok("取到新数据后会刷新页面，否则屏幕上还是旧的", b4.reloads.length >= 1, b4.reloads.length);
+
+  /* 来回切 App 不该把接口刷爆：15 秒内再回到前台就不重复取 */
+  cloud.log.length = 0;
+  b4.show();
+  await tick();
+  ok("刚取过就切回来，不重复请求", cloud.log.length === 0, cloud.log.join(" | "));
+
+  tickClock(60000);
+  cloud.log.length = 0;
+  b4.back();                                 // 从「上一页」退回来（整页是缓存恢复的）
+  await tick();
+  ok("从缓存恢复的页面也会再取一次", cloud.log.length > 0, cloud.log.join(" | "));
 
   console.log(out.join("\n"));
   const bad = out.filter(x => x.startsWith("FAIL")).length;
