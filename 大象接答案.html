@@ -99,7 +99,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191755"></script>
+<script src="接答案逻辑.js?v=202611191759"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -188,11 +188,25 @@ function pickVoice() {
   return female[0] || us[0] || en[0] || null;
 }
 
-function speakPraise(text, combo) {
-  if (!save.voice || !window.speechSynthesis) return;
-  if (combo < 3 && Math.random() > .7) return;       // 平时七成，连对必念
+/* iOS 上朗读有两道闸，都踩过：
+   1. 第一次 speak 必须发生在用户手势里，否则后面在定时器/动画里怎么叫都没声。
+      所以点「开始」的时候先念一句音量为 0 的空话，把闸打开。
+   2. cancel() 紧接着 speak()，在 iOS 上经常把刚排进去的那句一起吞掉。
+      改成只在真的还在说话时才打断，而且打断后隔一帧再说。 */
+let speechReady = false;
+function unlockSpeech() {
+  if (speechReady || !window.speechSynthesis) return;
+  speechReady = true;
   try {
-    speechSynthesis.cancel();
+    loadVoices();                        // iOS 要等一次手势之后才给得出完整列表
+    const u = new SpeechSynthesisUtterance(" ");
+    u.volume = 0;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+function say(text) {
+  try {
     const u = new SpeechSynthesisUtterance(text);
     const v = pickVoice();
     if (v) u.voice = v;
@@ -200,6 +214,18 @@ function speakPraise(text, combo) {
     u.rate = 1;    u.pitch = 1.2;         // 别太快：这也是听力，得听得清
     speechSynthesis.speak(u);
   } catch (e) {}
+}
+
+function speakPraise(text, combo) {
+  if (!save.voice || !window.speechSynthesis) return;
+  if (combo < 3 && Math.random() > .7) return;       // 平时七成，连对必念
+  if (!voices.length) loadVoices();                  // 列表可能刚刚才到
+  if (speechSynthesis.speaking || speechSynthesis.pending) {
+    try { speechSynthesis.cancel(); } catch (e) {}
+    setTimeout(() => say(text), 60);                 // 等打断落定，直接接着说会被吞
+    return;
+  }
+  say(text);
 }
 const sndUp   = () => { [0, 90, 180].forEach((d, i) => setTimeout(() => tone(600 + i * 180, .14, "triangle", .12), d)); };
 
@@ -578,7 +604,7 @@ function aim(clientX) {
   const pad = 40;
   S.ele.target = Math.max(pad, Math.min(W - pad, clientX));
 }
-cv.addEventListener("pointerdown", e => { audio(); aim(e.clientX); cv.setPointerCapture(e.pointerId); });
+cv.addEventListener("pointerdown", e => { audio(); unlockSpeech(); aim(e.clientX); cv.setPointerCapture(e.pointerId); });
 cv.addEventListener("pointermove", e => { if (e.buttons || e.pointerType === "touch") aim(e.clientX); });
 // 电脑上也能玩：方向键
 window.addEventListener("keydown", e => {
@@ -599,6 +625,7 @@ function start(fromLevel) {
   layer("start", false); layer("over", false); layer("paused", false); layer("pickwrap", false);
   newRound();
   audio();                               // 第一次点按钮时解锁声音，iOS 的规矩
+  unlockSpeech();                        // 朗读也得在手势里开闸，同上
 }
 
 function gameOver() {
@@ -621,6 +648,7 @@ function refreshVoiceBtn() {
   $("voicebtn").textContent = save.voice ? "🔊 夸奖语音：开（英文）" : "🔈 夸奖语音：关";
 }
 $("voicebtn").onclick = () => {
+  unlockSpeech();
   save.voice = !save.voice;
   persist();
   refreshVoiceBtn();
@@ -686,6 +714,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191755" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191759" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>
