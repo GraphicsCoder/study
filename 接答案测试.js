@@ -121,17 +121,40 @@ t("每答对 5 题升一级，封顶不再升", () => {
   assert(G.levelFor(99999) === G.MAX_LEVEL, "封顶");
 });
 
-t("越往后掉得越快，但有下限（再快就只剩手速）", () => {
-  let last = Infinity;
-  for (let lv = 1; lv <= G.MAX_LEVEL; lv++) {
-    const s = G.fallSecs(lv);
-    assert(s < last, lv + " 关没有比上一关快");
-    assert(s >= 2, lv + " 关只剩 " + s + " 秒，太快了");
-    last = s;
+t("同一个阶段里越往后掉得越快", () => {
+  for (let st = 0; st < G.STAGES.length; st++) {
+    let last = Infinity;
+    for (let k = 0; k < G.LEVELS_PER_STAGE; k++) {
+      const lv = st * G.LEVELS_PER_STAGE + k + 1;
+      const sec = G.fallSecs(lv);
+      assert(sec < last, "第 " + lv + " 关没比上一关快");
+      last = sec;
+    }
   }
-  assert(G.fallSecs(G.MAX_LEVEL + 50) >= 2, "超出范围也不能更快");
 });
 
+t("换到新阶段会先松一口气：题变复杂了不能接着压速度", () => {
+  for (let st = 1; st < G.STAGES.length; st++) {
+    const lastOfPrev = st * G.LEVELS_PER_STAGE;          // 上一阶段最后一关
+    const firstOfThis = lastOfPrev + 1;
+    assert(G.fallSecs(firstOfThis) > G.fallSecs(lastOfPrev),
+           "第 " + firstOfThis + " 关（新主题第一关）没有比上一关慢");
+  }
+});
+
+t("两步混合那一档最慢：式子光读完就要两秒", () => {
+  for (let k = 0; k < G.LEVELS_PER_STAGE; k++) {
+    const hard = 3 * G.LEVELS_PER_STAGE + k + 1;         // 第四阶段
+    const easy = k + 1;                                  // 第一阶段同位置
+    assert(G.fallSecs(hard) > G.fallSecs(easy),
+           "第 " + hard + " 关比第 " + easy + " 关还快，那是不给算");
+  }
+});
+
+t("再快也有下限，超出关卡范围不会更快", () => {
+  for (let lv = 1; lv <= G.MAX_LEVEL + 50; lv++) assert(G.fallSecs(lv) >= 2.6, lv + " 关只剩 " + G.fallSecs(lv) + " 秒");
+  assert(G.fallSecs(G.MAX_LEVEL + 50) === G.fallSecs(G.MAX_LEVEL), "超出范围按封顶算");
+});
 /* ---------------- 计分和命 ---------------- */
 
 t("接对了加分、连击累加，连击上限按 5 算", () => {

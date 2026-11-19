@@ -191,10 +191,20 @@
   function levelFor(solved) {
     return Math.min(MAX_LEVEL, 1 + Math.floor(solved / PER_LEVEL));
   }
-  // 落速：一屏高度要花几秒掉完。第 1 关 5.2 秒，往后越来越快，但不低于 2 秒——
-  // 再快就只剩手速，和算得对不对没关系了
+  /* 落速：一屏高度要花几秒掉完。
+     一开始是一路往下压到底，结果第 10 关起很难受——那时候的题是
+     「9 × 6 − 16」「(14 + 5) × 3」，光读完就要两秒，再按前面的速度掉
+     等于不给算。所以速度跟着「这一档的题要想多久」走：
+     每进一个新阶段先松一口气，再在阶段内的三关里逐关收紧。
+     题越复杂，这一档的起步就越慢——第四阶段起步比第一关还慢。 */
+  var STAGE_SECS = [5.2, 5.0, 5.4, 6.6];
+  var TIGHTEN = .35;                 // 同一阶段里每过一关收紧这么多秒
+  var MIN_SECS = 2.6;
+
   function fallSecs(level) {
-    return Math.max(2, 5.2 - (Math.min(MAX_LEVEL, level) - 1) * .28);
+    var lv = Math.max(1, Math.min(MAX_LEVEL, level | 0 || 1));
+    var base = STAGE_SECS[stageIndex(lv)];
+    return Math.max(MIN_SECS, base - (stepInStage(lv) - 1) * TIGHTEN);
   }
 
   /* ---------------- 计分 ---------------- */
