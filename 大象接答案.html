@@ -73,7 +73,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191702"></script>
+<script src="接答案逻辑.js?v=202611191705"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -136,8 +136,8 @@ const sndBad  = () => { tone(200, .22, "sawtooth", .1); setTimeout(() => tone(14
 const sndMiss = () => tone(300, .1, "sine", .07);
 
 /* ---------------- 夸一句 ----------------
-   接对了来一句「你真棒」。挑的是系统里的中文女声：孩子更吃这一套，
-   而且比纯音效更像「有人在旁边陪着玩」。
+   接对了来一句 Great job！挑的是系统里的英语女声：孩子更吃这一套，
+   比纯音效更像「有人在旁边陪着玩」，而且夸的话本身就是几句简单英语。
 
    三件事是踩过才知道的：
    - 每次都要先 cancel()。连对的时候两句叠在一起会糊成一团，而且 iOS 上
@@ -146,17 +146,20 @@ const sndMiss = () => tone(300, .1, "sine", .07);
    - 不是每次都夸：连着夸十句就成了背景噪音，反而没人听。平时七成概率，
      连对三次以上必夸 */
 
-const PRAISE = ["你真棒", "太厉害了", "答对啦", "好样的", "真聪明", "就是它", "漂亮"];
-const PRAISE_HOT = ["连对啦，厉害", "太强了", "停不下来了", "好厉害呀"];
+// 夸奖用英语：一句一两个词，玩着玩着就记住了，顺带也是听力
+const PRAISE = ["Awesome!", "Great job!", "Well done!", "You got it!", "Nice one!", "Perfect!", "Excellent!"];
+const PRAISE_HOT = ["You are on fire!", "Amazing streak!", "Unstoppable!", "Fantastic!"];
 let voices = [];
 function loadVoices() { try { voices = speechSynthesis.getVoices() || []; } catch (e) { voices = []; } }
 if (window.speechSynthesis) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
 
-// 优先挑中文女声；挑不到就让系统自己看着办，别硬塞一个英文声念中文
+// 优先挑英语女声；挑不到就让系统自己看着办，别拿中文声去念英文——
+// 那个腔调比不夸还糟
 function pickVoice() {
-  const zh = voices.filter(v => /^zh/i.test(v.lang || ""));
-  const female = zh.filter(v => /ting|xiao|hui|mei|yun|female|女/i.test(v.name || ""));
-  return female[0] || zh[0] || null;
+  const en = voices.filter(v => /^en/i.test(v.lang || ""));
+  const female = en.filter(v => /samantha|karen|zira|aria|jenny|moira|tessa|female|woman/i.test(v.name || ""));
+  const us = en.filter(v => /^en[-_]US/i.test(v.lang || ""));
+  return female[0] || us[0] || en[0] || null;
 }
 
 function praise(combo) {
@@ -168,8 +171,8 @@ function praise(combo) {
     const u = new SpeechSynthesisUtterance(list[Math.random() * list.length | 0]);
     const v = pickVoice();
     if (v) u.voice = v;
-    u.lang = (v && v.lang) || "zh-CN";
-    u.rate = 1.05; u.pitch = 1.25;        // 稍微快一点、亮一点，像在起哄
+    u.lang = (v && v.lang) || "en-US";
+    u.rate = 1;    u.pitch = 1.2;         // 别太快：这也是听力，得听得清
     speechSynthesis.speak(u);
   } catch (e) {}
 }
@@ -499,7 +502,7 @@ function gameOver() {
 }
 
 function refreshVoiceBtn() {
-  $("voicebtn").textContent = save.voice ? "🔊 夸奖语音：开" : "🔈 夸奖语音：关";
+  $("voicebtn").textContent = save.voice ? "🔊 夸奖语音：开（英文）" : "🔈 夸奖语音：关";
 }
 $("voicebtn").onclick = () => {
   save.voice = !save.voice;
@@ -536,6 +539,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191702" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191705" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>
