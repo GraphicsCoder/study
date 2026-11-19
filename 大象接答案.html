@@ -73,7 +73,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191713"></script>
+<script src="接答案逻辑.js?v=202611191721"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -146,9 +146,8 @@ const sndMiss = () => tone(300, .1, "sine", .07);
    - 不是每次都夸：连着夸十句就成了背景噪音，反而没人听。平时七成概率，
      连对三次以上必夸 */
 
-// 夸奖用英语：一句一两个词，玩着玩着就记住了，顺带也是听力
-const PRAISE = ["Awesome!", "Great job!", "Well done!", "You got it!", "Nice one!", "Perfect!", "Excellent!"];
-const PRAISE_HOT = ["You are on fire!", "Amazing streak!", "Unstoppable!", "Fantastic!"];
+// 夸奖的句子和「别连着重样」的挑法在 接答案逻辑.js 里（那边有测试）
+
 let voices = [];
 function loadVoices() { try { voices = speechSynthesis.getVoices() || []; } catch (e) { voices = []; } }
 if (window.speechSynthesis) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
@@ -160,11 +159,6 @@ function pickVoice() {
   const female = en.filter(v => /samantha|karen|zira|aria|jenny|moira|tessa|female|woman/i.test(v.name || ""));
   const us = en.filter(v => /^en[-_]US/i.test(v.lang || ""));
   return female[0] || us[0] || en[0] || null;
-}
-
-function praisePhrase(combo) {
-  const list = combo >= 3 ? PRAISE_HOT : PRAISE;
-  return list[Math.random() * list.length | 0];
 }
 
 function speakPraise(text, combo) {
@@ -236,7 +230,7 @@ function resolve(ok, value) {
   if (ok) {
     L.catchRight(S.g);
     sndGood(Math.min(S.g.combo, 6));
-    const word = praisePhrase(S.g.combo);
+    const word = L.praisePhrase(S.g.combo);
     speakPraise(word, S.g.combo);
     pop(word, S.g.combo);                 // 同一句话：耳朵听到的和眼睛看到的对得上
     burst(S.ele.x, GROUND() - 30, "#ffd166", 26);
@@ -565,7 +559,7 @@ $("voicebtn").onclick = () => {
   save.voice = !save.voice;
   persist();
   refreshVoiceBtn();
-  if (save.voice) speakPraise(praisePhrase(1), 9);   // 开的时候出个声，省得人不知道有没有生效
+  if (save.voice) speakPraise(L.praisePhrase(1), 9);   // 开的时候出个声，省得人不知道有没有生效
   else if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
 };
 
@@ -596,6 +590,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191713" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191721" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>

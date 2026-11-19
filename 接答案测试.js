@@ -145,5 +145,47 @@ t("最长连击记的是历史最好，不会被后来的归零抹掉", () => {
   assert(s.bestCombo === 4, JSON.stringify(s));
 });
 
+/* ---------------- 夸奖的句子 ---------------- */
+
+t("三档句子都够用：连得久也不会很快听到重样", () => {
+  assert(G.PRAISE.length >= 15, "普通档只有 " + G.PRAISE.length + " 句");
+  assert(G.PRAISE_HOT.length >= 10, "连对档只有 " + G.PRAISE_HOT.length + " 句");
+  assert(G.PRAISE_FIRE.length >= 8, "爆发档只有 " + G.PRAISE_FIRE.length + " 句");
+});
+
+t("连对越久夸得越夸张：三档各走各的", () => {
+  const inList = (n, list) => { for (let i = 0; i < 60; i++) assert(list.indexOf(G.praisePhrase(n)) > -1, n + " 连对拿到了别档的句子"); };
+  inList(1, G.PRAISE); inList(2, G.PRAISE);
+  inList(3, G.PRAISE_HOT); inList(6, G.PRAISE_HOT);
+  inList(7, G.PRAISE_FIRE); inList(30, G.PRAISE_FIRE);
+});
+
+t("同一句不会连着冒出来（这是最出戏的地方）", () => {
+  let last = "";
+  for (let i = 0; i < 400; i++) {
+    const w = G.praisePhrase(1 + (i % 12));   // 连对数来回变，三档都会走到
+    assert(w && typeof w === "string", "拿到空句子");
+    assert(w !== last, "连着两次都是「" + w + "」");
+    last = w;
+  }
+});
+
+t("最近四句之内也不重样", () => {
+  const seen = [];
+  for (let i = 0; i < 200; i++) {
+    const w = G.praisePhrase(1);
+    assert(seen.indexOf(w) < 0, "「" + w + "」在最近 4 句里重复了");
+    seen.push(w);
+    if (seen.length > 4) seen.shift();
+  }
+});
+
+t("夸奖都是英文短句，不混中文、也不会长到一屏放不下", () => {
+  [].concat(G.PRAISE, G.PRAISE_HOT, G.PRAISE_FIRE).forEach(w => {
+    assert(!/[\u4e00-\u9fa5]/.test(w), "混进了中文：" + w);
+    assert(w.length <= 22, "太长了：" + w);
+  });
+});
+
 console.log("\n" + (fail ? "失败 " + fail + " 项，" : "全部 ") + (pass + fail) + " 项" + (fail ? "" : "通过"));
 process.exit(fail ? 1 : 0);

@@ -148,11 +148,47 @@
     return s;
   }
 
+/* 夸奖用英语：一句一两个词，玩着玩着就记住了，顺带也是听力。
+   分三档，连得越久夸得越夸张——一直是同一个调门，夸到第十句就没人听了。
+   每一档都备足了句子：一局打顺手能连二三十个，句子少了就开始循环播放。 */
+const PRAISE = [
+  "Awesome!", "Great job!", "Well done!", "You got it!", "Nice one!", "Perfect!",
+  "Excellent!", "Brilliant!", "Nailed it!", "Way to go!", "Super!", "Spot on!",
+  "Good one!", "That's right!", "Clever!", "Sharp!", "Keep going!", "Lovely!",
+];
+const PRAISE_HOT = [
+  "You are on fire!", "Amazing streak!", "Unstoppable!", "Fantastic!",
+  "Three in a row!", "You are flying!", "So quick!", "Wonderful!",
+  "Super smart!", "Look at you go!", "Incredible!", "Brilliant again!",
+];
+const PRAISE_FIRE = [
+  "Absolutely amazing!", "You are a genius!", "Nobody can stop you!",
+  "Math superstar!", "Unbelievable!", "Champion!", "Record breaker!",
+  "You are on a roll!", "Legendary!", "Out of this world!",
+];
+
+// 刚说过的几句先不用：同一句连着出现两次，那股「有人在陪你」的劲儿立刻就没了
+const saidLately = [];
+function freshFrom(list) {
+  const fresh = list.filter(x => saidLately.indexOf(x) < 0);
+  const from = fresh.length ? fresh : list;         // 实在躲不开就不躲了
+  const pickOne = from[Math.random() * from.length | 0];
+  saidLately.push(pickOne);
+  // 记住最近 6 句：比最短的那档（10 句）小，否则每次都退化成「躲不开」
+  while (saidLately.length > 6) saidLately.shift();
+  return pickOne;
+}
+function praisePhrase(combo) {
+  return freshFrom(combo >= 7 ? PRAISE_FIRE : combo >= 3 ? PRAISE_HOT : PRAISE);
+}
+
+
   var API = {
     LIVES: LIVES, PER_LEVEL: PER_LEVEL, MAX_LEVEL: MAX_LEVEL,
     makeRound: makeRound, decoysFor: decoysFor,
     levelFor: levelFor, fallSecs: fallSecs,
     newGame: newGame, hitScore: hitScore,
+    praisePhrase: praisePhrase, PRAISE: PRAISE, PRAISE_HOT: PRAISE_HOT, PRAISE_FIRE: PRAISE_FIRE,
     catchRight: catchRight, catchWrong: catchWrong, missRound: missRound,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = API;
