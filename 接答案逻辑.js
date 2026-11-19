@@ -225,7 +225,8 @@
     rnd = rnd || Math.random;
     var unit = r * 2.2;   // 再大就变成「排队一个个掉」，一轮拖太久
     var out = [];
-    for (var i = 0; i < n; i++) out.push(-(r + 4) - i * unit - rnd() * r);
+    // 抖动只给 0.4r：再多就会把上面那个间距吃掉，两个球又变成一起到
+    for (var i = 0; i < n; i++) out.push(-(r + 4) - i * unit - rnd() * r * .4);
     for (var j = out.length - 1; j > 0; j--) {
       var k = Math.floor(rnd() * (j + 1)), t = out[j]; out[j] = out[k]; out[k] = t;
     }
