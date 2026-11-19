@@ -94,7 +94,12 @@
     50%    {box-shadow:0 0 0 4px rgba(220,38,38,.18)}
   }
 
-  .opts{display:grid;gap:10px;margin-top:4px}  button.opt{font-family:inherit;font-size:19px;min-height:58px;padding:12px 18px;
+  .opts{display:grid;gap:10px;margin-top:4px}
+  /* 选项都是短词（介词、数字）时排成一行：一屏能同时看见题干、选项和反馈，
+     手机/iPad 上不用上下找。长句选项仍旧一行一个，挤成一条就没法读了。 */
+  .opts.row{display:flex;flex-wrap:wrap}
+  .opts.row button.opt{flex:1 1 0;min-width:84px}
+  button.opt{font-family:inherit;font-size:19px;min-height:58px;padding:12px 18px;
     border-radius:13px;cursor:pointer;border:2px solid var(--line);background:#fff;
     color:inherit;text-align:center;transition:transform .1s,background .15s,border-color .15s}
   button.opt:hover:not(:disabled){background:var(--brand-soft);border-color:#f8b98e}
@@ -602,7 +607,7 @@ function question(){
       ? '<div class="limit" id="lim"><div class="track"><i id="limbar"></i></div></div>'
       : "")
 
-  + '<div class="opts" id="opts">'
+  + '<div class="opts' + (inRow(q.opts) ? " row" : "") + '" id="opts">'
   + q.opts.map((o,k) => '<button class="opt" data-k="' + k + '">' + esc(o) + '</button>').join("")
   + '</div>'
 
@@ -618,6 +623,15 @@ function question(){
   // 题目一出来先读一遍（听力铺垫），读完才开始计时
   if(q.say) speak(sayable(q.stem, null), () => startLimit());
   else startLimit();
+}
+
+// 选项能不能排成一行：短词才行（介词、数字、单个单词）。
+// 阅读理解那种整句选项挤成一条谁也读不下去，还是一行一个。
+// 中文一个字按两个字符算，不然「圆珠笔」这种看着短其实很宽。
+function inRow(opts){
+  if(!opts || opts.length < 2 || opts.length > 4) return false;
+  const w = s => String(s).replace(/[^\x00-\xff]/g, "aa").length;
+  return opts.every(o => w(o) <= 10) && opts.reduce((n,o) => n + w(o), 0) <= 30;
 }
 
 // ___ 显示成橙色横线；【】里的内容画下划线（划线部分提问用）
