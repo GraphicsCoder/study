@@ -247,6 +247,8 @@ const tick = (n = 6) => new Promise(r => { let i = 0; const go = () => (++i >= n
   ok("复制出来的就是二维码里那一串",
      d.clip.length === 1 && d.clip[0] === d.qrCalls[0][0], JSON.stringify(d.clip));
   ok("复制之后提醒一句别留在聊天记录里", /删掉/.test(d.html()), d.html().slice(0, 300));
+  ok("没点之前就写明了复制的那串该往哪儿放",
+     /配置链接/.test(d.panel()) && /同步方式/.test(d.panel()), d.panel().slice(0, 400));
 
   /* ---------- 源码层面的约束 ---------- */
 

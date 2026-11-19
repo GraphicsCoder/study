@@ -348,6 +348,10 @@
           '<div class="qr" id="syncqr">正在生成…</div>' +
           '<p class="hint">⚠️ 这张图里有你的 GitHub 令牌，<b>等于一把钥匙</b>。' +
           '只给自己的设备扫，别拍照发群里。面板关掉就没了。</p>' +
+          // 「复制链接」光有个按钮，人拿到那串也不知道往哪儿放，所以把
+          // 用法直接写在按钮旁边，而不是等点完才提示
+          '<p class="hint">两台设备不在一起？点<b>复制链接</b>发过去，' +
+          '在那台上点小圆点 → <b>⚙️ 同步方式</b>，粘进最上面那格「配置链接」。</p>' +
           '<p class="hint" id="syncqrtip"></p>'
         : '<p>还没配好 Gist，生成不了。先在「同步方式」里填令牌、保存一次。</p>') +
       '<div class="btns">' +
@@ -362,7 +366,8 @@
       var done = function (t) { if (tip) tip.innerHTML = t; };
       try {
         navigator.clipboard.writeText(url).then(
-          function () { done('已复制。<b>这串等于钥匙</b>，发完记得在聊天记录里删掉。'); },
+          function () { done('✓ 已复制。发到第二台 → <b>⚙️ 同步方式</b> → 粘进「配置链接」。' +
+                             '<br><b>这串等于钥匙</b>，发完记得把聊天记录删掉。'); },
           function () { done("复制失败，用上面那张码吧。"); });
       } catch (e) { done("这个浏览器不让脚本复制，用上面那张码吧。"); }
     };
