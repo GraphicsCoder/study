@@ -109,7 +109,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191827"></script>
+<script src="接答案逻辑.js?v=202611191832"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -250,6 +250,9 @@ const S = {
   floats: [],             // 冒出来的 +15 / 答案提示
   pops: [],               // 接对时甩在屏幕中间的那句英文
   retry: [],              // 答错过的题，等会儿再问一遍
+  prevBest: 0,            // 开局时的历史最高分，用来判断什么时候该炸彩带
+  brokeRecord: false,
+  flashGold: 0,
   wrongLog: [],           // 这一局错过哪些题，结算时摊开给人看
   ele: { x: 0, target: 0, squash: 0, trunk: 0, blink: 0, hop: 0 },
   shake: 0,
@@ -304,6 +307,17 @@ function resolve(ok, value) {
     float(S.ele.x, GROUND() - 70, "+" + gain, "#ffd166", 30);
     if (S.g.combo >= 3) float(S.ele.x, GROUND() - 110, "🔥 " + S.g.combo, "#ff9f45", 22);
     S.ele.hop = 1; S.ele.trunk = 1;
+
+    /* 当场超过历史最高分：别等结算页才说。那会儿人已经输了，
+       「新纪录」读起来像安慰奖；在还活着的时候炸一下，才是接着打的理由。 */
+    if (!S.brokeRecord && S.prevBest > 0 && S.g.score >= S.prevBest) {
+      S.brokeRecord = true;
+      confetti(90);
+      S.banner = { text: "🏆 破纪录了！", sub: "原来是 " + S.prevBest + " 分", t: 3, big: true };
+      pop("NEW RECORD!", 9, H * .52);      // 往下挪一截：上面那条横幅正占着 .36 那一带
+      sndFanfare();
+      S.flashGold = 1;
+    }
     const before = L.levelFor(S.g.solved - 1), now = L.levelFor(S.g.solved);
     if (now > before) {
       // 升关必须说一声，但不该打断：横幅飘在上面，球照掉。
@@ -356,15 +370,36 @@ function burst(x, y, color, n) {
 /* 接对时把夸奖甩在屏幕中间：先弹出来，再歪着飘上去淡掉。
    这句话是整局里最该被看见的东西，所以它画在最上层，字也给到最大。
    连对三次以上换一套更烫的配色，顺手告诉人「你现在状态不一样」。 */
-function pop(text, combo) {
+function pop(text, combo, y) {
   const hot = combo >= 3;
   S.pops.push({
     text, life: 1, hot,
-    x: W / 2, y: H * .36,
+    x: W / 2, y: y == null ? H * .36 : y,
     rot: (Math.random() - .5) * .18,
     hue: hot ? 14 : 48,
   });
   if (S.pops.length > 3) S.pops.shift();    // 手快的时候别糊成一堵墙
+}
+
+/* 破纪录：整屏彩带。粒子复用同一套，只是从屏幕顶上成片地落，
+   颜色杂、带旋转，掉得比火花慢——火花是「这一下很准」，彩带是「这一局成了」。 */
+const CONFETTI = ["#ffd166", "#ff9f45", "#5ad2a0", "#53c4ef", "#ff7a9c", "#fff"];
+function confetti(n) {
+  for (let i = 0; i < n; i++) {
+    S.parts.push({
+      x: Math.random() * W, y: -10 - Math.random() * H * .3,
+      vx: (Math.random() - .5) * 120, vy: 60 + Math.random() * 120,
+      r: 3 + Math.random() * 4, life: 1.6 + Math.random() * 1.2, max: 1,
+      color: CONFETTI[Math.random() * CONFETTI.length | 0],
+      flake: 1, spin: (Math.random() - .5) * 12, rot: Math.random() * 6.3,
+    });
+  }
+}
+
+// 破纪录的号角：往上爬的一串，最后落在一个长音上
+function sndFanfare() {
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, .16, "triangle", .13), i * 110));
+  setTimeout(() => tone(1319, .5, "triangle", .11), 470);
 }
 
 function float(x, y, text, color, size) {
@@ -425,6 +460,7 @@ function step(dt) {
   if (S.ele.blink < -3) S.ele.blink = .12 + Math.random() * .1;
   S.shake = Math.max(0, S.shake - dt * 2.6);
   if (S.flash !== null) { S.flash -= dt; if (S.flash <= 0) S.flash = null; }
+  if (S.flashGold) S.flashGold = Math.max(0, S.flashGold - dt * 1.6);
   if (S.banner) { S.banner.t -= dt; if (S.banner.t <= 0) S.banner = null; }
 
   const ground = GROUND();
@@ -450,7 +486,11 @@ function step(dt) {
   // 一个都不剩，又没接着 → 这题漏了
   if (S.round && !S.round.done && S.items.every(it => it.dead)) { S.round.done = 2; missed(); }
 
-  S.parts.forEach(p => { p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 900 * dt; });
+  S.parts.forEach(p => {
+    p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    p.vy += (p.flake ? 160 : 900) * dt;          // 彩带要飘，火花要砸
+    if (p.flake) { p.rot += p.spin * dt; p.vx *= (1 - dt * .6); }
+  });
   S.parts = S.parts.filter(p => p.life > 0);
   S.floats.forEach(f => { f.life -= dt; f.y -= dt * 40; });
   S.floats = S.floats.filter(f => f.life > 0);
@@ -499,9 +539,16 @@ function draw(dt) {
 
   // 粒子
   S.parts.forEach(p => {
-    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
     ctx.fillStyle = p.color;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.3); ctx.fill();
+    if (p.flake) {                               // 彩带画成会翻面的小纸片
+      ctx.save();
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillRect(-p.r, -p.r * .5, p.r * 2, Math.max(1.2, p.r * Math.abs(Math.cos(p.rot))));
+      ctx.restore();
+    } else {
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.3); ctx.fill();
+    }
   });
   ctx.globalAlpha = 1;
 
@@ -551,6 +598,10 @@ function draw(dt) {
   });
   ctx.globalAlpha = 1;
 
+  if (S.flashGold) {
+    ctx.fillStyle = "rgba(255,209,102," + (S.flashGold * .35) + ")";
+    ctx.fillRect(-20, -20, W + 40, H + 40);
+  }
   if (S.flash !== null) {
     ctx.fillStyle = "rgba(255,80,60," + (S.flash * .5) + ")";
     ctx.fillRect(-20, -20, W + 40, H + 40);
@@ -652,6 +703,7 @@ function start(fromLevel) {
   if (fromLevel > 1) S.g.solved = L.solvedForLevel(fromLevel);   // 选关：直接从那一关开打
   S.items = []; S.parts = []; S.floats = []; S.pops = []; S.banner = null; S.flash = null;
   S.retry = []; S.wrongLog = [];
+  S.prevBest = save.best || 0; S.brokeRecord = false; S.flashGold = 0;
   S.ele.x = S.ele.target = W / 2;
   S.t = 0; S.nextRoundAt = 0;
   S.mode = "play";
@@ -674,6 +726,7 @@ function gameOver() {
   save.bestCombo = Math.max(prevCombo, bestCombo);
   persist();
   $("overtitle").textContent = isBest ? "🏆 新纪录！" : "这局结束";
+  if (isBest && !S.brokeRecord) { confetti(70); sndFanfare(); }   // 开局时还没有纪录的那种
   const lvEnd = L.levelFor(S.g.solved);
   $("overstat").innerHTML =
     '<div class="big">' + S.g.score + " 分</div>" +
@@ -759,6 +812,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191827" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191832" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>
