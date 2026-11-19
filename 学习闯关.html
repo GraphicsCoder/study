@@ -771,10 +771,11 @@ function answer(k){
     $("fb").className = "fb y show";
     $("fb").innerHTML = '<div class="hd">✅ ' + cheer + (S.streak >= 3 ? "　🔥 连对 " + S.streak : "") + '</div>'
                       + (q.why ? '<div class="why">' + esc(q.why) + '</div>' : "");
-    // 读一遍补完整的句子，顺带把正确说法印进耳朵
-    const after = () => { stopAdvance(); advTimer = setTimeout(next, (q.say && save.speak) ? 180 : 700); };
-    if(q.say) speak(sayable(q.stem, q.ans), after);
-    else after();
+    // 答对了就不再读一遍补完整的句子：题干刚念过，答案也看见了，
+    // 再听一遍只是在等。想听还可以点喇叭。读错那条留着，那才需要。
+    hush();
+    stopAdvance();
+    advTimer = setTimeout(next, 700);
 
   }else{
     wrongFlow(q, "❌ 正确答案是 " + esc(q.ans));
