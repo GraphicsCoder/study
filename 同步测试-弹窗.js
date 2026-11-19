@@ -37,6 +37,7 @@ function Device(store = {}, session = {}) {
       const ls = { getItem: k => (k in s ? s[k] : null), setItem: (k, v) => { s[k] = String(v); },
                    removeItem: k => { delete s[k]; } };
       const doc = makeDoc();
+      if (opt.nopop) doc.currentScript.dataset.nopop = "1";
       let popFn = null;
       const ctx = {
         document: doc, window: { addEventListener() {} }, localStorage: ls,
@@ -121,6 +122,13 @@ const tick = (n = 6) => new Promise(r => { let i = 0; const go = () => (++i >= n
   const d6b = Device(d6.store);
   let v2 = d6b.open(); await tick();
   ok("配好后再翻页不弹", !v2.scheduled());
+
+  /* 游戏页：一上来就弹「填 GitHub 令牌」太煞风景，小圆点留着就行 */
+  const game = Device();
+  const gp = game.open({ nopop: true });
+  await tick();
+  ok("写了 data-nopop 的页面不自动弹", !gp.scheduled());
+  ok("但小圆点还在，家长随时能点开", !!gp.chip);
 
   console.log(out.join("\n"));
   const bad = out.filter(x => x.startsWith("FAIL")).length;

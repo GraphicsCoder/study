@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>大象接答案 · 口算小游戏</title>
+<link rel="icon" href="favicon.svg?v=2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<style>
+  /* 这一页是游戏，不是文档：整屏固定、不滚动、不回弹，手指只用来操作大象 */
+  html,body{margin:0;height:100%;overflow:hidden;background:#0d5f4c;
+    overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    font:16px/1.6 "Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:#fff}
+  canvas{display:block;width:100%;height:100%}
+
+  /* 盖在画布上的几层：开始、结算、暂停。画面用 canvas，文字和按钮用 DOM——
+     canvas 里排中文太难调，DOM 还能直接用系统字体和安全区 */
+  .layer{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:calc(env(safe-area-inset-top) + 20px) 22px calc(env(safe-area-inset-bottom) + 20px);
+    background:rgba(8,54,44,.82);backdrop-filter:blur(3px)}
+  .layer.show{display:flex}
+  .layer h1{font-size:30px;margin:0 0 6px}
+  .layer h2{font-size:23px;margin:0 0 10px}
+  .layer p{margin:0 0 14px;font-size:15px;color:#cfe9e0;max-width:19em;line-height:1.9}
+  .layer b{color:#ffd166}
+  /* 只管自己弹层里的按钮：同步面板也是 <button>，不加这层限定会被染成黄色 */
+  .layer button{font-family:inherit;font-size:19px;font-weight:700;padding:14px 34px;border-radius:99px;
+    border:none;background:#ffd166;color:#0d5f4c;cursor:pointer;box-shadow:0 6px 0 #d9a93f;
+    transition:transform .08s,box-shadow .08s}
+  .layer button:active{transform:translateY(4px);box-shadow:0 2px 0 #d9a93f}
+  .layer button.ghost{background:transparent;color:#cfe9e0;box-shadow:none;font-size:15px;font-weight:500;padding:10px 18px}
+  .layer button.ghost:active{transform:none}
+  .row{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap;justify-content:center}
+  .stat{font-size:15px;color:#cfe9e0;margin-top:10px;line-height:2}
+  .stat em{font-style:normal;color:#fff;font-weight:700;font-size:17px}
+  a.home{position:fixed;left:calc(env(safe-area-inset-left) + 10px);top:calc(env(safe-area-inset-top) + 10px);
+    z-index:5;color:rgba(255,255,255,.75);text-decoration:none;font-size:14px;
+    background:rgba(0,0,0,.18);padding:6px 12px;border-radius:99px}
+  #pausebtn{font-family:inherit;border:none;cursor:pointer;position:fixed;right:calc(env(safe-area-inset-right) + 10px);top:calc(env(safe-area-inset-top) + 10px);
+    z-index:5;font-size:14px;font-weight:500;padding:6px 12px;background:rgba(0,0,0,.18);color:rgba(255,255,255,.75);
+    box-shadow:none;border-radius:99px}
+  #pausebtn:active{transform:none}
+  @media (prefers-reduced-motion:reduce){ .layer button{transition:none} }
+</style>
+</head>
+<body>
+
+<canvas id="cv"></canvas>
+<a class="home" href="index.html">‹ 返回</a>
+<button id="pausebtn">⏸</button>
+
+<div class="layer show" id="start">
+  <h1>🐘 大象接答案</h1>
+  <p>天上掉数字，<b>按住屏幕左右拖</b>，让大象接住<b>算对的那个</b>。<br>
+     接错掉一颗心，漏掉不扣心。</p>
+  <button id="go">开始</button>
+  <div class="stat" id="startstat"></div>
+</div>
+
+<div class="layer" id="over">
+  <h2 id="overtitle">这局结束</h2>
+  <div class="stat" id="overstat"></div>
+  <div class="row">
+    <button id="again">再来一局</button>
+    <button class="ghost" id="back">回首页</button>
+  </div>
+</div>
+
+<div class="layer" id="paused">
+  <h2>⏸ 暂停</h2>
+  <button id="resume">继续</button>
+</div>
+
+<script src="接答案逻辑.js?v=202611191654"></script>
+<script>
+/* =====================================================================
+   大象接答案
+   玩法一句话：天上掉数字，拖着大象去接算对的那个。
+
+   这一份只管「看得见的部分」——画面、手感、音效。出题、判定、计分、
+   难度曲线都在 接答案逻辑.js 里，那边有测试（接答案测试.js）。
+
+   为什么用 canvas 而不是 DOM：几十个气球加粒子同时动，DOM 在 iPad 上
+   会掉帧；canvas 一次画完稳在 60 帧。但文字按钮仍旧用 DOM——canvas 里
+   排中文、处理安全区都太别扭。
+   ===================================================================== */
+
+const L = window.CatchLogic;
+const SAVE_KEY = "catch-game-v1";
+
+let save = {};
+try { save = JSON.parse(localStorage.getItem(SAVE_KEY) || "{}"); } catch (e) { save = {}; }
+save.best = save.best || 0;              // 最高分
+save.solved = save.solved || 0;          // 累计答对多少题
+save.plays = save.plays || 0;            // 玩过多少局
+const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
+
+/* ---------------- 画布 ---------------- */
+
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);   // 超过 2 倍纯属烧电
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener("resize", resize);
+window.addEventListener("orientationchange", () => setTimeout(resize, 120));
+resize();
+
+/* ---------------- 声音（现合成，不下载任何文件） ---------------- */
+
+let AC = null;
+function audio() {
+  if (AC) return AC;
+  try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; }
+  return AC;
+}
+function tone(freq, dur, type, vol) {
+  const ac = audio(); if (!ac || save.mute) return;
+  if (ac.state === "suspended") ac.resume();
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type || "sine"; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || .12, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + dur);
+  o.connect(g); g.connect(ac.destination);
+  o.start(); o.stop(ac.currentTime + dur);
+}
+// 接对了是往上走的两声，接错是往下掉的一声——不用看屏幕也知道刚才对不对
+const sndGood = n => { tone(520 + n * 40, .12, "triangle", .14); setTimeout(() => tone(780 + n * 50, .16, "triangle", .12), 90); };
+const sndBad  = () => { tone(200, .22, "sawtooth", .1); setTimeout(() => tone(140, .26, "sawtooth", .09), 110); };
+const sndMiss = () => tone(300, .1, "sine", .07);
+const sndUp   = () => { [0, 90, 180].forEach((d, i) => setTimeout(() => tone(600 + i * 180, .14, "triangle", .12), d)); };
+
+/* ---------------- 状态 ---------------- */
+
+const S = {
+  mode: "ready",          // ready | play | pause | over
+  g: L.newGame(),
+  round: null,            // 当前这道题
+  items: [],              // 正在掉的数字
+  parts: [],              // 粒子
+  floats: [],             // 冒出来的 +15 / 答案提示
+  ele: { x: 0, target: 0, squash: 0, trunk: 0, blink: 0, hop: 0 },
+  shake: 0,
+  flash: null,            // 答错时糊在屏幕上的那一下
+  nextRoundAt: 0,
+  banner: null,           // 升级横幅
+  t: 0,
+};
+
+const $ = id => document.getElementById(id);
+const layer = (id, on) => $(id).classList.toggle("show", on);
+
+/* ---------------- 一轮 ---------------- */
+
+const GROUND = () => H - Math.max(96, H * .16);     // 大象站的那条线
+const ITEM_R = () => Math.max(26, Math.min(40, W / 10));
+
+function newRound() {
+  const lv = L.levelFor(S.g.solved);
+  S.round = L.makeRound(lv, Math.random);
+  const n = S.round.drops.length;
+  const r = ITEM_R();
+  const pad = r + 10;
+  const secs = L.fallSecs(lv);
+  // 均分到 n 条「道」上，道内再随机挪一点，免得每次都排成一样的队形
+  S.items = S.round.drops.map((v, i) => {
+    const laneW = (W - pad * 2) / n;
+    // 夹在边上一点：球出一半在屏幕外，看着像 bug，也真的接不到
+    const x = Math.max(pad, Math.min(W - pad,
+      pad + laneW * i + laneW / 2 + (Math.random() - .5) * laneW * .35));
+    return {
+      v, x, r,
+      y: -r - i * (H * .22) * Math.random() - r,      // 错开一点出场，不要整排平着压下来
+      vy: (GROUND() + r * 2) / secs,
+      sway: Math.random() * 6.28, hue: 0, dead: 0, caught: 0,
+    };
+  });
+  // 正确答案不画成特殊颜色（那就不用算了），颜色按位置轮着来
+  S.items.forEach((it, i) => it.hue = [48, 14, 190, 330][i % 4]);
+}
+
+function resolve(ok, value) {
+  if (ok) {
+    L.catchRight(S.g);
+    sndGood(Math.min(S.g.combo, 6));
+    burst(S.ele.x, GROUND() - 30, "#ffd166", 26);
+    float(S.ele.x, GROUND() - 70, "+" + L.hitScore(S.g.combo), "#ffd166", 30);
+    if (S.g.combo >= 3) float(S.ele.x, GROUND() - 110, "🔥 连对 " + S.g.combo, "#ff9f45", 22);
+    S.ele.hop = 1; S.ele.trunk = 1;
+    const before = L.levelFor(S.g.solved - 1), now = L.levelFor(S.g.solved);
+    if (now > before) { S.banner = { text: "第 " + now + " 关 · 掉得更快啦", t: 1.6 }; sndUp(); }
+  } else {
+    L.catchWrong(S.g);
+    sndBad();
+    S.shake = 1;
+    S.flash = .5;
+    S.ele.squash = 1;
+    float(W / 2, H * .42, "正确答案是 " + S.round.ans, "#fff", 34);
+  }
+  save.solved = (save.solved || 0) + (ok ? 1 : 0);
+  S.nextRoundAt = S.t + (ok ? .45 : 1.3);
+  if (S.g.over) gameOver();
+}
+
+function missed() {
+  L.missRound(S.g);
+  sndMiss();
+  float(W / 2, H * .42, "这题是 " + S.round.ans, "#cfe9e0", 26);
+  S.nextRoundAt = S.t + .9;
+}
+
+/* ---------------- 粒子和飘字：游戏的「汁水」都在这儿 ---------------- */
+
+function burst(x, y, color, n) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, sp = 90 + Math.random() * 260;
+    S.parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 60,
+                   r: 2 + Math.random() * 4, life: .5 + Math.random() * .5, max: 1, color });
+  }
+}
+function float(x, y, text, color, size) {
+  S.floats.push({ x, y, text, color, size: size || 24, life: 1.1 });
+}
+
+/* ---------------- 大象 ---------------- */
+
+function drawElephant(x, y, scale) {
+  const s = scale;
+  ctx.save();
+  ctx.translate(x, y);
+  // 接到东西会往上蹦一下、身子压扁一点点——有弹性才像活的
+  const hop = Math.sin(S.ele.hop * Math.PI) * 18 * s;
+  const sq = 1 + S.ele.squash * .18, st = 1 - S.ele.squash * .14;
+  ctx.translate(0, -hop);
+  ctx.scale(sq, st);
+
+  ctx.fillStyle = "#fff";
+  ctx.beginPath(); ctx.arc(-14 * s, -8 * s, 30 * s, 0, 6.3); ctx.fill();   // 身子
+  ctx.beginPath(); ctx.arc(22 * s, -6 * s, 25 * s, 0, 6.3); ctx.fill();    // 脑袋
+
+  // 鼻子：接到东西时会卷起来
+  const lift = S.ele.trunk;
+  ctx.strokeStyle = "#fff"; ctx.lineCap = "round"; ctx.lineWidth = 15 * s;
+  ctx.beginPath();
+  ctx.moveTo(26 * s, 14 * s);
+  ctx.quadraticCurveTo(44 * s, 26 * s - lift * 26 * s, 30 * s - lift * 6 * s, 40 * s - lift * 44 * s);
+  ctx.stroke();
+
+  // 眼睛（偶尔眨一下）
+  ctx.fillStyle = "#0d5f4c";
+  const open = S.ele.blink > 0 ? .25 : 1;
+  ctx.beginPath(); ctx.ellipse(30 * s, -12 * s, 4.6 * s, 4.6 * s * open, 0, 0, 6.3); ctx.fill();
+  ctx.restore();
+}
+
+/* ---------------- 每帧 ---------------- */
+
+let last = 0;
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(.05, (now - last) / 1000 || 0);     // 切后台回来不要一下跳一大步
+  last = now;
+  if (S.mode === "play") step(dt);
+  draw(dt);
+}
+
+function step(dt) {
+  S.t += dt;
+
+  // 大象跟手：不是瞬移，留一点追赶感，但要足够快，不能「拖不动」
+  S.ele.x += (S.ele.target - S.ele.x) * Math.min(1, dt * 16);
+  S.ele.hop = Math.max(0, S.ele.hop - dt * 3.2);
+  S.ele.squash = Math.max(0, S.ele.squash - dt * 2.4);
+  S.ele.trunk = Math.max(0, S.ele.trunk - dt * 2.2);
+  S.ele.blink -= dt;
+  if (S.ele.blink < -3) S.ele.blink = .12 + Math.random() * .1;
+  S.shake = Math.max(0, S.shake - dt * 2.6);
+  if (S.flash !== null) { S.flash -= dt; if (S.flash <= 0) S.flash = null; }
+  if (S.banner) { S.banner.t -= dt; if (S.banner.t <= 0) S.banner = null; }
+
+  const ground = GROUND();
+  let alive = 0;
+  S.items.forEach(it => {
+    if (it.dead) { it.dead += dt; return; }
+    it.y += it.vy * dt;
+    it.sway += dt * 2;
+    alive++;
+    // 接住判定：篮口比大象本体宽一点，宁可宽松——这个年纪的手没那么准
+    const dx = Math.abs(it.x + Math.sin(it.sway) * 6 - S.ele.x);
+    if (it.y + it.r >= ground - 18 && it.y - it.r < ground + 26 && dx < it.r + 46) {
+      it.dead = .001; it.caught = 1;
+      if (!S.round.done) { S.round.done = 1; resolve(it.v === S.round.ans, it.v); }
+    } else if (it.y - it.r > H) {
+      it.dead = .001;
+    }
+  });
+
+  // 一个都不剩，又没接着 → 这题漏了
+  if (S.round && !S.round.done && S.items.every(it => it.dead)) { S.round.done = 2; missed(); }
+
+  S.parts.forEach(p => { p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 900 * dt; });
+  S.parts = S.parts.filter(p => p.life > 0);
+  S.floats.forEach(f => { f.life -= dt; f.y -= dt * 40; });
+  S.floats = S.floats.filter(f => f.life > 0);
+
+  if (S.round && S.round.done && S.nextRoundAt && S.t >= S.nextRoundAt && !S.g.over) {
+    S.nextRoundAt = 0; newRound();
+  }
+}
+
+function draw(dt) {
+  ctx.save();
+  if (S.shake > 0) {
+    const k = S.shake * 10;
+    ctx.translate((Math.random() - .5) * k, (Math.random() - .5) * k);
+  }
+
+  // 背景：上深下浅，底下一条草地
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, "#0b4d3e"); g.addColorStop(1, "#13795f");
+  ctx.fillStyle = g; ctx.fillRect(-20, -20, W + 40, H + 40);
+  const ground = GROUND();
+  ctx.fillStyle = "#0a4133";
+  ctx.fillRect(-20, ground + 24, W + 40, H);
+
+  // 掉下来的数字
+  S.items.forEach(it => {
+    if (it.dead > .25) return;
+    const x = it.x + Math.sin(it.sway) * 6;
+    const fade = it.dead ? Math.max(0, 1 - it.dead * 4) : 1;
+    const pop = it.caught ? 1 + it.dead * 3 : 1;
+    ctx.globalAlpha = fade;
+    ctx.save(); ctx.translate(x, it.y); ctx.scale(pop, pop);
+    ctx.fillStyle = "hsl(" + it.hue + ",85%,62%)";
+    ctx.beginPath(); ctx.arc(0, 0, it.r, 0, 6.3); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.35)";
+    ctx.beginPath(); ctx.ellipse(-it.r * .3, -it.r * .35, it.r * .3, it.r * .2, -.6, 0, 6.3); ctx.fill();
+    ctx.fillStyle = "#20323a";
+    ctx.font = "700 " + Math.round(it.r * .92) + "px system-ui,-apple-system,sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(String(it.v), 0, 1);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  });
+
+  // 粒子
+  S.parts.forEach(p => {
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.3); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  drawElephant(S.ele.x, ground, Math.max(.85, Math.min(1.25, W / 420)));
+
+  // 飘字
+  S.floats.forEach(f => {
+    ctx.globalAlpha = Math.min(1, f.life * 1.4);
+    ctx.fillStyle = f.color;
+    ctx.font = "800 " + f.size + "px system-ui,-apple-system,sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(f.text, f.x, f.y);
+  });
+  ctx.globalAlpha = 1;
+
+  if (S.flash !== null) {
+    ctx.fillStyle = "rgba(255,80,60," + (S.flash * .5) + ")";
+    ctx.fillRect(-20, -20, W + 40, H + 40);
+  }
+  ctx.restore();
+
+  if (S.mode === "play" || S.mode === "pause") drawHud();
+}
+
+function headBottom() { return Math.max(124, H * .21); }
+
+function drawHud() {
+  // 顶上压一条不透明的带子：题目写在上面，球从带子底下钻出来。
+  // 之前题目和球在同一层，球飘过去正好糊住题面，等于逼人背题
+  const hb = headBottom();
+  const g2 = ctx.createLinearGradient(0, 0, 0, hb);
+  g2.addColorStop(0, "#073a2f"); g2.addColorStop(1, "#0a4d3e");
+  ctx.fillStyle = g2; ctx.fillRect(-20, -20, W + 40, hb + 20);
+  ctx.fillStyle = "rgba(255,255,255,.10)";
+  ctx.fillRect(-20, hb, W + 40, 2);
+
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillStyle = "rgba(255,255,255,.96)";
+  ctx.font = "800 " + Math.round(Math.min(48, W / 9)) + "px system-ui,-apple-system,sans-serif";
+  if (S.round) ctx.fillText(S.round.q + " = ?", W / 2, headBottom() - 56);
+
+  ctx.font = "600 15px system-ui,-apple-system,sans-serif";
+  ctx.fillStyle = "rgba(255,255,255,.8)";
+  ctx.textAlign = "left";
+  ctx.fillText("❤".repeat(S.g.lives) || "—", 16, headBottom() - 18);
+  ctx.textAlign = "right";
+  ctx.fillText(S.g.score + " 分", W - 16, headBottom() - 18);
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(255,255,255,.55)";
+  ctx.fillText("第 " + L.levelFor(S.g.solved) + " 关", W / 2, headBottom() - 18);
+
+  if (S.banner) {
+    ctx.globalAlpha = Math.min(1, S.banner.t);
+    ctx.fillStyle = "#ffd166";
+    ctx.font = "800 26px system-ui,-apple-system,sans-serif";
+    ctx.fillText(S.banner.text, W / 2, headBottom() + 46);
+    ctx.globalAlpha = 1;
+  }
+}
+
+/* ---------------- 操作：按住屏幕左右拖 ---------------- */
+
+function aim(clientX) {
+  const pad = 40;
+  S.ele.target = Math.max(pad, Math.min(W - pad, clientX));
+}
+cv.addEventListener("pointerdown", e => { audio(); aim(e.clientX); cv.setPointerCapture(e.pointerId); });
+cv.addEventListener("pointermove", e => { if (e.buttons || e.pointerType === "touch") aim(e.clientX); });
+// 电脑上也能玩：方向键
+window.addEventListener("keydown", e => {
+  if (S.mode !== "play") return;
+  if (e.key === "ArrowLeft")  { S.ele.target = Math.max(40, S.ele.target - 60); e.preventDefault(); }
+  if (e.key === "ArrowRight") { S.ele.target = Math.min(W - 40, S.ele.target + 60); e.preventDefault(); }
+});
+
+/* ---------------- 开局 / 结算 ---------------- */
+
+function start() {
+  S.g = L.newGame();
+  S.items = []; S.parts = []; S.floats = []; S.banner = null; S.flash = null;
+  S.ele.x = S.ele.target = W / 2;
+  S.t = 0; S.nextRoundAt = 0;
+  S.mode = "play";
+  layer("start", false); layer("over", false); layer("paused", false);
+  newRound();
+  audio();                               // 第一次点按钮时解锁声音，iOS 的规矩
+}
+
+function gameOver() {
+  S.mode = "over";
+  save.plays = (save.plays || 0) + 1;
+  const best = Math.max(save.best || 0, S.g.score);
+  const isBest = S.g.score > (save.best || 0) && S.g.score > 0;
+  save.best = best;
+  persist();
+  $("overtitle").textContent = isBest ? "🏆 新纪录！" : "这局结束";
+  $("overstat").innerHTML =
+    "得分 <em>" + S.g.score + "</em>　答对 <em>" + S.g.solved + "</em> 题<br>" +
+    "最长连对 <em>" + S.g.bestCombo + "</em>　到了第 <em>" + L.levelFor(S.g.solved) + "</em> 关<br>" +
+    "最高分 <em>" + save.best + "</em>";
+  setTimeout(() => layer("over", true), 650);     // 让最后那下动画播完再盖上
+}
+
+function refreshStart() {
+  $("startstat").innerHTML = save.best
+    ? "最高分 <em>" + save.best + "</em>　累计答对 <em>" + (save.solved || 0) + "</em> 题"
+    : "";
+}
+
+$("go").onclick = start;
+$("again").onclick = start;
+$("back").onclick = () => { location.href = "index.html"; };
+$("pausebtn").onclick = () => {
+  if (S.mode === "play") { S.mode = "pause"; layer("paused", true); }
+  else if (S.mode === "pause") { S.mode = "play"; layer("paused", false); }
+};
+$("resume").onclick = () => { S.mode = "play"; layer("paused", false); };
+
+// 切到别的 App 自动暂停：回来时不会发现三颗心已经掉光了
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden" && S.mode === "play") {
+    S.mode = "pause"; layer("paused", true);
+  }
+});
+
+refreshStart();
+requestAnimationFrame(frame);
+</script>
+<script src="同步.js?v=202611191654" data-key="catch-game-v1" data-nopop="1"></script>
+</body>
+</html>

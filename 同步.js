@@ -57,6 +57,9 @@
   var me = document.currentScript;
   var KEY = (me && me.dataset && me.dataset.key) || "";   // 导航页没有，属正常
   var SELF = (me && me.src) || "";                        // 拿来拼 二维码.js 的地址
+  // 游戏页写 data-nopop：那里一上来就弹「填 GitHub 令牌」太煞风景，
+  // 小圆点还在，家长随时能点开配置
+  var NOPOP = !!(me && me.dataset && me.dataset.nopop);
 
   var CODE = "__sync_code__";             // 登录名，全站共用，登录一次就够
   var SKIP = "__sync_skip_login__";       // 推迟到什么时候再问的时间戳
@@ -1020,7 +1023,7 @@
       // 旧版本这里存的是 "1"，Number("1") 很小，一样会判定成早就过期，自动修复。
       var skip = +(localStorage.getItem(SKIP) || 0);
       var pop  = sessionStorage.getItem(POPPED);
-      if (!pop && Date.now() - skip > SKIP_DAYS * 864e5) {
+      if (!NOPOP && !pop && Date.now() - skip > SKIP_DAYS * 864e5) {
         try { sessionStorage.setItem(POPPED, "1"); } catch (e) {}
         setTimeout(function () {
           autoPop = true;
