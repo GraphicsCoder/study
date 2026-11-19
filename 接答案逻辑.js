@@ -23,48 +23,116 @@
   /* ---------------- 出题 ----------------
      每一档只放「一眼能看出路子」的式子，难的是速度不是算理。 */
 
-  var MAKERS = [
-    // 1. 凑整乘法：25×4、125×8 这类，背下来就能秒答
-    function (rnd, lv) {
-      var pairs = [[25, 4], [25, 8], [125, 8], [50, 2], [20, 5], [15, 4], [12, 5]];
-      var p = pick(rnd, pairs);
-      var a = p[0], b = p[1];
-      if (rnd() < .5) { var t = a; a = b; b = t; }
-      return { q: a + " × " + b, ans: a * b };
+  /* ---------------- 四个阶段，由易到难 ----------------
+     关卡不只是「掉得更快」，内容本身也在走台阶：
+       一、20 以内加减        —— 先把手感和节奏建立起来，题本身不该拦人
+       二、九九乘法（含除法） —— 练熟练度，乘和除混着出，背过的表才算会用
+       三、凑整巧算           —— 25×4、99+36，开始讲「怎么算得快」
+       四、两步混合 / 带括号  —— 运算顺序，最后这档才是真正的综合
+
+     每个阶段三关（一关 5 题），所以大概十五题换一个主题。
+     进了新阶段会回头抽两成旧题型：一换主题就把前面的忘光，不是我们要的。 */
+
+  var STAGES = [
+    {
+      name: "20 以内加减",
+      makers: [
+        function (rnd) {                       // 不进位、进位都有
+          var a = rndInt(rnd, 2, 18), b = rndInt(rnd, 2, 20 - a);
+          return { q: a + " + " + b, ans: a + b };
+        },
+        function (rnd) {
+          var a = rndInt(rnd, 5, 20), b = rndInt(rnd, 1, a - 1);
+          return { q: a + " − " + b, ans: a - b };
+        },
+        function (rnd) {                       // 凑十：7 + 3 + 6 这种
+          var a = rndInt(rnd, 3, 9), b = 10 - a, c = rndInt(rnd, 2, 9);
+          return { q: a + " + " + b + " + " + c, ans: 10 + c };
+        },
+      ],
     },
-    // 2. 凑整加减：99 + 36、102 - 47
-    function (rnd, lv) {
-      var near = pick(rnd, [99, 98, 101, 102, 199, 201]);
-      var x = rndInt(rnd, 11, 60);
-      return rnd() < .5
-        ? { q: near + " + " + x, ans: near + x }
-        : { q: (near + x) + " − " + x, ans: near };
+    {
+      name: "九九乘法 · 乘和除",
+      makers: [
+        function (rnd) {
+          var a = rndInt(rnd, 2, 9), b = rndInt(rnd, 2, 9);
+          return { q: a + " × " + b, ans: a * b };
+        },
+        function (rnd) {                       // 除法就是乘法反过来问
+          var a = rndInt(rnd, 2, 9), b = rndInt(rnd, 2, 9);
+          return { q: (a * b) + " ÷ " + b, ans: a };
+        },
+        function (rnd) {                       // 难背的那几行多出一点
+          var a = pick(rnd, [6, 7, 8, 9]), b = pick(rnd, [6, 7, 8, 9]);
+          return rnd() < .5
+            ? { q: a + " × " + b, ans: a * b }
+            : { q: (a * b) + " ÷ " + a, ans: b };
+        },
+      ],
     },
-    // 3. 表内乘除混一把
-    function (rnd, lv) {
-      var a = rndInt(rnd, 3, 9), b = rndInt(rnd, 6, 9);
-      return rnd() < .5
-        ? { q: a + " × " + b, ans: a * b }
-        : { q: (a * b) + " ÷ " + b, ans: a };
+    {
+      name: "凑整巧算",
+      makers: [
+        function (rnd) {                       // 25×4、125×8 这类，背下来就能秒答
+          var pairs = [[25, 4], [25, 8], [125, 8], [50, 2], [20, 5], [15, 4], [12, 5]];
+          var p = pick(rnd, pairs), a = p[0], b = p[1];
+          if (rnd() < .5) { var t = a; a = b; b = t; }
+          return { q: a + " × " + b, ans: a * b };
+        },
+        function (rnd) {                       // 99 + 36、147 − 48
+          var near = pick(rnd, [99, 98, 101, 102, 199, 201]);
+          var x = rndInt(rnd, 11, 60);
+          return rnd() < .5
+            ? { q: near + " + " + x, ans: near + x }
+            : { q: (near + x) + " − " + x, ans: near };
+        },
+        function (rnd) {                       // 整十整百的乘法
+          var a = pick(rnd, [20, 30, 40, 50, 60, 70, 80, 90]), b = rndInt(rnd, 2, 9);
+          return { q: a + " × " + b, ans: a * b };
+        },
+      ],
     },
-    // 4. 两步：先乘后加减，顺带练运算顺序
-    function (rnd, lv) {
-      var a = rndInt(rnd, 2, 9), b = rndInt(rnd, 2, 9), c = rndInt(rnd, 1, 20);
-      return rnd() < .5
-        ? { q: a + " × " + b + " + " + c, ans: a * b + c }
-        : { q: a + " × " + b + " − " + Math.min(c, a * b), ans: a * b - Math.min(c, a * b) };
-    },
-    // 5. 带括号：(12 + 8) × 5，括号先算
-    function (rnd, lv) {
-      var a = rndInt(rnd, 3, 18), b = rndInt(rnd, 2, 12), c = pick(rnd, [2, 3, 4, 5]);
-      return { q: "(" + a + " + " + b + ") × " + c, ans: (a + b) * c };
+    {
+      name: "两步混合 · 看运算顺序",
+      makers: [
+        function (rnd) {                       // 先乘后加减
+          var a = rndInt(rnd, 2, 9), b = rndInt(rnd, 2, 9), c = rndInt(rnd, 1, 20);
+          return rnd() < .5
+            ? { q: a + " × " + b + " + " + c, ans: a * b + c }
+            : { q: a + " × " + b + " − " + Math.min(c, a * b), ans: a * b - Math.min(c, a * b) };
+        },
+        function (rnd) {                       // 括号先算
+          var a = rndInt(rnd, 3, 18), b = rndInt(rnd, 2, 12), c = pick(rnd, [2, 3, 4, 5]);
+          return { q: "(" + a + " + " + b + ") × " + c, ans: (a + b) * c };
+        },
+        function (rnd) {                       // 先除后加
+          var a = rndInt(rnd, 2, 9), b = rndInt(rnd, 2, 9), c = rndInt(rnd, 1, 20);
+          return { q: (a * b) + " ÷ " + b + " + " + c, ans: a + c };
+        },
+      ],
     },
   ];
 
-  // 前几关只用前两种，越往后花样越多——一上来就上两步混合会劝退
+  var LEVELS_PER_STAGE = 3;
+
+  function stageIndex(level) {
+    return Math.min(STAGES.length - 1, Math.floor((Math.max(1, level) - 1) / LEVELS_PER_STAGE));
+  }
+  function stageOf(level) {
+    var i = stageIndex(level);
+    return { index: i, name: STAGES[i].name, first: i * LEVELS_PER_STAGE + 1 };
+  }
+  // 一关里第几关（1,2,3），用来告诉人「这个主题还剩几关」
+  function stepInStage(level) {
+    return ((Math.max(1, level) - 1) % LEVELS_PER_STAGE) + 1;
+  }
+
   function makersFor(level) {
-    var n = level <= 1 ? 2 : level <= 3 ? 3 : level <= 5 ? 4 : 5;
-    return MAKERS.slice(0, n);
+    var i = stageIndex(level);
+    var list = STAGES[i].makers.slice();
+    // 两成旧题型：换了主题也别把前面的丢干净
+    if (i > 0) list = list.concat(STAGES[i - 1].makers, STAGES[i - 1].makers.length ? [] : []);
+    return { main: STAGES[i].makers, all: list };
   }
 
   /* 干扰项：要像「算错了会得到的那个数」，不能是随便一个数。
@@ -95,7 +163,10 @@
   function makeRound(level, rnd) {
     rnd = rnd || Math.random;
     level = Math.max(1, Math.min(MAX_LEVEL, level | 0 || 1));
-    var m = pick(rnd, makersFor(level));
+    var sets = makersFor(level);
+    // 八成出本阶段的，两成回头抽上一阶段的
+    var list = (rnd() < .8 || sets.all === sets.main) ? sets.main : sets.all;
+    var m = pick(rnd, list);
     var r = m(rnd, level);
     var count = level <= 2 ? 3 : 4;                 // 掉下来几个数
     var drops = [r.ans].concat(decoysFor(r.ans, rnd, count - 1));
@@ -187,6 +258,7 @@ function praisePhrase(combo) {
     LIVES: LIVES, PER_LEVEL: PER_LEVEL, MAX_LEVEL: MAX_LEVEL,
     makeRound: makeRound, decoysFor: decoysFor,
     levelFor: levelFor, fallSecs: fallSecs,
+    stageOf: stageOf, stepInStage: stepInStage, STAGES: STAGES, LEVELS_PER_STAGE: LEVELS_PER_STAGE,
     newGame: newGame, hitScore: hitScore,
     praisePhrase: praisePhrase, PRAISE: PRAISE, PRAISE_HOT: PRAISE_HOT, PRAISE_FIRE: PRAISE_FIRE,
     catchRight: catchRight, catchWrong: catchWrong, missRound: missRound,

@@ -17,7 +17,9 @@ function assert(c, m) { if (!c) throw new Error(m || "不成立"); }
 // 可复现的伪随机：测试里不用真 Math.random，不然挂了也复现不出来
 function rng(seed) {
   let s = seed >>> 0 || 1;
-  return function () { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+  const next = () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+  for (let i = 0; i < 8; i++) next();     // 预热：种子小的时候，头几个数会紧贴着 0，
+  return next;                            // 不预热的话「两成概率」那种分支永远走不到
 }
 
 const ROUNDS = [];
@@ -63,10 +65,35 @@ t("前两关只掉 3 个数，往后 4 个", () => {
   ROUNDS.forEach(r => assert(r.drops.length === (r.level <= 2 ? 3 : 4), r.level + " 关掉了 " + r.drops.length + " 个"));
 });
 
-t("低关卡不出两步混合，难的留到后面", () => {
-  ROUNDS.filter(r => r.level === 1).forEach(r => {
-    assert(!/[+−].*×|×.*[+−]|\(/.test(r.q), "第 1 关出现了 " + r.q);
+t("第一阶段只出 20 以内加减：开局不该被题本身拦住", () => {
+  ROUNDS.filter(r => r.level <= 3).forEach(r => {
+    assert(!/[×÷(]/.test(r.q), "第 " + r.level + " 关出现了 " + r.q);
+    assert(r.ans <= 20, r.q + " = " + r.ans + "，超过 20 了");
   });
+});
+
+t("四个阶段按关卡排队，三关换一个主题", () => {
+  assert(G.stageOf(1).index === 0 && G.stageOf(3).index === 0, "1–3 关是第一阶段");
+  assert(G.stageOf(4).index === 1 && G.stageOf(6).index === 1, "4–6 关是第二阶段");
+  assert(G.stageOf(7).index === 2, "7 关进第三阶段");
+  assert(G.stageOf(10).index === 3 && G.stageOf(99).index === 3, "最后一个阶段封顶");
+  assert(G.stepInStage(1) === 1 && G.stepInStage(3) === 3 && G.stepInStage(4) === 1, "阶段内第几关");
+  G.STAGES.forEach(st => assert(st.name && st.makers.length >= 2, "阶段缺名字或题型太少"));
+});
+
+t("第二阶段乘除都要出，不能只剩乘法", () => {
+  const qs = ROUNDS.filter(r => r.level >= 4 && r.level <= 6).map(r => r.q);
+  assert(qs.some(q => q.indexOf("×") > -1), "一道乘法都没有");
+  assert(qs.some(q => q.indexOf("÷") > -1), "一道除法都没有");
+  // 九九表之内：乘数和被乘数都不超过 9
+  qs.filter(q => q.indexOf("×") > -1).forEach(q => {
+    q.split("×").forEach(x => assert(+x.trim() <= 9, "超出九九表：" + q));
+  });
+});
+
+t("进了新阶段还会回头抽旧题型，别把前面的忘光", () => {
+  const later = ROUNDS.filter(r => r.level >= 4 && r.level <= 6);
+  assert(later.some(r => !/[×÷]/.test(r.q)), "第二阶段一道加减都没回头出");
 });
 
 t("同一个随机种子出同一道题（挂了能复现）", () => {

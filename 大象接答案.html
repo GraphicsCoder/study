@@ -53,7 +53,8 @@
 <div class="layer show" id="start">
   <h1>🐘 大象接答案</h1>
   <p>天上掉数字，<b>按住屏幕左右拖</b>，让大象接住<b>算对的那个</b>。<br>
-     接错掉一颗心，漏掉不扣心。</p>
+     接错掉一颗心，漏掉不扣心。<br>
+     从 <b>20 以内加减</b> 开始，一路到九九乘法、凑整巧算、两步混合。</p>
   <button id="go">开始</button>
   <div class="row"><button class="ghost" id="voicebtn"></button></div>
   <div class="stat" id="startstat"></div>
@@ -73,7 +74,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191721"></script>
+<script src="接答案逻辑.js?v=202611191729"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -238,7 +239,19 @@ function resolve(ok, value) {
     if (S.g.combo >= 3) float(S.ele.x, GROUND() - 110, "🔥 " + S.g.combo, "#ff9f45", 22);
     S.ele.hop = 1; S.ele.trunk = 1;
     const before = L.levelFor(S.g.solved - 1), now = L.levelFor(S.g.solved);
-    if (now > before) { S.banner = { text: "第 " + now + " 关 · 掉得更快啦", t: 1.6 }; sndUp(); }
+    if (now > before) {
+      // 升关必须说一声，但不该打断：横幅飘在上面，球照掉。
+      // 换主题是件大事（题型整个变了），多给一点时间和一个副标题，
+      // 并且把下一题推迟一会儿——让人把那行字看完
+      const s0 = L.stageOf(before), s1 = L.stageOf(now);
+      const newStage = s1.index > s0.index;
+      S.banner = newStage
+        ? { text: "第 " + now + " 关 · " + s1.name, sub: "换新题型啦", t: 2.6, big: true }
+        : { text: "第 " + now + " 关", sub: "掉得更快了", t: 1.8, big: false };
+      if (newStage) S.nextRoundAt += 1;
+      sndUp();
+      if (newStage) setTimeout(() => sndUp(), 260);
+    }
   } else {
     L.catchWrong(S.g);
     sndBad();
@@ -497,13 +510,35 @@ function drawHud() {
   ctx.fillText(S.g.score + " 分", W - 16, headBottom() - 18);
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255,255,255,.55)";
-  ctx.fillText("第 " + L.levelFor(S.g.solved) + " 关", W / 2, headBottom() - 18);
+  const lv = L.levelFor(S.g.solved);
+  ctx.fillText("第 " + lv + " 关 · " + L.stageOf(lv).name, W / 2, headBottom() - 18);
 
   if (S.banner) {
-    ctx.globalAlpha = Math.min(1, S.banner.t);
+    const b = S.banner, y = headBottom() + (b.big ? 58 : 46);
+    ctx.globalAlpha = Math.min(1, b.t);
+    // 换主题那一下给个底衬：底下正在掉球，纯文字会被花花绿绿的球搅乱
+    if (b.big) {
+      ctx.font = "800 " + Math.round(Math.min(27, W / 15)) + "px system-ui,-apple-system,sans-serif";
+      const w = ctx.measureText(b.text).width + 36;
+      ctx.fillStyle = "rgba(7,58,47,.9)";
+      const x0 = W / 2 - w / 2, h = 62, r = 14;
+      ctx.beginPath();
+      ctx.moveTo(x0 + r, y - h / 2);
+      ctx.arcTo(x0 + w, y - h / 2, x0 + w, y + h / 2, r);
+      ctx.arcTo(x0 + w, y + h / 2, x0, y + h / 2, r);
+      ctx.arcTo(x0, y + h / 2, x0, y - h / 2, r);
+      ctx.arcTo(x0, y - h / 2, x0 + w, y - h / 2, r);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,209,102,.6)"; ctx.lineWidth = 2; ctx.stroke();
+    }
     ctx.fillStyle = "#ffd166";
-    ctx.font = "800 26px system-ui,-apple-system,sans-serif";
-    ctx.fillText(S.banner.text, W / 2, headBottom() + 46);
+    ctx.font = "800 " + Math.round(Math.min(b.big ? 27 : 24, W / 15)) + "px system-ui,-apple-system,sans-serif";
+    ctx.fillText(b.text, W / 2, y - (b.sub ? 11 : 0));
+    if (b.sub) {
+      ctx.fillStyle = "rgba(255,255,255,.78)";
+      ctx.font = "600 14px system-ui,-apple-system,sans-serif";
+      ctx.fillText(b.sub, W / 2, y + 15);
+    }
     ctx.globalAlpha = 1;
   }
 }
@@ -590,6 +625,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191721" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191729" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>
