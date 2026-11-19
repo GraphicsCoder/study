@@ -38,6 +38,12 @@
   .stat .big{font-size:40px;font-weight:800;color:#ffd166;line-height:1.3}
   .stat .combo{font-size:17px;color:#fff;margin:2px 0 8px}
   .stat .combo em{color:#ff9f45;font-size:20px}
+  /* 结算页的错题：这局唯一「学到东西」的部分，给它一块地方，别混在数字里 */
+  .stat .wrongs{margin-top:12px;background:rgba(255,255,255,.08);border-radius:12px;
+    padding:10px 12px;font-size:14px;color:#cfe9e0;text-align:left;line-height:1.9}
+  .stat .wrongs b{display:block;color:#ffd166;font-size:13px;margin-bottom:4px}
+  .stat .wrongs span{display:inline-block;background:rgba(0,0,0,.18);border-radius:8px;
+    padding:2px 9px;margin:2px 5px 2px 0;color:#fff;font-weight:600}
   a.home{position:fixed;left:calc(env(safe-area-inset-left) + 10px);top:calc(env(safe-area-inset-top) + 10px);
     z-index:5;color:rgba(255,255,255,.75);text-decoration:none;font-size:14px;
     background:rgba(0,0,0,.18);padding:6px 12px;border-radius:99px}
@@ -103,7 +109,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191824"></script>
+<script src="接答案逻辑.js?v=202611191827"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -243,6 +249,8 @@ const S = {
   parts: [],              // 粒子
   floats: [],             // 冒出来的 +15 / 答案提示
   pops: [],               // 接对时甩在屏幕中间的那句英文
+  retry: [],              // 答错过的题，等会儿再问一遍
+  wrongLog: [],           // 这一局错过哪些题，结算时摊开给人看
   ele: { x: 0, target: 0, squash: 0, trunk: 0, blink: 0, hop: 0 },
   shake: 0,
   flash: null,            // 答错时糊在屏幕上的那一下
@@ -263,10 +271,14 @@ const SWAY = 4;        // 左右摇摆的幅度。再大就会吃掉球之间留
 function newRound() {
   const lv = L.levelFor(S.g.solved);
   const r = ITEM_R();
+  // 错过的题隔几轮再考一次：错完就过去了，等于没学到。
+  // 不紧接着重问——刚看过答案，马上再问只是在抄
+  const due = S.retry.length && S.t >= S.retry[0].at ? S.retry.shift() : null;
   // 能排几个球由屏幕说了算：排不下就少掉一个，宁可三个也不要挤成一排——
   // 挤在一起时，大象横着过去的路上会先撞到旁边那个错的
   const n = L.dropCount(lv, W, r);
-  S.round = L.makeRound(lv, Math.random, n);
+  S.round = due ? L.reRound(due.q, due.ans, Math.random, n) : L.makeRound(lv, Math.random, n);
+  S.round.again = !!due;
   const xs = L.lanes(n, W, r, Math.random);
   const ys = L.dropOffsets(n, r, Math.random);
   const secs = L.fallSecs(lv);
@@ -312,6 +324,9 @@ function resolve(ok, value) {
   } else {
     L.catchWrong(S.g);
     sndBad();
+    // 排到 3 轮之后再考一遍（时间上大约二十秒），中间隔开才算记住
+    S.retry.push({ q: S.round.q, ans: S.round.ans, at: S.t + 20 });
+    if (!S.wrongLog.some(x => x.q === S.round.q)) S.wrongLog.push({ q: S.round.q, ans: S.round.ans });
     S.shake = 1;
     S.flash = .5;
     S.ele.squash = 1;
@@ -560,7 +575,17 @@ function drawHud() {
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   ctx.fillStyle = "rgba(255,255,255,.96)";
   ctx.font = "800 " + Math.round(Math.min(48, W / 9)) + "px system-ui,-apple-system,sans-serif";
-  if (S.round) ctx.fillText(S.round.q + " = ?", W / 2, headBottom() - 56);
+  if (S.round) {
+    ctx.fillText(S.round.q + " = ?", W / 2, headBottom() - 56);
+    if (S.round.again) {
+      // 补考的题标一下：让人知道「这题刚才错过」，而不是觉得题库在重复
+      ctx.save();
+      ctx.font = "700 13px system-ui,-apple-system,sans-serif";
+      ctx.fillStyle = "#ff9f45";
+      ctx.fillText("↻ 刚才错过的题", W / 2, headBottom() - 88);
+      ctx.restore();
+    }
+  }
 
   ctx.font = "600 15px system-ui,-apple-system,sans-serif";
   ctx.fillStyle = "rgba(255,255,255,.8)";
@@ -626,6 +651,7 @@ function start(fromLevel) {
   S.g = L.newGame();
   if (fromLevel > 1) S.g.solved = L.solvedForLevel(fromLevel);   // 选关：直接从那一关开打
   S.items = []; S.parts = []; S.floats = []; S.pops = []; S.banner = null; S.flash = null;
+  S.retry = []; S.wrongLog = [];
   S.ele.x = S.ele.target = W / 2;
   S.t = 0; S.nextRoundAt = 0;
   S.mode = "play";
@@ -654,7 +680,12 @@ function gameOver() {
     '<div class="combo">🔥 最长连对 <em>' + bestCombo + "</em> 题" +
     (isComboBest ? "　<b>刷新了连对纪录</b>" : "") + "</div>" +
     "答对 <em>" + S.g.solved + "</em> 题　打到 <em>第 " + lvEnd + " 关</em>（" + L.stageOf(lvEnd).name + "）<br>" +
-    "最高分 <em>" + save.best + "</em>　历史最长连对 <em>" + (save.bestCombo || 0) + "</em> 题";
+    "最高分 <em>" + save.best + "</em>　历史最长连对 <em>" + (save.bestCombo || 0) + "</em> 题" +
+    (S.wrongLog.length
+      ? '<div class="wrongs"><b>这几题再看一眼：</b>' +
+        S.wrongLog.slice(0, 5).map(x => "<span>" + x.q + " = " + x.ans + "</span>").join("") +
+        (S.wrongLog.length > 5 ? "<span>…</span>" : "") + "</div>"
+      : "");
   setTimeout(() => layer("over", true), 650);     // 让最后那下动画播完再盖上
 }
 
@@ -728,6 +759,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191824" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191827" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>

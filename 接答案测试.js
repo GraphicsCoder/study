@@ -338,5 +338,26 @@ t("出场高度彼此错开：两个球不会同时压到大象头上", () => {
     }
   });
 });
+/* ---------------- 错题补考 ---------------- */
+
+t("补考的题面和答案原样不动，干扰项重新来过", () => {
+  for (let i = 0; i < 100; i++) {
+    const r = G.reRound("25 × 4", 100, rng(i + 3), 4);
+    assert(r.q === "25 × 4" && r.ans === 100, JSON.stringify(r));
+    assert(r.drops.length === 4, JSON.stringify(r));
+    assert(r.drops.filter(d => d === 100).length === 1, JSON.stringify(r));
+    assert(new Set(r.drops).size === 4, JSON.stringify(r));
+    assert(r.again === true, "补考要标出来");
+  }
+});
+
+t("补考时答案不会总在同一个位置（记位置就能蒙对那就白考了）", () => {
+  const seen = new Set();
+  for (let i = 0; i < 60; i++) {
+    const r = G.reRound("7 × 8", 56, rng(i * 13 + 5), 4);
+    seen.add(r.drops.indexOf(56));
+  }
+  assert(seen.size >= 3, "答案只出现在 " + seen.size + " 个位置上");
+});
 console.log("\n" + (fail ? "失败 " + fail + " 项，" : "全部 ") + (pass + fail) + " 项" + (fail ? "" : "通过"));
 process.exit(fail ? 1 : 0);

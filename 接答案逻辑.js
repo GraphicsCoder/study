@@ -233,6 +233,18 @@
     return out;
   }
 
+  // 补考：题面和答案都是原来那道，只有干扰项和位置重新来过——
+  // 位置不变的话，记住「上次在左边」就能蒙对，等于没考
+  function reRound(q, ans, rnd, howMany) {
+    rnd = rnd || Math.random;
+    var count = Math.max(2, Math.min(4, howMany | 0 || 3));
+    var drops = [ans].concat(decoysFor(ans, rnd, count - 1));
+    for (var i = drops.length - 1; i > 0; i--) {
+      var j = rndInt(rnd, 0, i), t = drops[i]; drops[i] = drops[j]; drops[j] = t;
+    }
+    return { q: q, ans: ans, drops: drops, level: 0, again: true };
+  }
+
   /* ---------------- 难度 ---------------- */
 
   // 选关要用：从第 N 关开局，等价于「已经答对过这么多题」
@@ -343,7 +355,7 @@ function praisePhrase(combo) {
 
   var API = {
     LIVES: LIVES, PER_LEVEL: PER_LEVEL, MAX_LEVEL: MAX_LEVEL,
-    makeRound: makeRound, decoysFor: decoysFor,
+    makeRound: makeRound, reRound: reRound, decoysFor: decoysFor,
     catchHalf: catchHalf, dropCount: dropCount, lanes: lanes, dropOffsets: dropOffsets,
     levelFor: levelFor, fallSecs: fallSecs, solvedForLevel: solvedForLevel, unlockTo: unlockTo,
     stageOf: stageOf, stepInStage: stepInStage, STAGES: STAGES, LEVELS_PER_STAGE: LEVELS_PER_STAGE,
