@@ -73,7 +73,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191705"></script>
+<script src="接答案逻辑.js?v=202611191713"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -162,13 +162,17 @@ function pickVoice() {
   return female[0] || us[0] || en[0] || null;
 }
 
-function praise(combo) {
-  if (!save.voice || !window.speechSynthesis) return;
-  if (combo < 3 && Math.random() > .7) return;
+function praisePhrase(combo) {
   const list = combo >= 3 ? PRAISE_HOT : PRAISE;
+  return list[Math.random() * list.length | 0];
+}
+
+function speakPraise(text, combo) {
+  if (!save.voice || !window.speechSynthesis) return;
+  if (combo < 3 && Math.random() > .7) return;       // 平时七成，连对必念
   try {
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(list[Math.random() * list.length | 0]);
+    const u = new SpeechSynthesisUtterance(text);
     const v = pickVoice();
     if (v) u.voice = v;
     u.lang = (v && v.lang) || "en-US";
@@ -187,6 +191,7 @@ const S = {
   items: [],              // 正在掉的数字
   parts: [],              // 粒子
   floats: [],             // 冒出来的 +15 / 答案提示
+  pops: [],               // 接对时甩在屏幕中间的那句英文
   ele: { x: 0, target: 0, squash: 0, trunk: 0, blink: 0, hop: 0 },
   shake: 0,
   flash: null,            // 答错时糊在屏幕上的那一下
@@ -231,10 +236,12 @@ function resolve(ok, value) {
   if (ok) {
     L.catchRight(S.g);
     sndGood(Math.min(S.g.combo, 6));
-    praise(S.g.combo);
+    const word = praisePhrase(S.g.combo);
+    speakPraise(word, S.g.combo);
+    pop(word, S.g.combo);                 // 同一句话：耳朵听到的和眼睛看到的对得上
     burst(S.ele.x, GROUND() - 30, "#ffd166", 26);
     float(S.ele.x, GROUND() - 70, "+" + L.hitScore(S.g.combo), "#ffd166", 30);
-    if (S.g.combo >= 3) float(S.ele.x, GROUND() - 110, "🔥 连对 " + S.g.combo, "#ff9f45", 22);
+    if (S.g.combo >= 3) float(S.ele.x, GROUND() - 110, "🔥 " + S.g.combo, "#ff9f45", 22);
     S.ele.hop = 1; S.ele.trunk = 1;
     const before = L.levelFor(S.g.solved - 1), now = L.levelFor(S.g.solved);
     if (now > before) { S.banner = { text: "第 " + now + " 关 · 掉得更快啦", t: 1.6 }; sndUp(); }
@@ -267,6 +274,20 @@ function burst(x, y, color, n) {
                    r: 2 + Math.random() * 4, life: .5 + Math.random() * .5, max: 1, color });
   }
 }
+/* 接对时把夸奖甩在屏幕中间：先弹出来，再歪着飘上去淡掉。
+   这句话是整局里最该被看见的东西，所以它画在最上层，字也给到最大。
+   连对三次以上换一套更烫的配色，顺手告诉人「你现在状态不一样」。 */
+function pop(text, combo) {
+  const hot = combo >= 3;
+  S.pops.push({
+    text, life: 1, hot,
+    x: W / 2, y: H * .36,
+    rot: (Math.random() - .5) * .18,
+    hue: hot ? 14 : 48,
+  });
+  if (S.pops.length > 3) S.pops.shift();    // 手快的时候别糊成一堵墙
+}
+
 function float(x, y, text, color, size) {
   S.floats.push({ x, y, text, color, size: size || 24, life: 1.1 });
 }
@@ -351,6 +372,8 @@ function step(dt) {
   S.parts = S.parts.filter(p => p.life > 0);
   S.floats.forEach(f => { f.life -= dt; f.y -= dt * 40; });
   S.floats = S.floats.filter(f => f.life > 0);
+  S.pops.forEach(p => { p.life -= dt * 1.15; p.y -= dt * 46; p.rot *= (1 - dt * 1.5); });
+  S.pops = S.pops.filter(p => p.life > 0);
 
   if (S.round && S.round.done && S.nextRoundAt && S.t >= S.nextRoundAt && !S.g.over) {
     S.nextRoundAt = 0; newRound();
@@ -409,6 +432,40 @@ function draw(dt) {
     ctx.font = "800 " + f.size + "px system-ui,-apple-system,sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(f.text, f.x, f.y);
+  });
+  ctx.globalAlpha = 1;
+
+  // 夸奖大字：弹进来（略微过冲）→ 稳住 → 飘上去淡掉
+  S.pops.forEach(p => {
+    const age = 1 - p.life;
+    const k = age < .18 ? (age / .18) : 1;
+    const scale = age < .18 ? (.4 + k * .85) : (1.25 - Math.min(1, (age - .18) / .25) * .25);
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, p.life * 1.8);
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.scale(scale, scale);
+    // 先按最大号排，太宽就按量出来的宽度缩一档——"Amazing streak!" 比
+    // "Nice one!" 长一截，一个固定字号必然有一个会出屏幕
+    let size = Math.round(Math.min(56, W / 7.5));
+    const font = n => "900 " + n + 'px "Segoe UI",system-ui,-apple-system,sans-serif';
+    ctx.font = font(size);
+    // 留出弹进来时那 1.25 倍的过冲，不然「稳住」之前会先出一次屏幕
+    const maxW = W * .86 / 1.25;
+    const w = ctx.measureText(p.text).width;
+    if (w > maxW) { size = Math.max(20, Math.floor(size * maxW / w)); ctx.font = font(size); }
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    // 先描一圈深色边，底下无论是球还是草地都读得清
+    ctx.lineWidth = Math.max(6, size * .16);
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "rgba(6,48,38,.85)";
+    ctx.strokeText(p.text, 0, 0);
+    const grd = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
+    grd.addColorStop(0, "#fff");
+    grd.addColorStop(1, p.hot ? "#ff9f45" : "#ffd166");
+    ctx.fillStyle = grd;
+    ctx.fillText(p.text, 0, 0);
+    ctx.restore();
   });
   ctx.globalAlpha = 1;
 
@@ -476,7 +533,7 @@ window.addEventListener("keydown", e => {
 
 function start() {
   S.g = L.newGame();
-  S.items = []; S.parts = []; S.floats = []; S.banner = null; S.flash = null;
+  S.items = []; S.parts = []; S.floats = []; S.pops = []; S.banner = null; S.flash = null;
   S.ele.x = S.ele.target = W / 2;
   S.t = 0; S.nextRoundAt = 0;
   S.mode = "play";
@@ -508,7 +565,7 @@ $("voicebtn").onclick = () => {
   save.voice = !save.voice;
   persist();
   refreshVoiceBtn();
-  if (save.voice) praise(1);          // 开的时候出个声，省得人不知道有没有生效
+  if (save.voice) speakPraise(praisePhrase(1), 9);   // 开的时候出个声，省得人不知道有没有生效
   else if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
 };
 
@@ -539,6 +596,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191705" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191713" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>
