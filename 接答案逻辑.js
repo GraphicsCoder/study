@@ -178,6 +178,16 @@
 
   /* ---------------- 难度 ---------------- */
 
+  // 选关要用：从第 N 关开局，等价于「已经答对过这么多题」
+  function solvedForLevel(level) {
+    return (Math.max(1, Math.min(MAX_LEVEL, level | 0 || 1)) - 1) * PER_LEVEL;
+  }
+
+  // 打到哪一关就解锁到哪一关，但只升不降——这周打到第 7 关，下周打开还在
+  function unlockTo(now, level) {
+    return Math.max(1, Math.min(MAX_LEVEL, Math.max(now | 0 || 1, level | 0 || 1)));
+  }
+
   function levelFor(solved) {
     return Math.min(MAX_LEVEL, 1 + Math.floor(solved / PER_LEVEL));
   }
@@ -257,7 +267,7 @@ function praisePhrase(combo) {
   var API = {
     LIVES: LIVES, PER_LEVEL: PER_LEVEL, MAX_LEVEL: MAX_LEVEL,
     makeRound: makeRound, decoysFor: decoysFor,
-    levelFor: levelFor, fallSecs: fallSecs,
+    levelFor: levelFor, fallSecs: fallSecs, solvedForLevel: solvedForLevel, unlockTo: unlockTo,
     stageOf: stageOf, stepInStage: stepInStage, STAGES: STAGES, LEVELS_PER_STAGE: LEVELS_PER_STAGE,
     newGame: newGame, hitScore: hitScore,
     praisePhrase: praisePhrase, PRAISE: PRAISE, PRAISE_HOT: PRAISE_HOT, PRAISE_FIRE: PRAISE_FIRE,

@@ -41,6 +41,18 @@
     z-index:5;font-size:14px;font-weight:500;padding:6px 12px;background:rgba(0,0,0,.18);color:rgba(255,255,255,.75);
     box-shadow:none;border-radius:99px}
   #pausebtn:active{transform:none}
+  /* 选关：一个阶段一行，锁住的也画出来——看得见「还有什么」才有奔头 */
+  #pick{max-height:52vh;overflow:auto;width:100%;max-width:340px;-webkit-overflow-scrolling:touch}
+  #pick .st{font-size:13px;color:#9fc9bb;margin:12px 0 6px;text-align:left}
+  #pick .lvrow{display:flex;gap:8px;justify-content:flex-start;flex-wrap:wrap}
+  /* box-shadow 要显式关掉：.layer button 那条给所有按钮垫了一道黄色厚边，
+     关卡格子套上去会变成一排立体砖块 */
+  #pick .lv{width:84px;padding:10px 0;border-radius:12px;border:2px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.08);color:#fff;font-size:15px;font-weight:700;cursor:pointer;
+    box-shadow:none;transform:none}
+  #pick .lv:active{transform:scale(.96);box-shadow:none}
+  #pick .lv.on{border-color:#ffd166;background:rgba(255,209,102,.18);color:#ffd166}
+  #pick .lv.lock{opacity:.38;cursor:not-allowed}
   @media (prefers-reduced-motion:reduce){ .layer button{transition:none} }
 </style>
 </head>
@@ -56,8 +68,18 @@
      接错掉一颗心，漏掉不扣心。<br>
      从 <b>20 以内加减</b> 开始，一路到九九乘法、凑整巧算、两步混合。</p>
   <button id="go">开始</button>
-  <div class="row"><button class="ghost" id="voicebtn"></button></div>
+  <div class="row">
+    <button class="ghost" id="pickbtn">🗺 选关</button>
+    <button class="ghost" id="voicebtn"></button>
+  </div>
   <div class="stat" id="startstat"></div>
+</div>
+
+<div class="layer" id="pickwrap">
+  <h2>选一关开始</h2>
+  <p>打到哪一关，哪一关就解锁。想复习前面的，随时点回去。</p>
+  <div id="pick"></div>
+  <div class="row"><button class="ghost" id="pickback">返回</button></div>
 </div>
 
 <div class="layer" id="over">
@@ -65,6 +87,7 @@
   <div class="stat" id="overstat"></div>
   <div class="row">
     <button id="again">再来一局</button>
+    <button class="ghost" id="pickbtn2">🗺 选关</button>
     <button class="ghost" id="back">回首页</button>
   </div>
 </div>
@@ -74,7 +97,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191729"></script>
+<script src="接答案逻辑.js?v=202611191737"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -97,6 +120,7 @@ save.best = save.best || 0;              // 最高分
 save.solved = save.solved || 0;          // 累计答对多少题
 save.plays = save.plays || 0;            // 玩过多少局
 if (save.voice === undefined) save.voice = true;   // 接对时的语音鼓励
+save.unlocked = L.unlockTo(save.unlocked || 1, 1);    // 解锁到第几关
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
 
 /* ---------------- 画布 ---------------- */
@@ -249,6 +273,9 @@ function resolve(ok, value) {
         ? { text: "第 " + now + " 关 · " + s1.name, sub: "换新题型啦", t: 2.6, big: true }
         : { text: "第 " + now + " 关", sub: "掉得更快了", t: 1.8, big: false };
       if (newStage) S.nextRoundAt += 1;
+      // 打到哪一关就解锁哪一关，下次可以直接从这儿接着打
+      const un = L.unlockTo(save.unlocked, now);
+      if (un !== save.unlocked) { save.unlocked = un; persist(); }
       sndUp();
       if (newStage) setTimeout(() => sndUp(), 260);
     }
@@ -560,13 +587,14 @@ window.addEventListener("keydown", e => {
 
 /* ---------------- 开局 / 结算 ---------------- */
 
-function start() {
+function start(fromLevel) {
   S.g = L.newGame();
+  if (fromLevel > 1) S.g.solved = L.solvedForLevel(fromLevel);   // 选关：直接从那一关开打
   S.items = []; S.parts = []; S.floats = []; S.pops = []; S.banner = null; S.flash = null;
   S.ele.x = S.ele.target = W / 2;
   S.t = 0; S.nextRoundAt = 0;
   S.mode = "play";
-  layer("start", false); layer("over", false); layer("paused", false);
+  layer("start", false); layer("over", false); layer("paused", false); layer("pickwrap", false);
   newRound();
   audio();                               // 第一次点按钮时解锁声音，iOS 的规矩
 }
@@ -598,15 +626,46 @@ $("voicebtn").onclick = () => {
   else if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
 };
 
-function refreshStart() {
-  refreshVoiceBtn();
-  $("startstat").innerHTML = save.best
-    ? "最高分 <em>" + save.best + "</em>　累计答对 <em>" + (save.solved || 0) + "</em> 题"
-    : "";
+function renderPick() {
+  const box = $("pick");
+  let h = "";
+  L.STAGES.forEach((st, si) => {
+    h += '<div class="st">' + (si + 1) + "、" + st.name + '</div><div class="lvrow">';
+    for (let k = 0; k < L.LEVELS_PER_STAGE; k++) {
+      const lv = si * L.LEVELS_PER_STAGE + k + 1;
+      if (lv > L.MAX_LEVEL) break;
+      const open = lv <= save.unlocked;
+      h += '<button class="lv' + (open ? (lv === save.unlocked ? " on" : "") : " lock") + '"' +
+           (open ? ' data-lv="' + lv + '"' : " disabled") +
+           ">" + (open ? "第 " + lv + " 关" : "🔒 " + lv) + "</button>";
+    }
+    h += "</div>";
+  });
+  box.innerHTML = h;
+  box.querySelectorAll("button.lv[data-lv]").forEach(b => {
+    b.onclick = () => start(+b.dataset.lv);
+  });
 }
 
-$("go").onclick = start;
-$("again").onclick = start;
+function openPick() {
+  renderPick();
+  layer("start", false); layer("over", false); layer("pickwrap", true);
+}
+
+function refreshStart() {
+  refreshVoiceBtn();
+  const un = save.unlocked || 1;
+  $("startstat").innerHTML =
+    (un > 1 ? "从 <em>第 " + un + " 关 · " + L.stageOf(un).name + "</em> 接着打<br>" : "") +
+    (save.best ? "最高分 <em>" + save.best + "</em>　累计答对 <em>" + (save.solved || 0) + "</em> 题" : "");
+}
+
+// 「开始」从解锁到的那一关接着打：每次都从 20 以内加减重来，很快就腻了
+$("go").onclick = () => start(save.unlocked || 1);
+$("again").onclick = () => start(L.levelFor(S.g.solved));
+$("pickbtn").onclick = openPick;
+$("pickbtn2").onclick = openPick;
+$("pickback").onclick = () => { layer("pickwrap", false); layer("start", true); refreshStart(); };
 $("back").onclick = () => { location.href = "index.html"; };
 $("pausebtn").onclick = () => {
   if (S.mode === "play") { S.mode = "pause"; layer("paused", true); }
@@ -625,6 +684,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191729" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611191737" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>

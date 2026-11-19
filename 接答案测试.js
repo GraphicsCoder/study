@@ -214,5 +214,18 @@ t("夸奖都是英文短句，不混中文、也不会长到一屏放不下", ()
   });
 });
 
+t("选关：从第 N 关开局，关卡号对得上", () => {
+  for (let lv = 1; lv <= G.MAX_LEVEL; lv++)
+    assert(G.levelFor(G.solvedForLevel(lv)) === lv, "从第 " + lv + " 关开局，算出来却是第 " + G.levelFor(G.solvedForLevel(lv)) + " 关");
+  assert(G.solvedForLevel(1) === 0, "第 1 关从零开始");
+  assert(G.solvedForLevel(999) === G.solvedForLevel(G.MAX_LEVEL), "超出范围按封顶算");
+});
+
+t("解锁只升不降，也不会越界", () => {
+  assert(G.unlockTo(1, 5) === 5, "打到第 5 关就解锁到 5");
+  assert(G.unlockTo(7, 3) === 7, "打得差一点不该把解锁退回去");
+  assert(G.unlockTo(1, 999) === G.MAX_LEVEL, "封顶");
+  assert(G.unlockTo(0, 0) === 1, "最少解锁到第 1 关");
+});
 console.log("\n" + (fail ? "失败 " + fail + " 项，" : "全部 ") + (pass + fail) + " 项" + (fail ? "" : "通过"));
 process.exit(fail ? 1 : 0);
