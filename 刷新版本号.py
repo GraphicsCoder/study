@@ -1,4 +1,4 @@
-"""给 同步.js、接答案逻辑.js 的引用打上版本号，强制浏览器重新下载。
+"""给 同步.js、接答案逻辑.js、搬家逻辑.js 的引用打上版本号，强制浏览器重新下载。
 
 改完 同步.js 之后跑一次：
 
@@ -20,7 +20,7 @@ try:
 except Exception:
     pass
 
-PATTERN = re.compile(r'src="(同步|接答案逻辑)\.js(?:\?v=\d+)?"')
+PATTERN = re.compile(r'src="(同步|接答案逻辑|搬家逻辑)\.js(?:\?v=\d+)?"')
 
 
 def main() -> int:

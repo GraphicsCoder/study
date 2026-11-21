@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>大象搬家 · 介词小游戏</title>
+<link rel="icon" href="favicon.svg?v=2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#15314f;
+    overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    font:16px/1.6 "Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:#fff}
+  canvas{display:block;width:100%;height:100%}
+
+  .layer{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:calc(env(safe-area-inset-top) + 20px) 22px calc(env(safe-area-inset-bottom) + 20px);
+    background:rgba(10,26,43,.84)}
+  .layer.show{display:flex}
+  .layer h1{font-size:29px;margin:0 0 6px}
+  .layer h2{font-size:23px;margin:0 0 10px}
+  .layer p{margin:0 0 14px;font-size:15px;color:#c3d7ee;max-width:20em;line-height:1.9}
+  .layer b{color:#ffd166}
+  .layer button{font-family:inherit;font-size:19px;font-weight:700;padding:14px 34px;border-radius:99px;
+    border:none;background:#ffd166;color:#15314f;cursor:pointer;box-shadow:0 6px 0 #d9a93f;
+    transition:transform .08s,box-shadow .08s}
+  .layer button:active{transform:translateY(4px);box-shadow:0 2px 0 #d9a93f}
+  .layer button.ghost{background:transparent;color:#c3d7ee;box-shadow:none;font-size:15px;font-weight:500;padding:10px 18px}
+  .layer button.ghost:active{transform:none}
+  .row{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap;justify-content:center}
+  .stat{font-size:15px;color:#c3d7ee;margin-top:10px;line-height:2}
+  .stat em{font-style:normal;color:#fff;font-weight:700;font-size:17px}
+  .stat .big{font-size:40px;font-weight:800;color:#ffd166;line-height:1.3}
+  .stat .combo{font-size:17px;color:#fff;margin:2px 0 8px}
+  .stat .combo em{color:#ff9f45;font-size:20px}
+  .stat .wrongs{margin-top:12px;background:rgba(255,255,255,.08);border-radius:12px;
+    padding:10px 12px;font-size:14px;color:#c3d7ee;text-align:left;line-height:1.9}
+  .stat .wrongs b{display:block;color:#ffd166;font-size:13px;margin-bottom:4px}
+  .stat .wrongs span{display:inline-block;background:rgba(0,0,0,.2);border-radius:8px;
+    padding:2px 9px;margin:2px 5px 2px 0;color:#fff;font-weight:600}
+
+  #pick{max-height:50vh;overflow:auto;width:100%;max-width:330px;-webkit-overflow-scrolling:touch}
+  #pick .st{font-size:13px;color:#9fb8d4;margin:12px 0 6px;text-align:left}
+  #pick .lvrow{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  #pick .lv{width:100%;padding:10px 0;border-radius:12px;border:2px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.08);color:#fff;font-size:15px;font-weight:700;cursor:pointer;
+    box-shadow:none;transform:none}
+  #pick .lv.on{border-color:#ffd166;background:rgba(255,209,102,.18);color:#ffd166}
+  #pick .lv.lock{opacity:.38;cursor:not-allowed}
+  #pick .lv:active{transform:scale(.96)}
+
+  .home,#pausebtn,#saybtn{font-family:inherit;border:none;cursor:pointer;position:fixed;z-index:5;
+    font-size:14px;padding:6px 12px;border-radius:99px;background:rgba(0,0,0,.2);color:rgba(255,255,255,.8)}
+  .home{left:calc(env(safe-area-inset-left) + 10px);top:calc(env(safe-area-inset-top) + 10px)}
+  #pausebtn{right:calc(env(safe-area-inset-right) + 10px);top:calc(env(safe-area-inset-top) + 10px)}
+  /* 再听一遍：放在右下角，拖东西的手正好够得着 */
+  #saybtn{right:calc(env(safe-area-inset-right) + 10px);bottom:calc(env(safe-area-inset-bottom) + 64px);
+    font-size:20px;padding:10px 14px;display:none}
+  body.playing #syncchip{display:none !important}
+  @media (prefers-reduced-motion:reduce){ .layer button{transition:none} }
+</style>
+</head>
+<body>
+
+<canvas id="cv"></canvas>
+<button class="home" id="homebtn">‹ 返回</button>
+<button id="pausebtn">⏸</button>
+<button id="saybtn" title="再听一遍">🔊</button>
+
+<div class="layer show" id="start">
+  <h1>🐘 大象搬家</h1>
+  <p>听一句英语，把东西<b>拖到正确的位置</b>。<br>
+     in / on / under 先练熟，再加 next to、behind，最后是 between。<br>
+     放错不扣心，会告诉你刚才那儿是什么。</p>
+  <button id="go">开始</button>
+  <div class="row">
+    <button class="ghost" id="pickbtn">🗺 选关</button>
+    <button class="ghost" id="cnbtn"></button>
+  </div>
+  <div class="stat" id="startstat"></div>
+</div>
+
+<div class="layer" id="pickwrap">
+  <h2>选一关开始</h2>
+  <p>打到哪一关，哪一关就解锁。</p>
+  <div id="pick"></div>
+  <div class="row"><button class="ghost" id="pickback">返回</button></div>
+</div>
+
+<div class="layer" id="over">
+  <h2 id="overtitle">这局结束</h2>
+  <div class="stat" id="overstat"></div>
+  <div class="row">
+    <button id="again">再来一局</button>
+    <button class="ghost" id="pickbtn2">🗺 选关</button>
+    <button class="ghost" id="back">回首页</button>
+  </div>
+</div>
+
+<div class="layer" id="paused">
+  <h2>⏸ 暂停</h2>
+  <button id="resume">继续</button>
+</div>
+
+<script src="搬家逻辑.js?v=202611211719"></script>
+<script>
+/* =====================================================================
+   大象搬家 · 介词拖放
+   "Put the cat under the bed." —— 手指把小猫拖到床底下。
+
+   为什么是拖放不是选择题：in / on / under 本来就是空间关系，拖到位置上
+   这件事本身就是答案。选择题考「认得这个词」，拖放考「知道它在哪儿」。
+
+   出题、可放点的几何、判对错都在 搬家逻辑.js（有测试：搬家测试.js），
+   这一份只管画面、手感和声音。
+   ===================================================================== */
+
+const L = window.MoveLogic;
+const SAVE_KEY = "move-game-v1";
+
+let save = {};
+try { save = JSON.parse(localStorage.getItem(SAVE_KEY) || "{}"); } catch (e) { save = {}; }
+save.best = save.best || 0;
+save.solved = save.solved || 0;
+save.unlocked = Math.max(1, Math.min(L.MAX_LEVEL, save.unlocked || 1));
+if (save.cn === undefined) save.cn = true;        // 显示中文提示
+const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
+
+/* ---------------- 画布 ---------------- */
+
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1, bgGrad = null;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = cv.clientWidth; H = cv.clientHeight;
+  while (W * DPR * H * DPR > 2400000 && DPR > 1) DPR -= .25;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+  bgGrad.addColorStop(0, "#102b47"); bgGrad.addColorStop(1, "#1d4a74");
+  if (S.task) relayout();                      // 转屏之后家具要重新摆
+}
+window.addEventListener("resize", resize);
+window.addEventListener("orientationchange", () => setTimeout(resize, 120));
+
+/* ---------------- 声音 ---------------- */
+
+let AC = null;
+function audio() {
+  if (AC) return AC;
+  try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; }
+  return AC;
+}
+function tone(freq, dur, type, vol) {
+  const ac = audio(); if (!ac) return;
+  if (ac.state === "suspended") ac.resume();
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type || "sine"; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol || .12, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + dur);
+  o.connect(g); g.connect(ac.destination);
+  o.start(); o.stop(ac.currentTime + dur);
+}
+const sndGood = n => { tone(520 + n * 40, .12, "triangle", .14); setTimeout(() => tone(780 + n * 50, .16, "triangle", .12), 90); };
+const sndBad  = () => { tone(220, .2, "sawtooth", .09); setTimeout(() => tone(160, .24, "sawtooth", .08), 110); };
+const sndPick = () => tone(660, .06, "sine", .07);
+function sndFanfare() {
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, .16, "triangle", .13), i * 110));
+  setTimeout(() => tone(1319, .5, "triangle", .11), 470);
+}
+
+/* ---------------- 朗读 ----------------
+   这一页的朗读不是装饰：题目本身就是一句英语，听懂了才知道往哪儿放。
+   iOS 的两道闸和接答案那边一样——第一次必须在手势里开，cancel 之后要隔一帧。 */
+
+let voices = [], speechReady = false;
+function loadVoices() { try { voices = speechSynthesis.getVoices() || []; } catch (e) { voices = []; } }
+if (window.speechSynthesis) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function pickVoice() {
+  const en = voices.filter(v => /^en/i.test(v.lang || ""));
+  const female = en.filter(v => /samantha|karen|zira|aria|jenny|moira|tessa|female|woman/i.test(v.name || ""));
+  const us = en.filter(v => /^en[-_]US/i.test(v.lang || ""));
+  return female[0] || us[0] || en[0] || null;
+}
+function unlockSpeech() {
+  if (speechReady || !window.speechSynthesis) return;
+  speechReady = true;
+  try { loadVoices(); const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); } catch (e) {}
+}
+function sayNow(text, rate) {
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    const v = pickVoice();
+    if (v) u.voice = v;
+    u.lang = (v && v.lang) || "en-US";
+    u.rate = rate || .92;                 // 题目要听清楚，比夸奖慢一点
+    u.pitch = 1.1;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+function say(text, rate) {
+  if (!window.speechSynthesis) return;
+  if (speechSynthesis.speaking || speechSynthesis.pending) {
+    try { speechSynthesis.cancel(); } catch (e) {}
+    setTimeout(() => sayNow(text, rate), 60);
+    return;
+  }
+  sayNow(text, rate);
+}
+const PRAISE = ["Great job!", "Well done!", "Perfect!", "Nice one!", "Exactly!", "Brilliant!", "You got it!", "Awesome!"];
+const said = [];
+function praise() {
+  const fresh = PRAISE.filter(x => said.indexOf(x) < 0);
+  const w = (fresh.length ? fresh : PRAISE)[Math.random() * (fresh.length || PRAISE.length) | 0];
+  said.push(w); while (said.length > 4) said.shift();
+  say(w, 1);
+  return w;
+}
+
+/* ---------------- 状态 ---------------- */
+
+const S = {
+  mode: "ready",
+  g: L.newGame(),
+  task: null, lay: null, spots: null,
+  item: null,              // 正在拖的东西 {x, y, ox, oy, grab, home}
+  placed: [],              // 已经放好的（上一题留在场上的，淡出用）
+  parts: [], floats: [],
+  tell: null,              // 答错时的解说：{wrong, right, t}
+  retry: [], wrongLog: [],
+  shake: 0, flashGold: 0,
+  prevBest: 0, brokeRecord: false, endless: false,
+  t: 0,
+};
+
+const $ = id => document.getElementById(id);
+const layer = (id, on) => $(id).classList.toggle("show", on);
+const HEAD = () => Math.max(132, H * .2);
+const FOOT = () => Math.max(96, H * .14);
+
+/* ---------------- 一轮 ---------------- */
+
+function relayout() {
+  S.lay = L.layoutFor(W, H, HEAD() + 10, H - FOOT() - 10);
+  S.spots = L.spots(S.lay, L.STAGES[L.stageOf(L.levelFor(S.g.solved)).index].preps,
+                    S.task ? S.task.anchors : null);
+  if (S.item && !S.item.drag) { S.item.x = W / 2; S.item.y = H - FOOT() / 2; S.item.home = { x: W / 2, y: H - FOOT() / 2 }; }
+}
+
+function newTask() {
+  const lv = L.levelFor(S.g.solved);
+  const due = S.retry.length && S.t >= S.retry[0].at ? S.retry.shift() : null;
+  S.task = due ? due.task : L.makeTask(lv, Math.random);
+  S.task.again = !!due;
+  relayout();
+  S.item = { x: W / 2, y: H - FOOT() / 2, home: { x: W / 2, y: H - FOOT() / 2 }, drag: false, scale: 1 };
+  S.tell = null;
+  // 题目念一遍。念完才好动手，所以 item 一直在那儿等
+  say(S.task.en);
+}
+
+function drop(x, y) {
+  const r = L.judge(S.spots, x, y, S.task);
+  if (r.miss) {                       // 放在空地上：不算错，弹回去重来
+    S.item.x = S.item.home.x; S.item.y = S.item.home.y;
+    return;
+  }
+  if (r.ok) {
+    const lv = L.levelFor(S.g.solved);
+    const gain = L.hitScore(S.g.combo + 1, lv);
+    L.right(S.g, lv);
+    save.solved = (save.solved || 0) + 1;
+    S.item.x = r.spot.x; S.item.y = r.spot.y; S.item.drag = false; S.item.placed = 1;
+    burst(r.spot.x, r.spot.y, "#ffd166", 24);
+    float(r.spot.x, r.spot.y - 46, "+" + gain, "#ffd166", 28);
+    sndGood(Math.min(S.g.combo, 6));
+    const word = praise();
+    float(W / 2, HEAD() + 54, word, "#9ef0c8", 30);
+
+    if (!S.brokeRecord && S.prevBest > 0 && S.g.score >= S.prevBest) {
+      S.brokeRecord = true; confetti(90); sndFanfare(); S.flashGold = 1;
+      float(W / 2, H * .42, "NEW RECORD!", "#ffd166", 34);
+    }
+    const before = L.levelFor(S.g.solved - 1), now = L.levelFor(S.g.solved);
+    if (now > before) {
+      save.unlocked = Math.max(save.unlocked, now);
+      float(W / 2, HEAD() + 96, "第 " + now + " 关 · " + L.stageOf(now).name, "#fff", 22);
+      sndFanfare();
+    }
+    persist();
+    if (!S.endless && L.isCleared(S.g.solved)) { setTimeout(victory, 900); return; }
+    setTimeout(newTask, 1100);
+  } else {
+    L.wrong(S.g);
+    sndBad();
+    S.shake = 1;
+    // 讲清楚：你放的地方是「on the box」，要放的是「under the box」
+    S.tell = { wrong: r.spot, right: S.spots.find(s => s.prep === S.task.prep &&
+                 (S.task.prep === "between" || s.ai === S.task.ai)), t: 2.6 };
+    S.item.x = S.item.home.x; S.item.y = S.item.home.y;
+    S.retry.push({ task: S.task, at: S.t + 25 });
+    if (!S.wrongLog.some(w => w.en === S.task.en)) S.wrongLog.push({ en: S.task.en, cn: S.task.cn });
+    say(phraseOf(S.task.prep, S.task), 1);
+  }
+}
+
+// "under the bed" / "between the box and the tree"
+function phraseOf(prep, task) {
+  return prep === "between"
+    ? "between the " + task.anchors[0].en + " and the " + task.anchors[1].en
+    : prep + " the " + task.anchors[task.ai].en;
+}
+function phraseOfSpot(spot, task) {
+  return spot.prep === "between"
+    ? "between the " + task.anchors[0].en + " and the " + task.anchors[1].en
+    : spot.prep + " the " + task.anchors[spot.ai].en;
+}
+
+/* ---------------- 特效 ---------------- */
+
+const CONFETTI = ["#ffd166", "#ff9f45", "#5ad2a0", "#53c4ef", "#ff7a9c", "#fff"];
+const MAX_PARTS = 240;
+function burst(x, y, color, n) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * 6.28, sp = 80 + Math.random() * 220;
+    S.parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 50, r: 2 + Math.random() * 4,
+                   life: .5 + Math.random() * .5, color });
+  }
+}
+function confetti(n) {
+  for (let i = 0; i < n; i++) {
+    S.parts.push({ x: Math.random() * W, y: -10 - Math.random() * H * .3,
+      vx: (Math.random() - .5) * 120, vy: 60 + Math.random() * 120, r: 3 + Math.random() * 4,
+      life: 1.6 + Math.random() * 1.2, color: CONFETTI[Math.random() * CONFETTI.length | 0],
+      flake: 1, spin: (Math.random() - .5) * 12, rot: Math.random() * 6.3 });
+  }
+}
+function float(x, y, text, color, size) { S.floats.push({ x, y, text, color, size: size || 24, life: 1.3 }); }
+
+/* ---------------- 每帧 ---------------- */
+
+let last = 0;
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(.05, (now - last) / 1000 || 0);
+  last = now;
+  if (S.mode === "play") step(dt);
+  draw();
+}
+
+function step(dt) {
+  S.t += dt;
+  S.shake = Math.max(0, S.shake - dt * 2.6);
+  if (S.flashGold) S.flashGold = Math.max(0, S.flashGold - dt * 1.6);
+  if (S.tell) { S.tell.t -= dt; if (S.tell.t <= 0) S.tell = null; }
+  S.parts.forEach(p => {
+    p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    p.vy += (p.flake ? 160 : 900) * dt;
+    if (p.flake) { p.rot += p.spin * dt; p.vx *= (1 - dt * .6); }
+  });
+  S.parts = S.parts.filter(p => p.life > 0);
+  if (S.parts.length > MAX_PARTS) S.parts.splice(0, S.parts.length - MAX_PARTS);
+  S.floats.forEach(f => { f.life -= dt; f.y -= dt * 34; });
+  S.floats = S.floats.filter(f => f.life > 0);
+  if (S.item && !S.item.drag && !S.item.placed) {
+    // 弹回原位：不是瞬移，弹一下才看得出「没放成」
+    S.item.x += (S.item.home.x - S.item.x) * Math.min(1, dt * 12);
+    S.item.y += (S.item.home.y - S.item.y) * Math.min(1, dt * 12);
+  }
+}
+
+function emoji(ch, x, y, size) {
+  ctx.font = size + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(ch, x, y);
+}
+
+function draw() {
+  ctx.save();
+  if (S.shake > 0) { const k = S.shake * 9; ctx.translate((Math.random() - .5) * k, (Math.random() - .5) * k); }
+  ctx.fillStyle = bgGrad || "#15314f";
+  ctx.fillRect(-20, -20, W + 40, H + 40);
+
+  if (S.mode === "play" || S.mode === "pause") {
+    const floor = H - FOOT() - 10;
+    ctx.fillStyle = "rgba(255,255,255,.05)";
+    ctx.fillRect(-20, floor, W + 40, H);
+
+    // 可以放的位置：画成虚线圈。知道有哪些位置可放，难点才落在「选哪个」上
+    S.spots.forEach(s => {
+      const target = S.tell && S.tell.right === s;
+      const bad = S.tell && S.tell.wrong === s;
+      ctx.save();
+      ctx.setLineDash(target || bad ? [] : [5, 6]);
+      ctx.lineWidth = target || bad ? 3 : 2;
+      ctx.strokeStyle = target ? "#5ad2a0" : bad ? "#ff7a9c" : "rgba(255,255,255,.22)";
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.3); ctx.stroke();
+      ctx.restore();
+      if (target || bad) {
+        ctx.fillStyle = target ? "#5ad2a0" : "#ff7a9c";
+        ctx.font = "700 13px system-ui,-apple-system,sans-serif";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText((target ? "✓ " : "✗ ") + s.prep, s.x, s.y + s.r + 13);
+      }
+    });
+
+    // 家具
+    S.lay.forEach((a, i) => emoji(S.task.anchors[i].emoji, a.x, a.y, a.h * 2));
+
+    /* 家具叫什么，写在地板线上当图例：
+       原来写在家具正下方，正好压在「under」那个圈上，看着像那个圈的标签 */
+    ctx.font = "600 13px system-ui,-apple-system,sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = "rgba(255,255,255,.62)";
+    const legend = S.task.anchors.map(a => a.emoji + " " + a.en).join("   ");
+    ctx.fillText(legend, W / 2, floor + 18);
+
+    // 要搬的东西（拖着的时候放大一点，手指底下才看得见）
+    const it = S.item;
+    if (it) emoji(S.task.item.emoji, it.x, it.y, (it.drag ? 1.25 : 1) * Math.max(34, S.lay[0].h * 1.15));
+  }
+
+  // 粒子
+  S.parts.forEach(p => {
+    ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+    ctx.fillStyle = p.color;
+    if (p.flake) {
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillRect(-p.r, -p.r * .5, p.r * 2, Math.max(1.2, p.r * Math.abs(Math.cos(p.rot))));
+      ctx.restore();
+    } else { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.3); ctx.fill(); }
+  });
+  ctx.globalAlpha = 1;
+
+  S.floats.forEach(f => {
+    ctx.globalAlpha = Math.min(1, f.life * 1.4);
+    ctx.fillStyle = f.color;
+    ctx.font = "800 " + f.size + "px system-ui,-apple-system,sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(f.text, f.x, f.y);
+  });
+  ctx.globalAlpha = 1;
+
+  if (S.flashGold) {
+    ctx.fillStyle = "rgba(255,209,102," + (S.flashGold * .32) + ")";
+    ctx.fillRect(-20, -20, W + 40, H + 40);
+  }
+  ctx.restore();
+
+  if (S.mode === "play" || S.mode === "pause") drawHud();
+}
+
+function drawHud() {
+  const hb = HEAD();
+  ctx.fillStyle = "#0b2338";
+  ctx.fillRect(-20, -20, W + 40, hb + 20);
+  ctx.fillStyle = "rgba(255,255,255,.08)";
+  ctx.fillRect(-20, hb, W + 40, 2);
+
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  // 题目：介词用亮色标出来，眼睛一下就抓到要点
+  const t = S.task;
+  // 句子长短差很多（"Put the cat in the box." 和
+  // "Put the teddy between the basket and the house."），字号得按量出来的宽度缩
+  let size = Math.round(Math.min(27, W / 15));
+  const fontOf = n => "800 " + n + "px system-ui,-apple-system,sans-serif";
+  ctx.font = fontOf(size);
+  const full = ctx.measureText(t.en).width;
+  const room = W - 32;
+  if (full > room) { size = Math.max(14, Math.floor(size * room / full)); }
+  ctx.font = fontOf(size);
+  const prep = t.prep;
+  const parts = t.en.split(new RegExp("(" + prep.replace(/ /g, "\\s") + ")"));
+  const widths = parts.map(p => ctx.measureText(p).width);
+  let x = W / 2 - widths.reduce((a, b) => a + b, 0) / 2;
+  const y = hb - (save.cn ? 62 : 48);
+  parts.forEach((p, i) => {
+    ctx.fillStyle = p === prep ? "#ffd166" : "#fff";
+    ctx.textAlign = "left";
+    ctx.fillText(p, x, y);
+    x += widths[i];
+  });
+  ctx.textAlign = "center";
+  if (save.cn) {
+    ctx.fillStyle = "rgba(255,255,255,.62)";
+    ctx.font = "500 14px system-ui,-apple-system,sans-serif";
+    ctx.fillText(t.cn, W / 2, hb - 36);
+  }
+  if (t.again) {
+    ctx.fillStyle = "#ff9f45";
+    ctx.font = "700 12px system-ui,-apple-system,sans-serif";
+    ctx.fillText("↻ 刚才放错的那题", W / 2, 22);
+  }
+
+  const lv = L.levelFor(S.g.solved);
+  ctx.font = "600 13px system-ui,-apple-system,sans-serif";
+  ctx.fillStyle = "rgba(255,255,255,.72)";
+  ctx.textAlign = "left";
+  ctx.fillText(S.endless ? "♾ 无尽" : "第 " + lv + " 关 · 还差 " + L.leftToClear(S.g.solved) + " 题通关", 16, hb - 14);
+  ctx.textAlign = "right";
+  ctx.fillText(S.g.score + " 分" + (S.g.combo >= 2 ? "　🔥" + S.g.combo : ""), W - 16, hb - 14);
+}
+
+/* ---------------- 手指 ---------------- */
+
+function pointAt(e) { return { x: e.clientX, y: e.clientY }; }
+
+cv.addEventListener("pointerdown", e => {
+  audio(); unlockSpeech();
+  if (S.mode !== "play" || !S.item || S.item.placed) return;
+  const p = pointAt(e);
+  const size = Math.max(34, S.lay[0].h * 1.15);
+  // 抓的范围比图标大一圈：手指按在边上也该抓得起来
+  if (Math.hypot(p.x - S.item.x, p.y - S.item.y) > size) return;
+  S.item.drag = true;
+  cv.setPointerCapture(e.pointerId);
+  sndPick();
+});
+cv.addEventListener("pointermove", e => {
+  if (!S.item || !S.item.drag) return;
+  const p = pointAt(e);
+  S.item.x = p.x;
+  S.item.y = p.y - 26;        // 往上抬一点，手指不挡着图标
+});
+cv.addEventListener("pointerup", e => {
+  if (!S.item || !S.item.drag) return;
+  S.item.drag = false;
+  drop(S.item.x, S.item.y);
+});
+cv.addEventListener("pointercancel", () => { if (S.item) S.item.drag = false; });
+
+/* ---------------- 开局 / 结算 ---------------- */
+
+function start(fromLevel) {
+  S.g = L.newGame();
+  if (fromLevel > 1) S.g.solved = (Math.min(L.MAX_LEVEL, fromLevel) - 1) * L.PER_LEVEL;
+  S.parts = []; S.floats = []; S.retry = []; S.wrongLog = [];
+  S.prevBest = save.best || 0; S.brokeRecord = false; S.flashGold = 0; S.endless = false;
+  S.t = 0;
+  S.mode = "play";
+  document.body.classList.add("playing");
+  layer("start", false); layer("over", false); layer("paused", false); layer("pickwrap", false);
+  $("saybtn").style.display = "";
+  refreshHome();
+  audio(); unlockSpeech();
+  newTask();
+}
+
+function finish(title, cleared) {
+  S.mode = "over";
+  document.body.classList.remove("playing");
+  $("saybtn").style.display = "none";
+  if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
+  const prevBest = save.best || 0;
+  const isBest = S.g.score > prevBest && S.g.score > 0;
+  save.best = Math.max(prevBest, S.g.score);
+  save.bestCombo = Math.max(save.bestCombo || 0, S.g.bestCombo);
+  if (cleared) save.cleared = (save.cleared || 0) + 1;
+  persist();
+  if (isBest && !S.brokeRecord) { confetti(70); sndFanfare(); }
+  $("overtitle").textContent = title;
+  $("overstat").innerHTML =
+    '<div class="big">' + S.g.score + " 分</div>" +
+    '<div class="combo">🔥 最长连对 <em>' + S.g.bestCombo + "</em> 题</div>" +
+    "放对 <em>" + S.g.solved + "</em> 题　放错 <em>" + S.g.wrong + "</em> 次<br>" +
+    "最高分 <em>" + save.best + "</em>" + (save.cleared ? "　🏁 已通关 <em>" + save.cleared + "</em> 次" : "") +
+    (S.wrongLog.length
+      ? '<div class="wrongs"><b>这几句再看一眼：</b>' +
+        S.wrongLog.slice(0, 5).map(x => "<span>" + x.en + "</span>").join("") + "</div>"
+      : "");
+  setTimeout(() => { layer("over", true); refreshHome(); }, cleared ? 1000 : 500);
+}
+
+function victory() { confetti(160); sndFanfare(); setTimeout(sndFanfare, 600); S.flashGold = 1; finish("🎉 通关啦！", true); }
+
+/* ---------------- 界面 ---------------- */
+
+function renderPick() {
+  let h = "";
+  L.STAGES.forEach((st, si) => {
+    h += '<div class="st">' + (si + 1) + "、" + st.name + '</div><div class="lvrow">';
+    for (let k = 0; k < L.LEVELS_PER_STAGE; k++) {
+      const lv = si * L.LEVELS_PER_STAGE + k + 1;
+      const open = lv <= save.unlocked;
+      h += '<button class="lv' + (open ? (lv === save.unlocked ? " on" : "") : " lock") + '"' +
+           (open ? ' data-lv="' + lv + '"' : " disabled") + ">" +
+           (open ? "第 " + lv + " 关" : "🔒 " + lv) + "</button>";
+    }
+    h += "</div>";
+  });
+  $("pick").innerHTML = h;
+  $("pick").querySelectorAll("button.lv[data-lv]").forEach(b => { b.onclick = () => start(+b.dataset.lv); });
+}
+function openPick() { renderPick(); layer("start", false); layer("over", false); layer("pickwrap", true); refreshHome(); }
+
+function refreshCn() { $("cnbtn").textContent = save.cn ? "🀄 中文提示：开" : "🀄 中文提示：关"; }
+function refreshStart() {
+  refreshCn();
+  const un = save.unlocked || 1;
+  $("startstat").innerHTML =
+    (un > 1 ? "从 <em>第 " + un + " 关 · " + L.stageOf(un).name + "</em> 接着打<br>" : "") +
+    (save.best ? "最高分 <em>" + save.best + "</em>　累计放对 <em>" + (save.solved || 0) + "</em> 题" : "") +
+    (save.cleared ? "<br>🏁 已通关 <em>" + save.cleared + "</em> 次" : "");
+}
+function refreshHome() {
+  const inGame = S.mode === "play" || S.mode === "pause" || S.mode === "over" ||
+                 $("pickwrap").classList.contains("show");
+  $("homebtn").textContent = inGame ? "‹ 返回" : "‹ 回首页";
+}
+function goBack() {
+  if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
+  if (S.mode === "play" || S.mode === "pause" || S.mode === "over") {
+    S.mode = "ready";
+    document.body.classList.remove("playing");
+    S.parts = []; S.floats = [];
+    $("saybtn").style.display = "none";
+    layer("paused", false); layer("over", false); layer("pickwrap", false); layer("start", true);
+    refreshStart(); refreshHome();
+    return;
+  }
+  if ($("pickwrap").classList.contains("show")) {
+    layer("pickwrap", false); layer("start", true); refreshStart(); refreshHome();
+    return;
+  }
+  location.href = "index.html";
+}
+
+$("go").onclick = () => start(save.unlocked || 1);
+$("again").onclick = () => start(L.levelFor(S.g.solved));
+$("pickbtn").onclick = openPick;
+$("pickbtn2").onclick = openPick;
+$("pickback").onclick = () => { layer("pickwrap", false); layer("start", true); refreshStart(); refreshHome(); };
+$("back").onclick = () => { location.href = "index.html"; };
+$("homebtn").onclick = goBack;
+$("saybtn").onclick = () => { unlockSpeech(); if (S.task) say(S.task.en); };
+$("cnbtn").onclick = () => { save.cn = !save.cn; persist(); refreshCn(); };
+$("pausebtn").onclick = () => {
+  if (S.mode === "play") { S.mode = "pause"; layer("paused", true); }
+  else if (S.mode === "pause") { S.mode = "play"; layer("paused", false); }
+};
+$("resume").onclick = () => { S.mode = "play"; layer("paused", false); };
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden" && S.mode === "play") {
+    S.mode = "pause"; layer("paused", true);
+    if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
+  }
+});
+
+resize();
+refreshStart();
+refreshHome();
+requestAnimationFrame(frame);
+</script>
+<script src="同步.js?v=202611211719" data-key="move-game-v1" data-nopop="1"></script>
+</body>
+</html>
