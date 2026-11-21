@@ -65,6 +65,9 @@
   #pick .lv:active{transform:scale(.96);box-shadow:none}
   #pick .lv.on{border-color:#ffd166;background:rgba(255,209,102,.18);color:#ffd166}
   #pick .lv.lock{opacity:.38;cursor:not-allowed}
+  /* 没登录时，同步那个小圆点会一直做 box-shadow 呼吸动画——那是每帧重绘，
+     和正在下落的球抢同一份时间。游戏进行中直接把它收起来，回到开始界面再出现 */
+  body.playing #syncchip{display:none !important}
   @media (prefers-reduced-motion:reduce){ .layer button{transition:none} }
 </style>
 </head>
@@ -111,7 +114,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611211641"></script>
+<script src="接答案逻辑.js?v=202611211650"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -141,11 +144,21 @@ const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save
 
 const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
 let W = 0, H = 0, DPR = 1;
+let bgGrad = null, bandGrad = null;      // 渐变只在尺寸变了的时候重建
+
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);   // 超过 2 倍纯属烧电
+  // 再按总像素数压一道：iPad Pro 竖屏 1024×1366 @2 是 560 万像素，
+  // 整屏背景每帧都要填一遍，掉帧就是从这儿来的。大屏上降到 1.25 倍左右，
+  // 字边缘几乎看不出差别，但每帧要填的像素少一半还多
+  while (W * DPR * H * DPR > 2400000 && DPR > 1) DPR -= .25;
   W = cv.clientWidth; H = cv.clientHeight;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+  bgGrad.addColorStop(0, "#0b4d3e"); bgGrad.addColorStop(1, "#13795f");
+  bandGrad = ctx.createLinearGradient(0, 0, 0, Math.max(124, H * .21));
+  bandGrad.addColorStop(0, "#073a2f"); bandGrad.addColorStop(1, "#0a4d3e");
 }
 window.addEventListener("resize", resize);
 window.addEventListener("orientationchange", () => setTimeout(resize, 120));
@@ -272,6 +285,7 @@ const layer = (id, on) => $(id).classList.toggle("show", on);
 
 const GROUND = () => H - Math.max(96, H * .16);     // 大象站的那条线
 const ITEM_R = () => Math.max(26, Math.min(40, W / 10));
+const popFont = n => "900 " + n + 'px "Segoe UI",system-ui,-apple-system,sans-serif';
 const SWAY = 4;        // 左右摇摆的幅度。再大就会吃掉球之间留好的最小间距
 
 function newRound() {
@@ -381,8 +395,18 @@ function burst(x, y, color, n) {
    连对三次以上换一套更烫的配色，顺手告诉人「你现在状态不一样」。 */
 function pop(text, combo, y) {
   const hot = combo >= 3;
+  // 字号按量出来的宽度定一次就够：每帧 measureText + 建渐变，在 iPad 上
+  // 正好卡在球下落最密的时候
+  let size = Math.round(Math.min(56, W / 7.5));
+  const maxW = W * .86 / 1.25;              // 留出弹进来那 1.25 倍的过冲
+  ctx.font = popFont(size);
+  const w = ctx.measureText(text).width;
+  if (w > maxW) size = Math.max(20, Math.floor(size * maxW / w));
+  const grd = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
+  grd.addColorStop(0, "#fff");
+  grd.addColorStop(1, hot ? "#ff9f45" : "#ffd166");
   S.pops.push({
-    text, life: 1, hot,
+    text, life: 1, hot, size, grd,
     x: W / 2, y: y == null ? H * .36 : y,
     rot: (Math.random() - .5) * .18,
     hue: hot ? 14 : 48,
@@ -393,6 +417,7 @@ function pop(text, combo, y) {
 /* 破纪录：整屏彩带。粒子复用同一套，只是从屏幕顶上成片地落，
    颜色杂、带旋转，掉得比火花慢——火花是「这一下很准」，彩带是「这一局成了」。 */
 const CONFETTI = ["#ffd166", "#ff9f45", "#5ad2a0", "#53c4ef", "#ff7a9c", "#fff"];
+const MAX_PARTS = 240;        // 粒子上限：彩带和火花撞一起时别让帧率背锅
 function confetti(n) {
   for (let i = 0; i < n; i++) {
     S.parts.push({
@@ -501,6 +526,7 @@ function step(dt) {
     if (p.flake) { p.rot += p.spin * dt; p.vx *= (1 - dt * .6); }
   });
   S.parts = S.parts.filter(p => p.life > 0);
+  if (S.parts.length > MAX_PARTS) S.parts.splice(0, S.parts.length - MAX_PARTS);
   S.floats.forEach(f => { f.life -= dt; f.y -= dt * 40; });
   S.floats = S.floats.filter(f => f.life > 0);
   S.pops.forEach(p => { p.life -= dt * 1.15; p.y -= dt * 46; p.rot *= (1 - dt * 1.5); });
@@ -519,9 +545,7 @@ function draw(dt) {
   }
 
   // 背景：上深下浅，底下一条草地
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, "#0b4d3e"); g.addColorStop(1, "#13795f");
-  ctx.fillStyle = g; ctx.fillRect(-20, -20, W + 40, H + 40);
+  ctx.fillStyle = bgGrad; ctx.fillRect(-20, -20, W + 40, H + 40);
   const ground = GROUND();
   ctx.fillStyle = "#0a4133";
   ctx.fillRect(-20, ground + 24, W + 40, H);
@@ -583,25 +607,15 @@ function draw(dt) {
     ctx.translate(p.x, p.y);
     ctx.rotate(p.rot);
     ctx.scale(scale, scale);
-    // 先按最大号排，太宽就按量出来的宽度缩一档——"Amazing streak!" 比
-    // "Nice one!" 长一截，一个固定字号必然有一个会出屏幕
-    let size = Math.round(Math.min(56, W / 7.5));
-    const font = n => "900 " + n + 'px "Segoe UI",system-ui,-apple-system,sans-serif';
-    ctx.font = font(size);
-    // 留出弹进来时那 1.25 倍的过冲，不然「稳住」之前会先出一次屏幕
-    const maxW = W * .86 / 1.25;
-    const w = ctx.measureText(p.text).width;
-    if (w > maxW) { size = Math.max(20, Math.floor(size * maxW / w)); ctx.font = font(size); }
+    const size = p.size;
+    ctx.font = popFont(size);
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     // 先描一圈深色边，底下无论是球还是草地都读得清
     ctx.lineWidth = Math.max(6, size * .16);
     ctx.lineJoin = "round";
     ctx.strokeStyle = "rgba(6,48,38,.85)";
     ctx.strokeText(p.text, 0, 0);
-    const grd = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
-    grd.addColorStop(0, "#fff");
-    grd.addColorStop(1, p.hot ? "#ff9f45" : "#ffd166");
-    ctx.fillStyle = grd;
+    ctx.fillStyle = p.grd;
     ctx.fillText(p.text, 0, 0);
     ctx.restore();
   });
@@ -626,9 +640,7 @@ function drawHud() {
   // 顶上压一条不透明的带子：题目写在上面，球从带子底下钻出来。
   // 之前题目和球在同一层，球飘过去正好糊住题面，等于逼人背题
   const hb = headBottom();
-  const g2 = ctx.createLinearGradient(0, 0, 0, hb);
-  g2.addColorStop(0, "#073a2f"); g2.addColorStop(1, "#0a4d3e");
-  ctx.fillStyle = g2; ctx.fillRect(-20, -20, W + 40, hb + 20);
+  ctx.fillStyle = bandGrad; ctx.fillRect(-20, -20, W + 40, hb + 20);
   ctx.fillStyle = "rgba(255,255,255,.10)";
   ctx.fillRect(-20, hb, W + 40, 2);
 
@@ -671,7 +683,8 @@ function drawHud() {
     // 换主题那一下给个底衬：底下正在掉球，纯文字会被花花绿绿的球搅乱
     if (b.big) {
       ctx.font = "800 " + Math.round(Math.min(27, W / 15)) + "px system-ui,-apple-system,sans-serif";
-      const w = ctx.measureText(b.text).width + 36;
+      if (b.w == null) b.w = ctx.measureText(b.text).width + 36;   // 量一次就够，横幅要飘两秒多
+      const w = b.w;
       ctx.fillStyle = "rgba(7,58,47,.9)";
       const x0 = W / 2 - w / 2, h = 62, r = 14;
       ctx.beginPath();
@@ -721,6 +734,7 @@ function start(fromLevel) {
   S.ele.x = S.ele.target = W / 2;
   S.t = 0; S.nextRoundAt = 0;
   S.mode = "play";
+  document.body.classList.add("playing");
   layer("start", false); layer("over", false); layer("paused", false); layer("pickwrap", false);
   refreshHome();
   newRound();
@@ -732,6 +746,7 @@ function start(fromLevel) {
    有人就想继续刷分，不该逼他重开一局从 20 以内加减打起。 */
 function victory() {
   S.mode = "over";
+  document.body.classList.remove("playing");
   if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
   confetti(160);
   sndFanfare();
@@ -762,6 +777,7 @@ function victory() {
 
 function gameOver() {
   S.mode = "over";
+  document.body.classList.remove("playing");
   if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
   save.plays = (save.plays || 0) + 1;
   // 先把「原来的纪录」记下来再更新，否则一比就永远是「刷新了纪录」
@@ -850,6 +866,7 @@ function goBack() {
   if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
   if (S.mode === "play" || S.mode === "pause" || S.mode === "over") {
     S.mode = "ready";
+    document.body.classList.remove("playing");
     S.items = []; S.parts = []; S.floats = []; S.pops = [];
     layer("paused", false); layer("over", false); layer("pickwrap", false);
     layer("start", true);
@@ -877,6 +894,7 @@ $("endless").onclick = () => {
   // 接着打：心和分数都留着，关卡停在最高那一档，不再有通关判定
   S.endless = true;
   S.mode = "play";
+  document.body.classList.add("playing");
   layer("over", false);
   newRound();
 };
@@ -900,6 +918,6 @@ refreshStart();
 refreshHome();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611211641" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611211650" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>
