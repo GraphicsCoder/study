@@ -102,7 +102,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="搬家逻辑.js?v=202611211724"></script>
+<script src="搬家逻辑.js?v=202611211735"></script>
 <script>
 /* =====================================================================
    大象搬家 · 介词拖放
@@ -385,6 +385,7 @@ function draw() {
   ctx.fillRect(-20, -20, W + 40, H + 40);
 
   if (S.mode === "play" || S.mode === "pause") {
+    ctx.globalAlpha = 1;                  // 上一帧的粒子可能把它改过，这里归位
     const floor = H - FOOT() - 10;
     ctx.fillStyle = "rgba(255,255,255,.1)";
     ctx.fillRect(-20, floor, W + 40, H);
@@ -425,19 +426,22 @@ function draw() {
     const legend = S.task.anchors.map(a => a.emoji + " " + a.en).join("   ");
     ctx.fillText(legend, W / 2, floor + 18);
 
-    // 要搬的东西（拖着的时候放大一点，手指底下才看得见）
+    /* 要搬的东西。它是主角，任何时候都画成实的：
+       原来待命时给了 0.9 的透明度想做「轻飘飘」的感觉，iPad 上看起来就是
+       「这个东西是半透明的」，像还没加载完。要轻盈感改用上下浮动就够了。 */
     const it = S.item;
     if (it) {
-      // 要搬的那个是主角，跟家具差不多大才拖得顺手；拖起来再放大一点
-      const size = Math.max(52, S.lay[0].h * 1.9) * (it.drag ? 1.2 : 1);
-      if (!it.drag && !it.placed) {              // 待命时轻轻上下浮动，告诉人「这个能拖」
-        ctx.save();
-        ctx.globalAlpha = .9;
-        emoji(S.task.item.emoji, it.x, it.y + Math.sin(S.t * 2.4) * 4, size);
-        ctx.restore();
-      } else {
-        emoji(S.task.item.emoji, it.x, it.y, size);
-      }
+      const base = Math.max(52, S.lay[0].h * 1.9);
+      const size = base * (it.drag ? 1.2 : 1);
+      const y = (!it.drag && !it.placed) ? it.y + Math.sin(S.t * 2.4) * 4 : it.y;
+      ctx.globalAlpha = 1;
+      // 底下垫一圈柔光：和家具一样的处理，深色背景上才立得住
+      const gl = ctx.createRadialGradient(it.x, y, size * .1, it.x, y, size * .85);
+      gl.addColorStop(0, "rgba(255,255,255,.26)");
+      gl.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = gl;
+      ctx.beginPath(); ctx.arc(it.x, y, size * .85, 0, 6.3); ctx.fill();
+      emoji(S.task.item.emoji, it.x, y, size);
     }
   }
 
@@ -672,6 +676,6 @@ refreshStart();
 refreshHome();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611211724" data-key="move-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611211735" data-key="move-game-v1" data-nopop="1"></script>
 </body>
 </html>
