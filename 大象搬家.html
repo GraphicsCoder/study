@@ -102,7 +102,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="搬家逻辑.js?v=202611211719"></script>
+<script src="搬家逻辑.js?v=202611211724"></script>
 <script>
 /* =====================================================================
    大象搬家 · 介词拖放
@@ -137,7 +137,7 @@ function resize() {
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-  bgGrad.addColorStop(0, "#102b47"); bgGrad.addColorStop(1, "#1d4a74");
+  bgGrad.addColorStop(0, "#1b4772"); bgGrad.addColorStop(1, "#2e74a8");   // 原来太暗，家具都看不清
   if (S.task) relayout();                      // 转屏之后家具要重新摆
 }
 window.addEventListener("resize", resize);
@@ -236,7 +236,7 @@ const S = {
 const $ = id => document.getElementById(id);
 const layer = (id, on) => $(id).classList.toggle("show", on);
 const HEAD = () => Math.max(132, H * .2);
-const FOOT = () => Math.max(96, H * .14);
+const FOOT = () => Math.max(112, H * .16);
 
 /* ---------------- 一轮 ---------------- */
 
@@ -301,6 +301,9 @@ function drop(x, y) {
     S.retry.push({ task: S.task, at: S.t + 25 });
     if (!S.wrongLog.some(w => w.en === S.task.en)) S.wrongLog.push({ en: S.task.en, cn: S.task.cn });
     say(phraseOf(S.task.prep, S.task), 1);
+    // 讲完就换下一题。原来放错之后停在原题不动，看上去就是「一直在重复同一道」——
+    // 这题已经排进补考队列了，过一会儿自然会再见面
+    setTimeout(newTask, 2700);
   }
 }
 
@@ -383,7 +386,7 @@ function draw() {
 
   if (S.mode === "play" || S.mode === "pause") {
     const floor = H - FOOT() - 10;
-    ctx.fillStyle = "rgba(255,255,255,.05)";
+    ctx.fillStyle = "rgba(255,255,255,.1)";
     ctx.fillRect(-20, floor, W + 40, H);
 
     // 可以放的位置：画成虚线圈。知道有哪些位置可放，难点才落在「选哪个」上
@@ -393,7 +396,7 @@ function draw() {
       ctx.save();
       ctx.setLineDash(target || bad ? [] : [5, 6]);
       ctx.lineWidth = target || bad ? 3 : 2;
-      ctx.strokeStyle = target ? "#5ad2a0" : bad ? "#ff7a9c" : "rgba(255,255,255,.22)";
+      ctx.strokeStyle = target ? "#5ad2a0" : bad ? "#ff7a9c" : "rgba(255,255,255,.42)";
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.3); ctx.stroke();
       ctx.restore();
       if (target || bad) {
@@ -404,8 +407,15 @@ function draw() {
       }
     });
 
-    // 家具
-    S.lay.forEach((a, i) => emoji(S.task.anchors[i].emoji, a.x, a.y, a.h * 2));
+    // 家具：底下垫一圈柔光，emoji 才不会糊在深色背景里
+    S.lay.forEach((a, i) => {
+      const g = ctx.createRadialGradient(a.x, a.y, a.h * .2, a.x, a.y, a.h * 1.6);
+      g.addColorStop(0, "rgba(255,255,255,.22)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(a.x, a.y, a.h * 1.6, 0, 6.3); ctx.fill();
+      emoji(S.task.anchors[i].emoji, a.x, a.y, a.h * 2.2);
+    });
 
     /* 家具叫什么，写在地板线上当图例：
        原来写在家具正下方，正好压在「under」那个圈上，看着像那个圈的标签 */
@@ -417,7 +427,18 @@ function draw() {
 
     // 要搬的东西（拖着的时候放大一点，手指底下才看得见）
     const it = S.item;
-    if (it) emoji(S.task.item.emoji, it.x, it.y, (it.drag ? 1.25 : 1) * Math.max(34, S.lay[0].h * 1.15));
+    if (it) {
+      // 要搬的那个是主角，跟家具差不多大才拖得顺手；拖起来再放大一点
+      const size = Math.max(52, S.lay[0].h * 1.9) * (it.drag ? 1.2 : 1);
+      if (!it.drag && !it.placed) {              // 待命时轻轻上下浮动，告诉人「这个能拖」
+        ctx.save();
+        ctx.globalAlpha = .9;
+        emoji(S.task.item.emoji, it.x, it.y + Math.sin(S.t * 2.4) * 4, size);
+        ctx.restore();
+      } else {
+        emoji(S.task.item.emoji, it.x, it.y, size);
+      }
+    }
   }
 
   // 粒子
@@ -509,7 +530,7 @@ cv.addEventListener("pointerdown", e => {
   audio(); unlockSpeech();
   if (S.mode !== "play" || !S.item || S.item.placed) return;
   const p = pointAt(e);
-  const size = Math.max(34, S.lay[0].h * 1.15);
+  const size = Math.max(52, S.lay[0].h * 1.9);
   // 抓的范围比图标大一圈：手指按在边上也该抓得起来
   if (Math.hypot(p.x - S.item.x, p.y - S.item.y) > size) return;
   S.item.drag = true;
@@ -651,6 +672,6 @@ refreshStart();
 refreshHome();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611211719" data-key="move-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611211724" data-key="move-game-v1" data-nopop="1"></script>
 </body>
 </html>
