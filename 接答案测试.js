@@ -359,5 +359,24 @@ t("补考时答案不会总在同一个位置（记位置就能蒙对那就白�
   }
   assert(seen.size >= 3, "答案只出现在 " + seen.size + " 个位置上");
 });
+/* ---------------- 通关线 ---------------- */
+
+t("通关线 = 关卡数 × 每关题数，到了就算赢", () => {
+  assert(G.CLEAR_AT === G.MAX_LEVEL * G.PER_LEVEL, "通关线是 " + G.CLEAR_AT);
+  assert(!G.isCleared(G.CLEAR_AT - 1), "差一题不算通关");
+  assert(G.isCleared(G.CLEAR_AT), "到线就算通关");
+  assert(G.isCleared(G.CLEAR_AT + 20), "超过了当然也算");
+});
+
+t("还差几题通关：一路递减，到线归零", () => {
+  assert(G.leftToClear(0) === G.CLEAR_AT, "开局差满额");
+  for (let n = 0; n < G.CLEAR_AT; n++)
+    assert(G.leftToClear(n) === G.leftToClear(n + 1) + 1, "第 " + n + " 题处没有递减");
+  assert(G.leftToClear(G.CLEAR_AT) === 0 && G.leftToClear(999) === 0, "到线之后不能是负数");
+});
+
+t("通关那一刻，关卡正好停在最后一关", () => {
+  assert(G.levelFor(G.CLEAR_AT - 1) === G.MAX_LEVEL, "最后一题该在第 " + G.MAX_LEVEL + " 关");
+});
 console.log("\n" + (fail ? "失败 " + fail + " 项，" : "全部 ") + (pass + fail) + " 项" + (fail ? "" : "通过"));
 process.exit(fail ? 1 : 0);

@@ -78,7 +78,8 @@
   <h1>🐘 大象接答案</h1>
   <p>天上掉数字，<b>按住屏幕左右拖</b>，让大象接住<b>算对的那个</b>。<br>
      接错掉一颗心，漏掉不扣心。<br>
-     从 <b>20 以内加减</b> 开始，一路到九九乘法、凑整巧算、两步混合。</p>
+     从 <b>20 以内加减</b> 开始，一路到九九乘法、凑整巧算、两步混合，<br>
+     <b>答对 60 题</b>就通关。</p>
   <button id="go">开始</button>
   <div class="row">
     <button class="ghost" id="pickbtn">🗺 选关</button>
@@ -99,6 +100,7 @@
   <div class="stat" id="overstat"></div>
   <div class="row">
     <button id="again">再来一局</button>
+    <button class="ghost" id="endless" style="display:none">♾ 接着打</button>
     <button class="ghost" id="pickbtn2">🗺 选关</button>
     <button class="ghost" id="back">回首页</button>
   </div>
@@ -109,7 +111,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611191832"></script>
+<script src="接答案逻辑.js?v=202611211635"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -252,6 +254,7 @@ const S = {
   retry: [],              // 答错过的题，等会儿再问一遍
   prevBest: 0,            // 开局时的历史最高分，用来判断什么时候该炸彩带
   brokeRecord: false,
+  endless: false,         // 通关之后选择「接着打」
   flashGold: 0,
   wrongLog: [],           // 这一局错过哪些题，结算时摊开给人看
   ele: { x: 0, target: 0, squash: 0, trunk: 0, blink: 0, hop: 0 },
@@ -318,6 +321,9 @@ function resolve(ok, value) {
       sndFanfare();
       S.flashGold = 1;
     }
+    // 到 60 题就算通关：有个明确的终点，最后一关才不像「永远打不完」
+    if (!S.endless && L.isCleared(S.g.solved)) { victory(); return; }
+
     const before = L.levelFor(S.g.solved - 1), now = L.levelFor(S.g.solved);
     if (now > before) {
       // 升关必须说一声，但不该打断：横幅飘在上面，球照掉。
@@ -325,9 +331,12 @@ function resolve(ok, value) {
       // 并且把下一题推迟一会儿——让人把那行字看完
       const s0 = L.stageOf(before), s1 = L.stageOf(now);
       const newStage = s1.index > s0.index;
+      const last = now === L.MAX_LEVEL;
       S.banner = newStage
         ? { text: "第 " + now + " 关 · " + s1.name, sub: "换新题型啦", t: 2.6, big: true }
-        : { text: "第 " + now + " 关", sub: "掉得更快了", t: 1.8, big: false };
+        : last
+          ? { text: "最后一关", sub: "再 " + L.leftToClear(S.g.solved) + " 题就通关", t: 2.4, big: true }
+          : { text: "第 " + now + " 关", sub: "掉得更快了", t: 1.8, big: false };
       if (newStage) S.nextRoundAt += 1;
       // 打到哪一关就解锁哪一关，下次可以直接从这儿接着打
       const un = L.unlockTo(save.unlocked, now);
@@ -649,7 +658,12 @@ function drawHud() {
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255,255,255,.55)";
   const lv = L.levelFor(S.g.solved);
-  ctx.fillText("第 " + lv + " 关 · " + L.stageOf(lv).name, W / 2, headBottom() - 18);
+  const left = L.leftToClear(S.g.solved);
+  ctx.fillText(
+    S.endless ? "♾ 无尽模式"
+      : lv === L.MAX_LEVEL ? "最后一关 · 还差 " + left + " 题通关"
+      : "第 " + lv + " 关 · " + L.stageOf(lv).name,
+    W / 2, headBottom() - 18);
 
   if (S.banner) {
     const b = S.banner, y = headBottom() + (b.big ? 58 : 46);
@@ -703,7 +717,7 @@ function start(fromLevel) {
   if (fromLevel > 1) S.g.solved = L.solvedForLevel(fromLevel);   // 选关：直接从那一关开打
   S.items = []; S.parts = []; S.floats = []; S.pops = []; S.banner = null; S.flash = null;
   S.retry = []; S.wrongLog = [];
-  S.prevBest = save.best || 0; S.brokeRecord = false; S.flashGold = 0;
+  S.prevBest = save.best || 0; S.brokeRecord = false; S.flashGold = 0; S.endless = false;
   S.ele.x = S.ele.target = W / 2;
   S.t = 0; S.nextRoundAt = 0;
   S.mode = "play";
@@ -711,6 +725,38 @@ function start(fromLevel) {
   newRound();
   audio();                               // 第一次点按钮时解锁声音，iOS 的规矩
   unlockSpeech();                        // 朗读也得在手势里开闸，同上
+}
+
+/* 通关：这是整局唯一的「赢」。该炸的都炸，并且把「接着打」摆出来——
+   有人就想继续刷分，不该逼他重开一局从 20 以内加减打起。 */
+function victory() {
+  S.mode = "over";
+  if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
+  confetti(160);
+  sndFanfare();
+  setTimeout(sndFanfare, 600);
+  S.flashGold = 1;
+  save.cleared = (save.cleared || 0) + 1;
+  save.unlocked = L.unlockTo(save.unlocked, L.MAX_LEVEL);
+  const prevBest = save.best || 0, prevCombo = save.bestCombo || 0;
+  save.best = Math.max(prevBest, S.g.score);
+  save.bestCombo = Math.max(prevCombo, S.g.bestCombo);
+  save.solved = (save.solved || 0);
+  persist();
+
+  $("overtitle").textContent = "🎉 通关啦！";
+  $("overstat").innerHTML =
+    '<div class="big">' + S.g.score + " 分</div>" +
+    '<div class="combo">🔥 最长连对 <em>' + S.g.bestCombo + "</em> 题</div>" +
+    "答对 <em>" + L.CLEAR_AT + "</em> 题，十二关全打完了　剩 <em>" + S.g.lives + "</em> 颗心<br>" +
+    "最高分 <em>" + save.best + "</em>　这是第 <em>" + save.cleared + "</em> 次通关" +
+    (S.wrongLog.length
+      ? '<div class="wrongs"><b>这几题再看一眼：</b>' +
+        S.wrongLog.slice(0, 5).map(x => "<span>" + x.q + " = " + x.ans + "</span>").join("") +
+        (S.wrongLog.length > 5 ? "<span>…</span>" : "") + "</div>"
+      : "");
+  $("endless").style.display = "";
+  setTimeout(() => layer("over", true), 1100);     // 彩带先飘一会儿
 }
 
 function gameOver() {
@@ -726,6 +772,7 @@ function gameOver() {
   save.bestCombo = Math.max(prevCombo, bestCombo);
   persist();
   $("overtitle").textContent = isBest ? "🏆 新纪录！" : "这局结束";
+  $("endless").style.display = "none";
   if (isBest && !S.brokeRecord) { confetti(70); sndFanfare(); }   // 开局时还没有纪录的那种
   const lvEnd = L.levelFor(S.g.solved);
   $("overstat").innerHTML =
@@ -785,7 +832,8 @@ function refreshStart() {
   const un = save.unlocked || 1;
   $("startstat").innerHTML =
     (un > 1 ? "从 <em>第 " + un + " 关 · " + L.stageOf(un).name + "</em> 接着打<br>" : "") +
-    (save.best ? "最高分 <em>" + save.best + "</em>　累计答对 <em>" + (save.solved || 0) + "</em> 题" : "");
+    (save.best ? "最高分 <em>" + save.best + "</em>　累计答对 <em>" + (save.solved || 0) + "</em> 题" : "") +
+    (save.cleared ? "<br>🏁 已通关 <em>" + save.cleared + "</em> 次" : "");
 }
 
 // 「开始」从解锁到的那一关接着打：每次都从 20 以内加减重来，很快就腻了
@@ -793,6 +841,13 @@ $("go").onclick = () => start(save.unlocked || 1);
 $("again").onclick = () => start(L.levelFor(S.g.solved));
 $("pickbtn").onclick = openPick;
 $("pickbtn2").onclick = openPick;
+$("endless").onclick = () => {
+  // 接着打：心和分数都留着，关卡停在最高那一档，不再有通关判定
+  S.endless = true;
+  S.mode = "play";
+  layer("over", false);
+  newRound();
+};
 $("pickback").onclick = () => { layer("pickwrap", false); layer("start", true); refreshStart(); };
 $("back").onclick = () => { location.href = "index.html"; };
 $("pausebtn").onclick = () => {
@@ -812,6 +867,6 @@ document.addEventListener("visibilitychange", () => {
 refreshStart();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611191832" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611211635" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>

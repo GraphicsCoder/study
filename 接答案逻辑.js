@@ -257,6 +257,14 @@
     return Math.max(1, Math.min(MAX_LEVEL, Math.max(now | 0 || 1, level | 0 || 1)));
   }
 
+  /* 通关线：十二关 × 每关 5 题 = 60 题。
+     原来打到第 12 关之后就一直这么打下去，没有尽头——
+     最后一关反而最像「永远打不完」，玩的人不知道还要多久才算赢。
+     所以给一条明确的线：到 60 题就通关，之后想接着玩再进无尽。 */
+  var CLEAR_AT = MAX_LEVEL * PER_LEVEL;
+  function isCleared(solved) { return (solved | 0) >= CLEAR_AT; }
+  function leftToClear(solved) { return Math.max(0, CLEAR_AT - (solved | 0)); }
+
   function levelFor(solved) {
     return Math.min(MAX_LEVEL, 1 + Math.floor(solved / PER_LEVEL));
   }
@@ -357,7 +365,7 @@ function praisePhrase(combo) {
     LIVES: LIVES, PER_LEVEL: PER_LEVEL, MAX_LEVEL: MAX_LEVEL,
     makeRound: makeRound, reRound: reRound, decoysFor: decoysFor,
     catchHalf: catchHalf, dropCount: dropCount, lanes: lanes, dropOffsets: dropOffsets,
-    levelFor: levelFor, fallSecs: fallSecs, solvedForLevel: solvedForLevel, unlockTo: unlockTo,
+    levelFor: levelFor, fallSecs: fallSecs, isCleared: isCleared, leftToClear: leftToClear, CLEAR_AT: CLEAR_AT, solvedForLevel: solvedForLevel, unlockTo: unlockTo,
     stageOf: stageOf, stepInStage: stepInStage, STAGES: STAGES, LEVELS_PER_STAGE: LEVELS_PER_STAGE,
     newGame: newGame, hitScore: hitScore, levelMul: levelMul,
     praisePhrase: praisePhrase, PRAISE: PRAISE, PRAISE_HOT: PRAISE_HOT, PRAISE_FIRE: PRAISE_FIRE,
