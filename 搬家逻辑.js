@@ -77,11 +77,36 @@
   /* ---------------- 出题 ---------------- */
 
   // 一道题：两件家具 + 一个要搬的东西 + 一个介词（指向其中一件家具）
-  function makeTask(level, rnd) {
+  /* 错得多的词多出几次。
+     stats 形如 { behind: {right: 2, wrong: 5}, on: {right: 9, wrong: 0} }，
+     权重 = 1 + 3 × 错误率，再给「从来没做过的」一点加成——
+     不然前几关练熟的 on 会一直刷屏，真正不会的 behind 反而见得少。
+     权重最高也就 4 倍：完全按错误率出题会变成一直被按着打同一个词，
+     那比重复更劝退。 */
+  function weightOf(prep, stats) {
+    var st = stats && stats[prep];
+    if (!st) return 1.6;                       // 没见过的词，稍微偏向它
+    var n = (st.right || 0) + (st.wrong || 0);
+    if (!n) return 1.6;
+    return 1 + 3 * ((st.wrong || 0) / n);
+  }
+
+  function pickPrep(preps, rnd, stats) {
+    var ws = preps.map(function (p) { return weightOf(p, stats); });
+    var sum = ws.reduce(function (a, b) { return a + b; }, 0);
+    var r = rnd() * sum;
+    for (var i = 0; i < preps.length; i++) {
+      r -= ws[i];
+      if (r <= 0) return preps[i];
+    }
+    return preps[preps.length - 1];
+  }
+
+  function makeTask(level, rnd, stats) {
     rnd = rnd || Math.random;
     var lv = Math.max(1, Math.min(MAX_LEVEL, level | 0 || 1));
     var preps = STAGES[stageIndex(lv)].preps;
-    var prep = pick(rnd, preps);
+    var prep = pickPrep(preps, rnd, stats);
 
     // 挑两件不一样的家具；要出 in 就得保证至少有一件是能装东西的
     var a0 = pick(rnd, ANCHORS), a1 = pick(rnd, ANCHORS);
@@ -203,6 +228,19 @@
     return { ok: ok, miss: false, spot: s };
   }
 
+  // 这一阵子最该练的那个词：错得最多的；都没错过就返回空
+  function weakest(stats) {
+    var best = null, bestRate = 0;
+    Object.keys(stats || {}).forEach(function (p) {
+      if (!PREPS[p]) return;
+      var st = stats[p], n = (st.right || 0) + (st.wrong || 0);
+      if (n < 3 || !st.wrong) return;        // 做不够三次不下结论
+      var rate = st.wrong / n;
+      if (rate > bestRate) { bestRate = rate; best = p; }
+    });
+    return best;
+  }
+
   /* ---------------- 计分 ---------------- */
 
   function newGame() {
@@ -231,6 +269,7 @@
     LEVELS_PER_STAGE: LEVELS_PER_STAGE, MAX_LEVEL: MAX_LEVEL, PER_LEVEL: PER_LEVEL, CLEAR_AT: CLEAR_AT,
     stageOf: stageOf, levelFor: levelFor, isCleared: isCleared, leftToClear: leftToClear,
     makeTask: makeTask, sentence: sentence, chinese: chinese,
+    weightOf: weightOf, pickPrep: pickPrep, weakest: weakest,
     anchorSpots: anchorSpots, spots: spots, hit: hit, judge: judge, layoutFor: layoutFor,
     newGame: newGame, hitScore: hitScore, levelMul: levelMul, right: right, wrong: wrong,
   };

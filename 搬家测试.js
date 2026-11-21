@@ -211,5 +211,49 @@ t("通关线 = 关卡数 × 每关题数", () => {
   assert(M.levelFor(M.CLEAR_AT - 1) === M.MAX_LEVEL, "最后一题该在最后一关");
 });
 
+/* ---------------- 错得多的词多出几次 ---------------- */
+
+t("错得多的词权重更高，全对的词权重最低", () => {
+  const w = p => M.weightOf(p, { on: { right: 10, wrong: 0 }, behind: { right: 1, wrong: 9 }, under: { right: 5, wrong: 5 } });
+  assert(w("on") < w("under") && w("under") < w("behind"), [w("on"), w("under"), w("behind")].join(" "));
+  assert(w("behind") <= 4, "权重最高也就 4 倍，不能变成一直按着打同一个词：" + w("behind"));
+  assert(w("next to") > 1, "没做过的词该稍微偏向它");
+});
+
+t("没有统计也能正常出题（第一次玩）", () => {
+  for (let i = 0; i < 200; i++) {
+    const t1 = M.makeTask(3, rng(i), null);
+    const t2 = M.makeTask(3, rng(i + 999), {});
+    assert(t1.prep && t2.prep, "没有统计就出不了题");
+  }
+});
+
+t("统计里的脏数据不会影响出题", () => {
+  const junk = { on: null, 乱写: { right: 3, wrong: 9 }, under: { right: "x", wrong: undefined } };
+  for (let i = 0; i < 200; i++) {
+    const k = M.makeTask(6, rng(i + 7), junk);
+    const allow = M.STAGES[M.STAGES.length - 1].preps;
+    assert(allow.indexOf(k.prep) > -1, "出了一个不存在的词：" + k.prep);
+  }
+});
+
+t("长远看，错得多的那个词确实出得更多", () => {
+  const stats = { in: { right: 20, wrong: 0 }, on: { right: 20, wrong: 0 }, under: { right: 2, wrong: 18 } };
+  const n = {};
+  for (let i = 0; i < 3000; i++) {
+    const k = M.makeTask(1, rng(i + 1), stats);
+    n[k.prep] = (n[k.prep] || 0) + 1;
+  }
+  assert(n.under > n.on * 1.5 && n.under > n["in"] * 1.5, JSON.stringify(n));
+  assert(n.on > 200 && n["in"] > 200, "练熟的词也不能一次都不出：" + JSON.stringify(n));
+});
+
+t("最该练的词：错得最多的那个；做得太少不下结论", () => {
+  assert(M.weakest({ behind: { right: 1, wrong: 4 }, on: { right: 9, wrong: 1 } }) === "behind", "没挑出 behind");
+  assert(M.weakest({ on: { right: 2, wrong: 1 } }) === null || M.weakest({ on: { right: 1, wrong: 1 } }) === null,
+         "只做过两次就下结论了");
+  assert(M.weakest({}) === null && M.weakest(null) === null, "没有统计时该返回空");
+  assert(M.weakest({ on: { right: 9, wrong: 0 } }) === null, "全对的词不该被挑出来");
+});
 console.log("\n" + (fail ? "失败 " + fail + " 项，" : "全部 ") + (pass + fail) + " 项" + (fail ? "" : "通过"));
 process.exit(fail ? 1 : 0);

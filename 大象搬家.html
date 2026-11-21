@@ -102,7 +102,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="搬家逻辑.js?v=202611211735"></script>
+<script src="搬家逻辑.js?v=202611211740"></script>
 <script>
 /* =====================================================================
    大象搬家 · 介词拖放
@@ -124,6 +124,7 @@ save.best = save.best || 0;
 save.solved = save.solved || 0;
 save.unlocked = Math.max(1, Math.min(L.MAX_LEVEL, save.unlocked || 1));
 if (save.cn === undefined) save.cn = true;        // 显示中文提示
+save.stats = save.stats || {};                   // 每个介词的对错次数，用来决定多出哪个
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
 
 /* ---------------- 画布 ---------------- */
@@ -250,13 +251,19 @@ function relayout() {
 function newTask() {
   const lv = L.levelFor(S.g.solved);
   const due = S.retry.length && S.t >= S.retry[0].at ? S.retry.shift() : null;
-  S.task = due ? due.task : L.makeTask(lv, Math.random);
+  S.task = due ? due.task : L.makeTask(lv, Math.random, save.stats);
   S.task.again = !!due;
   relayout();
   S.item = { x: W / 2, y: H - FOOT() / 2, home: { x: W / 2, y: H - FOOT() / 2 }, drag: false, scale: 1 };
   S.tell = null;
   // 题目念一遍。念完才好动手，所以 item 一直在那儿等
   say(S.task.en);
+}
+
+// 每个介词记一笔对错：下次出题会多出错得多的那个
+function note(prep, ok) {
+  const st = save.stats[prep] || (save.stats[prep] = { right: 0, wrong: 0 });
+  st[ok ? "right" : "wrong"] += 1;
 }
 
 function drop(x, y) {
@@ -269,6 +276,7 @@ function drop(x, y) {
     const lv = L.levelFor(S.g.solved);
     const gain = L.hitScore(S.g.combo + 1, lv);
     L.right(S.g, lv);
+    note(S.task.prep, true);
     save.solved = (save.solved || 0) + 1;
     S.item.x = r.spot.x; S.item.y = r.spot.y; S.item.drag = false; S.item.placed = 1;
     burst(r.spot.x, r.spot.y, "#ffd166", 24);
@@ -292,6 +300,8 @@ function drop(x, y) {
     setTimeout(newTask, 1100);
   } else {
     L.wrong(S.g);
+    note(S.task.prep, false);
+    persist();
     sndBad();
     S.shake = 1;
     // 讲清楚：你放的地方是「on the box」，要放的是「under the box」
@@ -591,7 +601,9 @@ function finish(title, cleared) {
     "最高分 <em>" + save.best + "</em>" + (save.cleared ? "　🏁 已通关 <em>" + save.cleared + "</em> 次" : "") +
     (S.wrongLog.length
       ? '<div class="wrongs"><b>这几句再看一眼：</b>' +
-        S.wrongLog.slice(0, 5).map(x => "<span>" + x.en + "</span>").join("") + "</div>"
+        S.wrongLog.slice(0, 5).map(x => "<span>" + x.en + "</span>").join("") +
+        (L.weakest(save.stats) ? "<br><b style=\"margin-top:6px\">下一局会多练 " +
+          L.weakest(save.stats) + "（" + L.PREPS[L.weakest(save.stats)].cn + "）</b>" : "") + "</div>"
       : "");
   setTimeout(() => { layer("over", true); refreshHome(); }, cleared ? 1000 : 500);
 }
@@ -622,10 +634,12 @@ function refreshCn() { $("cnbtn").textContent = save.cn ? "🀄 中文提示：�
 function refreshStart() {
   refreshCn();
   const un = save.unlocked || 1;
+  const weak = L.weakest(save.stats);
   $("startstat").innerHTML =
     (un > 1 ? "从 <em>第 " + un + " 关 · " + L.stageOf(un).name + "</em> 接着打<br>" : "") +
     (save.best ? "最高分 <em>" + save.best + "</em>　累计放对 <em>" + (save.solved || 0) + "</em> 题" : "") +
-    (save.cleared ? "<br>🏁 已通关 <em>" + save.cleared + "</em> 次" : "");
+    (save.cleared ? "<br>🏁 已通关 <em>" + save.cleared + "</em> 次" : "") +
+    (weak ? '<br>最该练的是 <em>' + weak + "</em>（" + L.PREPS[weak].cn + "），这一局会多出几次" : "");
 }
 function refreshHome() {
   const inGame = S.mode === "play" || S.mode === "pause" || S.mode === "over" ||
@@ -676,6 +690,6 @@ refreshStart();
 refreshHome();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611211735" data-key="move-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611211740" data-key="move-game-v1" data-nopop="1"></script>
 </body>
 </html>
