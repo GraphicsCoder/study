@@ -43,7 +43,7 @@
   var ANCHORS = [
     { emoji: "📦", en: "box",     cn: "箱子", container: true },
     { emoji: "🧺", en: "basket",  cn: "篮子", container: true },
-    { emoji: "🛏️", en: "bed",     cn: "床" },
+    { emoji: "🛏",  en: "bed",     cn: "床" },   // 不带变体选择符：带的那个在个别机型上会掉成单色
     { emoji: "🪑", en: "chair",   cn: "椅子" },
     { emoji: "🌳", en: "tree",    cn: "树" },
     { emoji: "🚗", en: "car",     cn: "小汽车", container: true },

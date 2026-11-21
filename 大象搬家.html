@@ -102,7 +102,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="搬家逻辑.js?v=202611211740"></script>
+<script src="搬家逻辑.js?v=202611211833"></script>
 <script>
 /* =====================================================================
    大象搬家 · 介词拖放
@@ -382,9 +382,17 @@ function step(dt) {
   }
 }
 
+/* 画一个 emoji。
+   这里每次都把 fillStyle 和 globalAlpha 掰回不透明，看着多余，其实是在修
+   「手机上东西是半透明的」那个毛病：画 emoji 之前刚画过柔光，fillStyle 还是
+   一个边缘透明的径向渐变。彩色 emoji 不吃 fillStyle，但只要系统有一个字形
+   走了单色回退（🛏️ 这种带变体选择符的最容易），它就会用当前这个渐变去涂，
+   于是那个东西看着就是透明的——而桌面浏览器上一切正常，很难想到这儿。 */
 function emoji(ch, x, y, size) {
   ctx.font = size + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = "#fff";
   ctx.fillText(ch, x, y);
 }
 
@@ -690,6 +698,6 @@ refreshStart();
 refreshHome();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611211740" data-key="move-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611211833" data-key="move-game-v1" data-nopop="1"></script>
 </body>
 </html>
