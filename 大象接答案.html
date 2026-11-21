@@ -44,7 +44,7 @@
   .stat .wrongs b{display:block;color:#ffd166;font-size:13px;margin-bottom:4px}
   .stat .wrongs span{display:inline-block;background:rgba(0,0,0,.18);border-radius:8px;
     padding:2px 9px;margin:2px 5px 2px 0;color:#fff;font-weight:600}
-  a.home{position:fixed;left:calc(env(safe-area-inset-left) + 10px);top:calc(env(safe-area-inset-top) + 10px);
+  .home{font-family:inherit;border:none;cursor:pointer;position:fixed;left:calc(env(safe-area-inset-left) + 10px);top:calc(env(safe-area-inset-top) + 10px);
     z-index:5;color:rgba(255,255,255,.75);text-decoration:none;font-size:14px;
     background:rgba(0,0,0,.18);padding:6px 12px;border-radius:99px}
   #pausebtn{font-family:inherit;border:none;cursor:pointer;position:fixed;right:calc(env(safe-area-inset-right) + 10px);top:calc(env(safe-area-inset-top) + 10px);
@@ -71,7 +71,7 @@
 <body>
 
 <canvas id="cv"></canvas>
-<a class="home" href="index.html">‹ 返回</a>
+<button class="home" id="homebtn">‹ 返回</button>
 <button id="pausebtn">⏸</button>
 
 <div class="layer show" id="start">
@@ -111,7 +111,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611211635"></script>
+<script src="接答案逻辑.js?v=202611211641"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -722,6 +722,7 @@ function start(fromLevel) {
   S.t = 0; S.nextRoundAt = 0;
   S.mode = "play";
   layer("start", false); layer("over", false); layer("paused", false); layer("pickwrap", false);
+  refreshHome();
   newRound();
   audio();                               // 第一次点按钮时解锁声音，iOS 的规矩
   unlockSpeech();                        // 朗读也得在手势里开闸，同上
@@ -756,7 +757,7 @@ function victory() {
         (S.wrongLog.length > 5 ? "<span>…</span>" : "") + "</div>"
       : "");
   $("endless").style.display = "";
-  setTimeout(() => layer("over", true), 1100);     // 彩带先飘一会儿
+  setTimeout(() => { layer("over", true); refreshHome(); }, 1100);  // 彩带先飘一会儿
 }
 
 function gameOver() {
@@ -786,7 +787,7 @@ function gameOver() {
         S.wrongLog.slice(0, 5).map(x => "<span>" + x.q + " = " + x.ans + "</span>").join("") +
         (S.wrongLog.length > 5 ? "<span>…</span>" : "") + "</div>"
       : "");
-  setTimeout(() => layer("over", true), 650);     // 让最后那下动画播完再盖上
+  setTimeout(() => { layer("over", true); refreshHome(); }, 650);   // 让最后那下动画播完再盖上
 }
 
 function refreshVoiceBtn() {
@@ -825,6 +826,7 @@ function renderPick() {
 function openPick() {
   renderPick();
   layer("start", false); layer("over", false); layer("pickwrap", true);
+  refreshHome();
 }
 
 function refreshStart() {
@@ -841,6 +843,36 @@ $("go").onclick = () => start(save.unlocked || 1);
 $("again").onclick = () => start(L.levelFor(S.g.solved));
 $("pickbtn").onclick = openPick;
 $("pickbtn2").onclick = openPick;
+/* 左上角那个「返回」：游戏里按它是回到开始界面，不是直接离开网站。
+   原来写的是一个 <a href="index.html">，玩到一半手一抖就整个页面走了，
+   这一局也没了。只有已经在开始界面（或选关界面）时，它才真的回首页。 */
+function goBack() {
+  if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
+  if (S.mode === "play" || S.mode === "pause" || S.mode === "over") {
+    S.mode = "ready";
+    S.items = []; S.parts = []; S.floats = []; S.pops = [];
+    layer("paused", false); layer("over", false); layer("pickwrap", false);
+    layer("start", true);
+    refreshStart();
+    refreshHome();
+    return;
+  }
+  if ($("pickwrap").classList.contains("show")) {     // 在选关页，先退回开始界面
+    layer("pickwrap", false); layer("start", true); refreshStart(); refreshHome();
+    return;
+  }
+  location.href = "index.html";
+}
+
+// 在开始界面上，这个按钮的意思是「离开这个游戏」，字也跟着换，省得人以为还能再退一层
+function refreshHome() {
+  const inGame = S.mode === "play" || S.mode === "pause" || S.mode === "over" ||
+                 $("pickwrap").classList.contains("show");
+  $("homebtn").textContent = inGame ? "‹ 返回" : "‹ 回首页";
+}
+
+$("homebtn").onclick = goBack;
+
 $("endless").onclick = () => {
   // 接着打：心和分数都留着，关卡停在最高那一档，不再有通关判定
   S.endless = true;
@@ -848,7 +880,7 @@ $("endless").onclick = () => {
   layer("over", false);
   newRound();
 };
-$("pickback").onclick = () => { layer("pickwrap", false); layer("start", true); refreshStart(); };
+$("pickback").onclick = () => { layer("pickwrap", false); layer("start", true); refreshStart(); refreshHome(); };
 $("back").onclick = () => { location.href = "index.html"; };
 $("pausebtn").onclick = () => {
   if (S.mode === "play") { S.mode = "pause"; layer("paused", true); }
@@ -865,8 +897,9 @@ document.addEventListener("visibilitychange", () => {
 });
 
 refreshStart();
+refreshHome();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611211635" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611211641" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>
