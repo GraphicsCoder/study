@@ -12,10 +12,13 @@
   "use strict";
 
   var MAX_LEVEL = 5;
-  var MASTER_LEVEL = 4;              // 到这一级就算「会了」，用来算 unit 掌握度
+  var MASTER_LEVEL = 4;              // 到这一级就算「练熟」，用来算 unit 熟练度
   var MIN = 60 * 1000, DAY = 24 * 60 * MIN;
-  // 每一级答对之后隔多久再问。第 0 级是「刚答错 / 刚认识」，本节课内就要再见一次。
-  var GAP = [1 * MIN, 10 * MIN, 1 * DAY, 3 * DAY, 7 * DAY, 21 * DAY];
+  /* 每升一级之后隔多久才会再问到它。前三级故意排得很密：
+     一次坐下来多打几关，二十分钟内就能把一个新词推到 3 级；
+     但 3 级之后要隔一天——隔夜还记得才叫记住，当天连答十遍不算。
+     所以「练熟」最快是今天推到 3 级、明天再答对一次。 */
+  var GAP = [1 * MIN, 3 * MIN, 15 * MIN, 1 * DAY, 4 * DAY, 14 * DAY];
 
   var PER_ROUND = 10;                // 一关十题，四年级小朋友一口气能吃下的量
 
@@ -80,6 +83,23 @@
       var r = recOf(prog, x.id);
       return r.no > 0 && r.lv < MASTER_LEVEL;
     });
+  }
+
+  /* 现在有多少词该复习了、下一批还要等多久。
+     页面拿它写一句人话，免得小朋友打完一关看着进度条不动，
+     以为「练了也没用」——其实只是还没到点。 */
+  function dueInfo(pool, prog, now) {
+    now = now || Date.now();
+    var ready = 0, fresh = 0, next = null;
+    pool.forEach(function (x) {
+      var r = recOf(prog, x.id);
+      if (!r.seen) { fresh++; return; }
+      if (r.lv >= MASTER_LEVEL) return;          // 练熟的不催
+      if (r.due <= now) ready++;
+      else if (next === null || r.due < next) next = r.due;
+    });
+    return { ready: ready, fresh: fresh, next: next,
+             wait: next === null ? null : Math.max(0, next - now) };
   }
 
   /* 从本子里拿掉：生词本就是取消收藏，错词本就是把错误记录清零。
@@ -268,7 +288,7 @@
     MAX_LEVEL: MAX_LEVEL, MASTER_LEVEL: MASTER_LEVEL, PER_ROUND: PER_ROUND, GAP: GAP,
     recOf: recOf, grade: grade, isMastered: isMastered, unitStat: unitStat,
     star: star, isStarred: isStarred, starred: starred, weak: weak,
-    clearWrong: clearWrong,
+    clearWrong: clearWrong, dueInfo: dueInfo,
     pickSession: pickSession, kindFor: kindFor, canSpell: canSpell,
     distractors: distractors, makeQuestion: makeQuestion, scramble: scramble,
     check: check, newRound: newRound, answer: answer, nextItem: nextItem,

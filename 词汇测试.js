@@ -31,23 +31,25 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
 
   L.grade(p, "u1-1", true, now);
   eq("答对升到 1 级", p["u1-1"].lv, 1);
-  eq("1 级隔 10 分钟再问", p["u1-1"].due - now, 10 * MIN);
+  eq("1 级隔几分钟再问", p["u1-1"].due - now, 3 * MIN);
 
   L.grade(p, "u1-1", true, now);
   eq("再答对到 2 级", p["u1-1"].lv, 2);
-  eq("2 级隔一天", p["u1-1"].due - now, DAY);
+  eq("2 级隔一刻钟", p["u1-1"].due - now, 15 * MIN);
 
+  L.grade(p, "u1-1", true, now);
+  eq("3 级开始要隔一天", p["u1-1"].due - now, DAY);
   L.grade(p, "u1-1", false, now);
-  eq("答错退一级", p["u1-1"].lv, 1);
+  eq("答错退一级", p["u1-1"].lv, 2);
   eq("答错马上重排，不等", p["u1-1"].due, now);
-  eq("对的次数记下了", p["u1-1"].ok, 2);
+  eq("对的次数记下了", p["u1-1"].ok, 3);
   eq("错的次数记下了", p["u1-1"].no, 1);
 }
 {
   const p = {};
   for (let i = 0; i < 9; i++) L.grade(p, "x", true, now);
   eq("等级封顶在 MAX_LEVEL", p.x.lv, L.MAX_LEVEL);
-  eq("封顶后隔最长的 21 天", p.x.due - now, 21 * DAY);
+  eq("封顶后隔最长的两周", p.x.due - now, 14 * DAY);
   for (let i = 0; i < 9; i++) L.grade(p, "x", false, now);
   eq("等级不会掉到负数", p.x.lv, 0);
 }
@@ -311,6 +313,46 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   eq("一个词也能开一关", round.total, 1);
   const q = L.makeQuestion(round.queue[0], pool, p, seeded(4), ALL);
   if (q.kind !== "spell") eq("选项仍是四个", q.choices.length, 4);
+}
+
+/* ---------- 还有多久能再练 ---------- */
+{
+  const p = {};
+  let d = L.dueInfo(U1, p, now);
+  eq("全新时没有到期的", d.ready, 0);
+  eq("全新时全是生词", d.fresh, U1.length);
+  eq("全新时不用等", d.wait, null);
+
+  U1.forEach(x => L.grade(p, x.id, true, now));
+  d = L.dueInfo(U1, p, now);
+  eq("刚练完都没到点", d.ready, 0);
+  eq("刚练完也没有新词了", d.fresh, 0);
+  eq("要等的就是最短那一档", d.wait, 3 * MIN);
+
+  d = L.dueInfo(U1, p, now + 4 * MIN);
+  eq("过几分钟就全到期了", d.ready, U1.length);
+
+  // 一天之内能把词推到 3 级，第四级要隔天——这是「最快多久练熟」的答案
+  let t = now;
+  const id = U1[0].id;
+  const p2 = {};
+  L.grade(p2, id, true, t); t += 4 * MIN;
+  L.grade(p2, id, true, t); t += 16 * MIN;
+  L.grade(p2, id, true, t);
+  eq("二十分钟能推到 3 级", p2[id].lv, 3);
+  ok("第 3 级之后要隔一天", p2[id].due - t === DAY);
+  ok("当天没法练熟", !L.isMastered(p2, id));
+  L.grade(p2, id, true, t + DAY);
+  ok("隔天再答对一次就练熟了", L.isMastered(p2, id));
+}
+{
+  // 练熟的词不再催复习
+  const p = {};
+  const x = U1[0];
+  for (let i = 0; i < 4; i++) L.grade(p, x.id, true, now);
+  const d = L.dueInfo([x], p, now + 365 * DAY);
+  eq("练熟的不算到期", d.ready, 0);
+  eq("练熟的也不用等", d.wait, null);
 }
 
 console.log(fail ? `\n${fail} 项没过，${pass} 项通过` : `全部 ${pass} 项通过`);

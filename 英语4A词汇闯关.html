@@ -28,6 +28,7 @@
     background:rgba(255,255,255,.18);border-radius:10px;padding:7px 12px}
   .allbar .bar{flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden}
   .allbar .bar i{display:block;height:100%;width:0;background:#fff;transition:width .4s}
+  .duetip{margin-top:8px;font-size:13px;opacity:.95}
 
   .panel{display:none}
   .panel.on{display:block}
@@ -178,6 +179,7 @@
   <p>按预习单来的 220 个单词词组 · 认一认 → 听一听 → 想一想 → 拼一拼</p>
   <div class="allbar"><span id="alltext">熟练度 0%</span>
     <span class="bar"><i id="allbar"></i></span></div>
+  <div class="duetip" id="duetip"></div>
 </header>
 
 <!-- 选单元 -->
@@ -251,8 +253,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611231642"></script>
-<script src="词汇逻辑.js?v=202611231642"></script>
+<script src="英语4A词库.js?v=202611231654"></script>
+<script src="词汇逻辑.js?v=202611231654"></script>
 <script>
 (function () {
   "use strict";
@@ -363,6 +365,15 @@
     $("alltext").textContent = "熟练度 " + all.pct + "% · 练熟 " + all.mastered + " / " + all.total;
     $("allbar").style.width = all.pct + "%";
 
+    /* 复习是按时间排的，练完一轮再点进来经常「没到点」。
+       与其让人对着不动的进度条犯嘀咕，不如直接把下一批什么时候来写出来。 */
+    var d = L.dueInfo(ALL, prog, Date.now());
+    $("duetip").textContent =
+      d.ready ? "⏰ 现在有 " + d.ready + " 个词到点该复习了" :
+      d.fresh ? "🌱 还有 " + d.fresh + " 个新词没学过，挑个 unit 开始吧" :
+      d.wait === null ? "🎉 所有词都练熟了！" :
+      "😴 这一轮都复习过了，下一批 " + waitText(d.wait) + "后再来";
+
     // 错词本：错过且还没练熟的词。干扰项不够时会去全库借，所以有一个就能开。
     var weak = L.weak(ALL, prog);
     var wb = $("wrongbtn");
@@ -384,8 +395,25 @@
       : "🧹 管理生词本 / 错词本 · 现在都是空的";
   }
 
-  function esc(s) {
-    return String(s).replace(/[&<>"]/g, function (c) {
+  /* 结算页解释一句「为什么还没练熟」：
+     前几级排得很密，今天多打几关就能把词推到第 3 级；
+     但最后一级要隔一天——隔夜还记得才算真记住。 */
+  function levelTip() {
+    var d = L.dueInfo(pool, prog, Date.now());
+    if (d.ready) return "还有 " + d.ready + " 个词现在就能再练一遍，接着来";
+    if (d.fresh) return "这一关的词先放一放，还有 " + d.fresh + " 个新词没见过";
+    if (d.wait === null) return "这些词都练熟了，明天换一关吧";
+    return "刚练过的词要缓 " + waitText(d.wait) + "才再问 · 最后一级要隔一天，隔夜还记得才算练熟";
+  }
+
+  function waitText(ms) {
+    var m = Math.ceil(ms / 60000);
+    if (m < 60) return m + " 分钟";
+    var h = Math.round(m / 60);
+    return h < 24 ? h + " 小时" : Math.round(h / 24) + " 天";
+  }
+
+  function esc(s) {    return String(s).replace(/[&<>"]/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
     });
   }
@@ -636,7 +664,7 @@
       "答对 <em>" + R.right + "</em> 题　答错 <em>" + R.wrong + "</em> 题<br>" +
       "最长连对 <em>" + R.best + "</em> 题<br>" +
       esc(where) + " 熟练度 <em>" + s.pct + "%</em>　练熟 <em>" + s.mastered + "</em> / " + s.total +
-      '<br><span style="font-size:13px">一个词要连着答对四次才算练熟</span>';
+      '<br><span style="font-size:13px">' + levelTip() + '</span>';
 
     var missed = {};
     (R.queue || []).forEach(function (x) {
@@ -658,6 +686,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611231642" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611231654" data-key="en4a-vocab-v1"></script>
 </body>
 </html>
