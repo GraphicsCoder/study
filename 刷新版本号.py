@@ -20,7 +20,7 @@ try:
 except Exception:
     pass
 
-PATTERN = re.compile(r'src="(同步|接答案逻辑|搬家逻辑)\.js(?:\?v=\d+)?"')
+PATTERN = re.compile(r'src="(同步|接答案逻辑|搬家逻辑|词汇逻辑|英语4A词库)\.js(?:\?v=\d+)?"')
 
 
 def main() -> int:
