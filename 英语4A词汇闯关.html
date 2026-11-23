@@ -307,8 +307,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611232029"></script>
-<script src="词汇逻辑.js?v=202611232029"></script>
+<script src="英语4A词库.js?v=202611232033"></script>
+<script src="词汇逻辑.js?v=202611232033"></script>
 <script>
 (function () {
   "use strict";
@@ -901,6 +901,17 @@
   }
 
   $("qnext").onclick = nextQ;
+
+  /* 默写打满会自动判，输入框随即失焦，Enter 就没人接了。
+     干脆全局听一下：只要「下一题」露出来了，Enter 就是下一题——
+     用键盘默写的时候手不用离开键盘。 */
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    if (!$("pplay").classList.contains("on")) return;
+    if (!$("qnext").classList.contains("on")) return;
+    e.preventDefault();
+    nextQ();
+  });
   $("qspeak").onclick = function () { speak(Q && Q.speak, Q && Q.kind === "listen" ? .75 : .85); };
   $("quit").onclick = function (e) {
     e.preventDefault();
@@ -981,6 +992,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611232029" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611232033" data-key="en4a-vocab-v1"></script>
 </body>
 </html>
