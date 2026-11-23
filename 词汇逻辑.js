@@ -41,19 +41,42 @@
     var r = prog && prog[id];
     return { lv: (r && r.lv) || 0, due: (r && r.due) || 0,
              ok: (r && r.ok) || 0, no: (r && r.no) || 0,
+             k: (r && r.k) || {},                 // 各题型是不是都答对过
              seen: !!r };
   }
 
-  function grade(prog, id, right, now) {
+  /* 一个词一共会被问哪几种问法。
+     词组没法听写也不好拼，长单词拼起来超出耐心，所以不是每个词都有四关。 */
+  function modesOf(item) {
+    if (item.phrase) return ["en2cn", "cn2en"];
+    if (canSpell(item)) return ["en2cn", "listen", "cn2en", "spell"];
+    return ["en2cn", "listen", "cn2en"];
+  }
+
+  /* 这个词还差哪几种问法没答对过 */
+  function modesLeft(item, prog) {
+    var k = recOf(prog, item.id).k;
+    return modesOf(item).filter(function (m) { return !k[m]; });
+  }
+  function passedAll(item, prog) { return modesLeft(item, prog).length === 0; }
+
+  /* 记一次作答。kind 传进来才能记「这种问法会了」——
+     答对记上，答错就把这种问法的记号抹掉：刚才错的就是这种问法，
+     不能因为上周答对过就一直算它过关。 */
+  function grade(prog, id, right, now, kind) {
     now = now || Date.now();
     var r = recOf(prog, id);
     var lv = right ? Math.min(MAX_LEVEL, r.lv + 1) : Math.max(0, r.lv - 1);
+    var k = {};
+    Object.keys(r.k).forEach(function (m) { k[m] = 1; });
+    if (kind) { if (right) k[kind] = 1; else delete k[kind]; }
     var next = {
       lv: lv,
       // 答错的词不按等级排队，本关内就得再碰一次，所以直接 due 到当下
       due: right ? now + GAP[lv] : now,
       ok: r.ok + (right ? 1 : 0),
-      no: r.no + (right ? 0 : 1)
+      no: r.no + (right ? 0 : 1),
+      k: k
     };
     // 收藏标记跟练习进度是两件事，答题不该把它冲掉
     if (prog[id] && prog[id].star) next.star = 1;
@@ -78,10 +101,15 @@
   function starred(pool, prog) {
     return pool.filter(function (x) { return isStarred(prog, x.id); });
   }
+  /* 错词本的出入规则：
+       进来   答错过（no>0）
+       出去   四种问法（能出的那几种）全都答对过一次
+     光是「再答对一次」就放走太便宜了——很可能只是认得英文选中文，
+     反过来让他写就又不会。所以要把这个词的每一种问法都过一遍。 */
   function weak(pool, prog) {
     return pool.filter(function (x) {
       var r = recOf(prog, x.id);
-      return r.no > 0 && r.lv < MASTER_LEVEL;
+      return r.no > 0 && !passedAll(x, prog);
     });
   }
 
@@ -197,10 +225,12 @@
     return out;
   }
 
-  function makeQuestion(item, pool, prog, rnd, all) {
+  /* force 传进来就按指定问法出题——错词本就是靠它逐个补齐没过的问法。
+     平时不传，按等级来。 */
+  function makeQuestion(item, pool, prog, rnd, all, force) {
     var lv = recOf(prog, item.id).lv;
-    var kind = kindFor(item, lv, rnd);
-
+    var kind = force || kindFor(item, lv, rnd);
+    if (kind === "spell" && !canSpell(item)) kind = "cn2en";
     if (kind === "spell") {
       return {
         kind: "spell", item: item, lv: lv,
@@ -258,7 +288,7 @@
 
   function answer(round, q, ans, prog, now) {
     var right = check(q, ans);
-    grade(prog, q.item.id, right, now);
+    grade(prog, q.item.id, right, now, q.kind);
     if (right) {
       round.right++;
       round.combo++;
@@ -287,6 +317,7 @@
   var API = {
     MAX_LEVEL: MAX_LEVEL, MASTER_LEVEL: MASTER_LEVEL, PER_ROUND: PER_ROUND, GAP: GAP,
     recOf: recOf, grade: grade, isMastered: isMastered, unitStat: unitStat,
+    modesOf: modesOf, modesLeft: modesLeft, passedAll: passedAll,
     star: star, isStarred: isStarred, starred: starred, weak: weak,
     clearWrong: clearWrong, dueInfo: dueInfo,
     pickSession: pickSession, kindFor: kindFor, canSpell: canSpell,

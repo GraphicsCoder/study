@@ -355,5 +355,76 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   eq("练熟的也不用等", d.wait, null);
 }
 
+/* ---------- 错词本要四种问法全过才放人 ---------- */
+{
+  const word = U1.find(x => !x.phrase && L.canSpell(x));
+  const longWord = DB.all().find(x => !x.phrase && !L.canSpell(x));
+  const phrase = U1.find(x => x.phrase);
+  eq("能拼的单词有四种问法", L.modesOf(word).join(","), "en2cn,listen,cn2en,spell");
+  eq("太长的单词没有拼写关", L.modesOf(longWord).join(","), "en2cn,listen,cn2en");
+  eq("词组只有两种问法", L.modesOf(phrase).join(","), "en2cn,cn2en");
+
+  const p = {};
+  L.grade(p, word.id, false, now, "en2cn");       // 答错进错词本
+  ok("错了就在错词本里", L.weak([word], p).length === 1);
+  eq("一开始四种都没过", L.modesLeft(word, p).length, 4);
+
+  L.grade(p, word.id, true, now, "en2cn");
+  eq("过了一种还剩三种", L.modesLeft(word, p).length, 3);
+  ok("只过一种还在错词本里", L.weak([word], p).length === 1);
+
+  L.grade(p, word.id, true, now, "listen");
+  L.grade(p, word.id, true, now, "cn2en");
+  ok("差最后一种拼写，仍然在本子里", L.weak([word], p).length === 1);
+
+  L.grade(p, word.id, true, now, "spell");
+  ok("四种全过就自动离开错词本", L.weak([word], p).length === 0);
+  ok("四种全过算过关", L.passedAll(word, p));
+}
+{
+  // 过关之后又栽在同一种问法上，这一关要重新打
+  const word = U1.find(x => !x.phrase && L.canSpell(x));
+  const p = {};
+  L.modesOf(word).forEach(m => L.grade(p, word.id, true, now, m));
+  ok("先全过了", L.passedAll(word, p));
+  L.grade(p, word.id, false, now, "spell");
+  ok("拼错了就把拼写关作废", L.modesLeft(word, p).join(",") === "spell");
+  ok("于是又回到错词本", L.weak([word], p).length === 1);
+}
+{
+  // 词组只要两种问法，别卡着它等永远不会出的拼写题
+  const phrase = U1.find(x => x.phrase);
+  const p = {};
+  L.grade(p, phrase.id, false, now, "en2cn");
+  L.grade(p, phrase.id, true, now, "en2cn");
+  L.grade(p, phrase.id, true, now, "cn2en");
+  ok("词组过两种就出本子", L.weak([phrase], p).length === 0);
+}
+{
+  // 指定问法出题：错词本靠它补齐没过的那几关
+  const word = U1.find(x => !x.phrase && L.canSpell(x));
+  const p = {};
+  const q = L.makeQuestion(word, U1, p, seeded(6), ALL, "spell");
+  eq("指定什么问法就出什么", q.kind, "spell");
+  const q2 = L.makeQuestion(word, U1, p, seeded(6), ALL, "listen");
+  eq("听力题也能指定", q2.kind, "listen");
+  // 拼不了的词硬指定拼写，要退回选择题而不是出一道没法答的题
+  const longWord = DB.all().find(x => !x.phrase && !L.canSpell(x));
+  const q3 = L.makeQuestion(longWord, DB.unit(longWord.unit), p, seeded(6), ALL, "spell");
+  ok("拼不了的词不会被硬塞拼写题", q3.kind !== "spell");
+  eq("退回去的题照样能答", q3.choices.length, 4);
+}
+{
+  // 答题要把「这种问法会了」记下来，否则错词本永远清不掉
+  const p = {};
+  const rnd = seeded(31);
+  const word = U1.find(x => !x.phrase && L.canSpell(x));
+  const round = L.newRound([word], p, now, rnd, ALL);
+  const item = L.nextItem(round);
+  const q = L.makeQuestion(item, [word], p, rnd, ALL, "cn2en");
+  L.answer(round, q, q.answer, p, now);
+  ok("答对之后这一种就算过了", L.modesLeft(word, p).indexOf("cn2en") < 0);
+}
+
 console.log(fail ? `\n${fail} 项没过，${pass} 项通过` : `全部 ${pass} 项通过`);
 process.exit(fail ? 1 : 0);

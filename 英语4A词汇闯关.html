@@ -164,6 +164,11 @@
   .mrow button{font:inherit;font-size:13px;padding:7px 12px;border-radius:99px;cursor:pointer;
     border:1px solid var(--line);background:var(--card);color:var(--muted);white-space:nowrap}
   .mrow button.known{border-color:#8fd2a8;color:var(--ok)}
+  .mrow button.waiting{border-style:dashed;color:var(--muted);opacity:.9}
+  .chips{margin-top:5px;display:flex;gap:5px}
+  .chip{font-style:normal;font-size:11.5px;line-height:1;padding:4px 7px;border-radius:99px;
+    background:#f1f3f8;color:var(--muted)}
+  .chip.got{background:var(--ok-soft);color:var(--ok)}
   .mempty{padding:22px 14px;text-align:center;color:var(--muted);font-size:14px}
   .mtabs{display:flex;gap:8px;margin-bottom:12px}
   .mtabs button{flex:1;font:inherit;font-size:15px;padding:10px;border-radius:99px;cursor:pointer;
@@ -189,7 +194,7 @@
     <button class="starbook" id="starbtn"></button>
     <button class="wrongbook" id="wrongbtn"></button>
   </div>
-  <button class="manage" id="managebtn">🧹 管理生词本 / 错词本（会了就移掉）</button>
+  <button class="manage" id="managebtn">🧹 看看生词本 / 错词本</button>
   <a class="back" href="index.html">← 回导航页</a>
 </div>
 
@@ -253,8 +258,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611231654"></script>
-<script src="词汇逻辑.js?v=202611231654"></script>
+<script src="英语4A词库.js?v=202611231709"></script>
+<script src="词汇逻辑.js?v=202611231709"></script>
 <script>
 (function () {
   "use strict";
@@ -379,7 +384,7 @@
     var wb = $("wrongbtn");
     wb.disabled = weak.length === 0;
     wb.innerHTML = "📕 错词本 · " + weak.length + " 个" +
-      '<span class="s">' + (weak.length ? "专挑错过的再练一遍" : "还没有错词，先去闯几关") + "</span>";
+      '<span class="s">' + (weak.length ? "四种问法都答对才算过关" : "还没有错词，先去闯几关") + "</span>";
     wb.onclick = function () { if (weak.length) start(weak, "错词本"); };
 
     // 生词本：自己点星星收进来的，想重点练哪个就练哪个
@@ -391,8 +396,8 @@
     sb.onclick = function () { if (star.length) start(star, "生词本"); };
 
     $("managebtn").textContent = star.length + weak.length
-      ? "🧹 管理生词本 / 错词本（会了就移掉）"
-      : "🧹 管理生词本 / 错词本 · 现在都是空的";
+      ? "🧹 看看生词本 / 错词本"
+      : "🧹 生词本 / 错词本 · 现在都是空的";
   }
 
   /* 结算页解释一句「为什么还没练熟」：
@@ -432,6 +437,8 @@
      数据反而不准了。所以只留一个「移除」：把词从这个本子里拿走，
      练习进度一个字都不动，想再练就回 unit 里正常练。 */
   var tab = "star";
+  // 四种问法的小名，错词本上用它显示「还差哪几关」
+  var MODE_CN = { en2cn: "认", listen: "听", cn2en: "想", spell: "拼" };
   function renderBook() {
     $("tabstar").classList.toggle("on", tab === "star");
     $("tabwrong").classList.toggle("on", tab === "wrong");
@@ -447,18 +454,35 @@
     list.forEach(function (x) {
       var row = document.createElement("div");
       row.className = "mrow";
+      var modes = L.modesOf(x), left = L.modesLeft(x, prog);
+      var chips = modes.map(function (m) {
+        var got = left.indexOf(m) < 0;
+        return '<i class="chip' + (got ? " got" : "") + '">' +
+               (got ? "✓" : "") + MODE_CN[m] + "</i>";
+      }).join("");
+
       row.innerHTML =
         '<div class="w"><b>' + esc(x.w) + '</b>' +
-        '<span>' + esc(x.p ? x.p + " " : "") + esc(x.c) + ' · Unit ' + x.unit + '</span></div>';
+        '<span>' + esc(x.p ? x.p + " " : "") + esc(x.c) + ' · Unit ' + x.unit + '</span>' +
+        (tab === "wrong" ? '<div class="chips">' + chips + '</div>' : '') + '</div>';
 
       var out = document.createElement("button");
-      out.className = "known";
-      out.textContent = "✓ 会了，移除";
-      out.onclick = function () {
-        if (tab === "star") L.star(prog, x.id, false);
-        else L.clearWrong(prog, x.id);
-        save(); renderBook(); renderHome();
-      };
+      if (tab === "star") {
+        out.className = "known";
+        out.textContent = "✓ 移出生词本";
+        out.onclick = function () {
+          L.star(prog, x.id, false);
+          save(); renderBook(); renderHome();
+        };
+      } else {
+        /* 错词本不让手动勾销：四种问法全答对过才算真会了，自动消失。
+           不然「移除」就成了一键把错题扫到地毯底下。 */
+        out.className = "waiting";
+        out.textContent = "还差 " + left.length + " 种问法";
+        out.disabled = true;
+        out.title = "把 " + left.map(function (m) { return MODE_CN[m]; }).join("、") +
+                    " 都答对一次，它就自动离开错词本";
+      }
 
       row.appendChild(out);
       box.appendChild(row);
@@ -503,7 +527,14 @@
   function nextQ() {
     var item = L.nextItem(R);
     if (!item) return over();
-    Q = L.makeQuestion(item, pool, prog, Math.random, ALL);
+    /* 错词本是来「销账」的：专挑这个词还没答对过的问法出，
+       四种问法都过一遍，它才会自己从错词本里消失。 */
+    var force = null;
+    if (where === "错词本") {
+      var left = L.modesLeft(item, prog);
+      force = left[0] || null;
+    }
+    Q = L.makeQuestion(item, pool, prog, Math.random, ALL, force);
     answered = false;
     picked = [];
     render();
@@ -686,6 +717,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611231654" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611231709" data-key="en4a-vocab-v1"></script>
 </body>
 </html>
