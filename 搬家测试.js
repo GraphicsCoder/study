@@ -51,7 +51,7 @@ t("每一关只出这一关教过的词", () => {
 });
 
 t("第一关只有 in / on / under，最难的词留到后面", () => {
-  TASKS.filter(k => k.level <= M.LEVELS_PER_STAGE).forEach(k => {
+  TASKS.filter(k => k.level === 1).forEach(k => {
     assert(["in", "on", "under"].indexOf(k.prep) > -1, "第 1 关出现了 " + k.prep);
   });
 });
@@ -254,6 +254,71 @@ t("最该练的词：错得最多的那个；做得太少不下结论", () => {
          "只做过两次就下结论了");
   assert(M.weakest({}) === null && M.weakest(null) === null, "没有统计时该返回空");
   assert(M.weakest({ on: { right: 9, wrong: 0 } }) === null, "全对的词不该被挑出来");
+});
+/* ---------------- 反过来问：Where is the cat? ---------------- */
+
+t("第一关只拖不问：先把玩法学会", () => {
+  TASKS.filter(k => k.level === 1).forEach(k => assert(k.kind === "drag", "第 1 关出现了问答题"));
+});
+
+t("后面的关卡两种问法都有", () => {
+  const later = TASKS.filter(k => k.level >= 2);
+  const ask = later.filter(k => k.kind === "ask").length;
+  assert(ask > later.length * .2 && ask < later.length * .5,
+         "问答题占比 " + Math.round(ask / later.length * 100) + "%，不该太多也不该太少");
+});
+
+t("问答题：四个选项、不重样、答案在里面且只有一个", () => {
+  const asks = TASKS.filter(k => k.kind === "ask");
+  assert(asks.length > 50, "样本太少");
+  asks.forEach(k => {
+    assert(k.choices.length === 4, JSON.stringify(k.choices));
+    assert(new Set(k.choices).size === 4, "选项重样了：" + JSON.stringify(k.choices));
+    assert(k.choices[k.answer] === M.phrase(k.prep, k.ai, k.anchors), JSON.stringify(k));
+    assert(k.choices.filter(c => c === k.choices[k.answer]).length === 1, "正确答案出现了两次");
+    assert(/^Where is the [a-z]+\?$/.test(k.q), "问句不成形：" + k.q);
+  });
+});
+
+t("干扰项优先用同一件家具：考的是介词，不是找东西", () => {
+  const asks = TASKS.filter(k => k.kind === "ask" && k.prep !== "between");
+  let same = 0, total = 0;
+  asks.forEach(k => {
+    const name = k.anchors[k.ai].en;
+    k.choices.forEach(c => { if (c !== k.choices[k.answer]) { total++; if (c.indexOf(name) > -1) same++; } });
+  });
+  assert(same / total > .6, "只有 " + Math.round(same / total * 100) + "% 的干扰项用的是同一件家具");
+});
+
+t("选项里不会出现「把东西放进床里」这种不可能的位置", () => {
+  TASKS.filter(k => k.kind === "ask").forEach(k => {
+    k.choices.forEach(c => {
+      const m = /^in the (\w+)$/.exec(c);
+      if (!m) return;
+      const a = k.anchors.find(x => x.en === m[1]);
+      assert(a && a.container, "选项里有 " + c + "，但它装不了东西");
+    });
+  });
+});
+
+/* ---------------- 前面 / 后面 ---------------- */
+
+t("前后靠远近表达：后面画在家具之前（会被挡住），前面画在之后", () => {
+  const lay = layout(430, 860);
+  const sp = M.spots(lay, ALL, META);
+  const behind = sp.find(s => s.prep === "behind" && s.ai === 0);
+  const front = sp.find(s => s.prep === "in front of" && s.ai === 0);
+  assert(behind.depth === -1, "「后面」没有标成远处");
+  assert(front.depth === 1, "「前面」没有标成近处");
+  assert(behind.y < lay[0].y && front.y > lay[0].y, "后面该偏上、前面该偏下");
+  assert(Math.abs(behind.x - lay[0].x) < lay[0].h * 1.2 && Math.abs(front.x - lay[0].x) < lay[0].h * 1.2,
+         "前后应该贴着家具斜着放，不是甩到旁边去");
+});
+
+t("三关，每关 8 题，通关 24 题", () => {
+  assert(M.MAX_LEVEL === 3 && M.PER_LEVEL === 8 && M.CLEAR_AT === 24,
+         M.MAX_LEVEL + " 关 × " + M.PER_LEVEL + " = " + M.CLEAR_AT);
+  assert(M.LEVELS_PER_STAGE === 1, "一个阶段就该是一关");
 });
 console.log("\n" + (fail ? "失败 " + fail + " 项，" : "全部 ") + (pass + fail) + " 项" + (fail ? "" : "通过"));
 process.exit(fail ? 1 : 0);
