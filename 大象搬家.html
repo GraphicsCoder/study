@@ -40,8 +40,9 @@
     padding:2px 9px;margin:2px 5px 2px 0;color:#fff;font-weight:600}
 
   #pick{max-height:50vh;overflow:auto;width:100%;max-width:330px;-webkit-overflow-scrolling:touch}
-  #pick .st{font-size:13px;color:#9fb8d4;margin:12px 0 6px;text-align:left}
-  #pick .lvrow{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  #pick{display:flex;flex-direction:column;gap:10px;align-items:stretch}
+  #pick .lv .sub{display:block;font-size:12.5px;font-weight:500;color:rgba(255,255,255,.65);margin-top:2px}
+  #pick .lv.on .sub{color:rgba(255,209,102,.8)}
   #pick .lv{width:100%;padding:10px 0;border-radius:12px;border:2px solid rgba(255,255,255,.18);
     background:rgba(255,255,255,.08);color:#fff;font-size:15px;font-weight:700;cursor:pointer;
     box-shadow:none;transform:none}
@@ -116,7 +117,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="搬家逻辑.js?v=202611231136"></script>
+<script src="搬家逻辑.js?v=202611231140"></script>
 <script>
 /* =====================================================================
    大象搬家 · 介词拖放
@@ -737,18 +738,19 @@ function victory() { confetti(160); sndFanfare(); setTimeout(sndFanfare, 600); S
 
 /* ---------------- 界面 ---------------- */
 
+/* 选关：现在一个阶段就是一关，总共三关。
+   原来沿用的是接答案那边的两列网格，一行只有一个按钮时它会缩在左半边，
+   看着整块往左偏。三关一共就三行，直接排成一列整行按钮，顺手把这一关
+   练什么写在按钮上。 */
 function renderPick() {
   let h = "";
   L.STAGES.forEach((st, si) => {
-    h += '<div class="st">' + (si + 1) + "、" + st.name + '</div><div class="lvrow">';
-    for (let k = 0; k < L.LEVELS_PER_STAGE; k++) {
-      const lv = si * L.LEVELS_PER_STAGE + k + 1;
-      const open = lv <= save.unlocked;
-      h += '<button class="lv' + (open ? (lv === save.unlocked ? " on" : "") : " lock") + '"' +
-           (open ? ' data-lv="' + lv + '"' : " disabled") + ">" +
-           (open ? "第 " + lv + " 关" : "🔒 " + lv) + "</button>";
-    }
-    h += "</div>";
+    const lv = si + 1;
+    const open = lv <= save.unlocked;
+    h += '<button class="lv' + (open ? (lv === save.unlocked ? " on" : "") : " lock") + '"' +
+         (open ? ' data-lv="' + lv + '"' : " disabled") + ">" +
+         (open ? "第 " + lv + " 关" : "🔒 第 " + lv + " 关") +
+         '<span class="sub">' + st.name + "</span></button>";
   });
   $("pick").innerHTML = h;
   $("pick").querySelectorAll("button.lv[data-lv]").forEach(b => { b.onclick = () => start(+b.dataset.lv); });
@@ -816,6 +818,6 @@ refreshStart();
 refreshHome();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611231136" data-key="move-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611231140" data-key="move-game-v1" data-nopop="1"></script>
 </body>
 </html>
