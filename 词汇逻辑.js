@@ -184,19 +184,33 @@
   }
 
   /* ---------------- 出题 ----------------
-     同一个词，等级越高问得越狠：
-       0  en2cn   看见英文选中文（最容易，只要求脸熟）
-       1  listen  听发音选中文（把音和义接上）
-       2  cn2en   看中文选英文（反过来想得起来）
-       3+ spell   看中文把字母拼出来（真的会写了）
-     词组没法听写也不好拼，所以只在 en2cn / cn2en 之间轮换。 */
+     四种问法：
+       en2cn   看见英文选中文（最容易，只要求脸熟）
+       listen  听发音选中文（把音和义接上）
+       cn2en   看中文选英文（反过来想得起来）
+       spell   看中文把字母拼出来（真的会写了）
+
+     等级只决定「最多能难到哪儿」，不决定「这次问哪种」：
+       0 级    刚认识，只在 认 / 听 里挑
+       1 级    除了拼写都行
+       2 级起  四种随便挑
+     在允许的范围里随机，并且优先挑这个词还没答对过的问法——
+     原来写死成「等级 → 问法」的一一对应，练到后面每道题都是中译英，
+     练着练着就只剩一种花样了。 */
   var KINDS = ["en2cn", "listen", "cn2en", "spell"];
 
-  function kindFor(item, lv, rnd) {
-    if (item.phrase) return lv >= 2 ? "cn2en" : "en2cn";
-    if (lv >= 3 && canSpell(item)) return "spell";
-    if (lv >= 3) return "cn2en";
-    return KINDS[Math.min(lv, 2)];
+  function kindFor(item, lv, rnd, left) {
+    var all = modesOf(item);
+    var cap = lv <= 0 ? ["en2cn", "listen"]
+            : lv === 1 ? ["en2cn", "listen", "cn2en"]
+            : KINDS;
+    var pool = all.filter(function (m) { return cap.indexOf(m) >= 0; });
+    if (!pool.length) pool = all;
+
+    // 还没过的问法优先，免得老在已经会了的那一种上打转
+    var fresh = (left || []).filter(function (m) { return pool.indexOf(m) >= 0; });
+    var pick = fresh.length ? fresh : pool;
+    return pick[Math.floor(rand(rnd) * pick.length) % pick.length];
   }
 
   function canSpell(item) {
@@ -226,7 +240,7 @@
      平时不传，按等级来。 */
   function makeQuestion(item, pool, prog, rnd, all, force) {
     var lv = recOf(prog, item.id).lv;
-    var kind = force || kindFor(item, lv, rnd);
+    var kind = force || kindFor(item, lv, rnd, modesLeft(item, prog));
     if (kind === "spell" && !canSpell(item)) kind = "cn2en";
     if (kind === "spell") {
       return {

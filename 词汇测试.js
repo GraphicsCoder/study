@@ -129,22 +129,38 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   ok("有复习任务时不塞新词", fresh === 0, "塞了 " + fresh + " 个");
 }
 
-/* ---------- 题型随等级变 ---------- */
+/* ---------- 题型：等级只定上限，具体问法随机 ---------- */
 {
   const word = U1.find(x => !x.phrase && L.canSpell(x));
   const phrase = U1.find(x => x.phrase);
-  eq("0 级看英文选中文", L.kindFor(word, 0), "en2cn");
-  eq("1 级听音选中文", L.kindFor(word, 1), "listen");
-  eq("2 级看中文选英文", L.kindFor(word, 2), "cn2en");
-  eq("3 级开始要拼写", L.kindFor(word, 3), "spell");
-  eq("5 级还是拼写", L.kindFor(word, 5), "spell");
-  eq("词组低级只认不拼", L.kindFor(phrase, 0), "en2cn");
-  eq("词组高级反过来问", L.kindFor(phrase, 3), "cn2en");
+  const rnd = seeded(17);
+
+  // 把同一个词问很多次，看看都出过哪些花样
+  function kinds(item, lv, n) {
+    const out = new Set();
+    for (let i = 0; i < (n || 200); i++) out.add(L.kindFor(item, lv, rnd));
+    return [...out].sort().join(",");
+  }
+  eq("0 级只在认和听里挑", kinds(word, 0), "en2cn,listen");
+  eq("1 级还不考拼写", kinds(word, 1), "cn2en,en2cn,listen");
+  eq("2 级四种都可能", kinds(word, 2), "cn2en,en2cn,listen,spell");
+  eq("高级也不会只剩一种", kinds(word, 5), "cn2en,en2cn,listen,spell");
+  eq("词组只在认和想之间换", kinds(phrase, 5), "cn2en,en2cn");
   ok("词组永远不出拼写题",
-     DB.phrases().every(x => [0,1,2,3,4,5].every(lv => L.kindFor(x, lv) !== "spell")));
+     DB.phrases().every(x => [0, 2, 5].every(lv => kinds(x, lv, 40).indexOf("spell") < 0)));
+
   const longWord = { w: "neighbourhood", phrase: false };
   ok("太长的词不出拼写题", !L.canSpell(longWord));
-  eq("太长的词改成选择", L.kindFor(longWord, 4), "cn2en");
+  eq("太长的词只在三种里挑", kinds(longWord, 5), "cn2en,en2cn,listen");
+
+  // 没答对过的问法优先出，别老在会了的那一种上打转
+  const p = {};
+  L.modesOf(word).forEach(m => { if (m !== "spell") L.grade(p, word.id, true, now, m); });
+  const left = L.modesLeft(word, p);
+  eq("只剩拼写没过", left.join(","), "spell");
+  const got = new Set();
+  for (let i = 0; i < 40; i++) got.add(L.kindFor(word, 5, rnd, left));
+  eq("那就专挑没过的问法", [...got].join(","), "spell");
 }
 
 /* ---------- 出题内容 ---------- */
@@ -173,7 +189,7 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
       ok("每题都知道该读什么", q.speak === item.w);
     });
   });
-  ok("确实出到过拼写题", spellSeen > 100, String(spellSeen));
+  ok("确实出到过拼写题", spellSeen > 40, String(spellSeen));
   ok("确实出到过听力题", listenSeen > 100, String(listenSeen));
 }
 {
