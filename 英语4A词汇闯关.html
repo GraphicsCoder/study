@@ -92,12 +92,22 @@
   .spellbtns .go{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
   .spellbtns .go[disabled]{opacity:.4}
   /* 默写：一个大输入框，键盘打上去，和作业本上一样没有任何提示 */
-  #qinput{width:100%;margin-top:16px;font:inherit;font-size:24px;font-weight:700;text-align:center;
-    letter-spacing:1px;padding:12px 10px;border:2px solid var(--line);border-radius:14px;
-    background:var(--card);color:var(--ink)}
-  #qinput:focus{outline:none;border-color:var(--brand)}
-  #qinput.right{border-color:var(--ok);color:var(--ok)}
-  #qinput.wrong{border-color:var(--no);color:var(--no)}
+  /* 默写：底下是一排格子，上面盖一个透明的真输入框——
+     真输入框负责召唤键盘和接住输入法，格子负责好看。
+     点格子就是点输入框，所以聚焦不用额外处理。 */
+  .wbox{position:relative;margin-top:16px}
+  .wslots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+  .wslot{width:34px;height:46px;border-bottom:3px solid var(--line);
+    font-size:25px;font-weight:700;color:var(--brand);
+    display:flex;align-items:center;justify-content:center}
+  .wslot.on{border-color:var(--brand)}
+  .wslot.cur{border-color:var(--brand);background:var(--brand-soft);border-radius:6px 6px 0 0}
+  .wbox.right .wslot{border-color:var(--ok);color:var(--ok)}
+  .wbox.wrong .wslot{border-color:var(--no);color:var(--no)}
+  #qinput{position:absolute;inset:0;width:100%;height:100%;opacity:0;
+    font:inherit;font-size:25px;border:none;background:transparent;color:transparent;
+    caret-color:transparent;cursor:pointer}
+  #qinput:focus{outline:none}
 
   .say{margin-top:14px;font-size:15px;min-height:46px;color:var(--muted)}
   .say b{color:var(--ink)}
@@ -262,12 +272,15 @@
       </div>
     </div>
 
+    <!-- 默写：几个字母就画几个格子，打满自动判，不用再点确定 -->
     <div id="qwrite" style="display:none">
-      <input id="qinput" type="text" autocomplete="off" autocorrect="off"
-             autocapitalize="none" spellcheck="false" placeholder="在这里默写">
+      <div class="wbox" id="qwbox">
+        <div class="wslots" id="qwslots"></div>
+        <input id="qinput" type="text" autocomplete="off" autocorrect="off"
+               autocapitalize="none" spellcheck="false" inputmode="text">
+      </div>
       <div class="spellbtns">
         <button id="qwclear">清空</button>
-        <button class="go" id="qwgo" disabled>确定</button>
       </div>
     </div>
 
@@ -294,8 +307,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611232017"></script>
-<script src="词汇逻辑.js?v=202611232017"></script>
+<script src="英语4A词库.js?v=202611232025"></script>
+<script src="词汇逻辑.js?v=202611232025"></script>
 <script>
 (function () {
   "use strict";
@@ -677,7 +690,8 @@
     ask.className = "ask" + (cn ? " cn" : "");
     ask.textContent = Q.kind === "listen" ? "🎧" : Q.ask;
     $("qhint").textContent =
-      Q.kind === "spell" || Q.kind === "write" ? Q.hint :
+      Q.kind === "write" ? "点格子打字，写满就自动判" :
+      Q.kind === "spell" ? Q.hint :
       Q.kind === "listen" ? "点下面的喇叭，听清楚再选" :
       Q.item.p || "";
 
@@ -738,23 +752,48 @@
   }
 
   /* ---- 默写题 ----
-     没有字母块、没有选项，只有中文和一个输入框：
-     作业本上「中译英默写」就是这么考的。iOS 键盘爱自动大写和纠错，
-     所以输入框上把 autocorrect / autocapitalize 全关掉。 */
+     没有选项也没有字母块：中文 + 一排空格子，自己把词写出来，
+     跟作业本上的中译英默写一样。既然已经告诉他有几个字母，那就
+     把格子画出来——打满最后一格自动判，省掉一次「确定」。
+     iOS 键盘爱自动大写和纠错，所以 autocorrect / autocapitalize 全关掉。 */
   function renderWrite() {
-    var inp = $("qinput");
+    var inp = $("qinput"), box = $("qwbox");
     inp.value = "";
     inp.disabled = false;
-    inp.className = "";
-    $("qwgo").disabled = true;
-    inp.oninput = function () { $("qwgo").disabled = !inp.value.trim(); };
+    inp.maxLength = Q.answer.length;
+    box.className = "wbox";
+
+    var slots = $("qwslots");
+    slots.innerHTML = "";
+    for (var i = 0; i < Q.answer.length; i++) {
+      var d = document.createElement("div");
+      d.className = "wslot";
+      slots.appendChild(d);
+    }
+    paintWrite();
+
+    inp.oninput = function () {
+      // 输入法可能一次塞进来好几个字符，超出的直接截掉
+      if (inp.value.length > Q.answer.length) inp.value = inp.value.slice(0, Q.answer.length);
+      paintWrite();
+      // 打满最后一格就自动判。留一点点延时，让最后一个字母先显示出来
+      if (inp.value.length === Q.answer.length) setTimeout(submitWrite, 180);
+    };
     inp.onkeydown = function (e) { if (e.key === "Enter") submitWrite(); };
     $("qwclear").onclick = function () {
       if (answered) return;
-      inp.value = ""; $("qwgo").disabled = true; inp.focus();
+      inp.value = ""; paintWrite(); inp.focus();
     };
-    $("qwgo").onclick = submitWrite;
-    // 手机上自动弹键盘反而容易挡住题面，交给小朋友自己点
+    // 手机上自动弹键盘会把题面顶上去，让小朋友自己点格子
+  }
+
+  function paintWrite() {
+    var v = $("qinput").value, slots = $("qwslots").children;
+    for (var i = 0; i < slots.length; i++) {
+      slots[i].textContent = v[i] || "";
+      slots[i].classList.toggle("on", !!v[i]);
+      slots[i].classList.toggle("cur", !answered && i === v.length);
+    }
   }
 
   function submitWrite() {
@@ -766,8 +805,9 @@
     var right = judge(val);
     save();
     inp.disabled = true;
-    inp.className = right ? "right" : "wrong";
-    $("qwgo").disabled = true;
+    inp.blur();
+    $("qwbox").className = "wbox " + (right ? "right" : "wrong");
+    paintWrite();
     feedback(right);
   }
 
@@ -941,6 +981,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611232017" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611232025" data-key="en4a-vocab-v1"></script>
 </body>
 </html>
