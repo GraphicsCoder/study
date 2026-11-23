@@ -214,7 +214,9 @@ def from_material():
     for piece in mod.PIECES:
         # 有 A / B 轮流说话的是对话，全是旁白 N 的是短文——不用另外标，看说话人就知道
         kind = "对话" if any(w in ("A", "B") for w, _, _ in piece["lines"]) else "短文"
-        group = "听力材料 · " + piece["title"]
+        # 材料里写了 group 就按它分组（4A 的那十段靠这个按 unit 排），
+        # 没写就还是「听力材料 · 标题」
+        group = piece.get("group") or ("听力材料 · " + piece["title"])
         for who, en, cn in piece["lines"]:
             out.append((group, tidy(en), cn.strip(), voices.get(who, VOICE_F), kind))
     return out

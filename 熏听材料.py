@@ -162,4 +162,172 @@ PIECES = [
   ],
 },
 
+
+# ============ 4A 预习单配套：一个 unit 一段 ============
+# 用的都是那一单元预习单上的词，听的时候就是在复习这一关的生词。
+# group 字段会盖掉默认的「听力材料 · 标题」，让它在播放器里自成一组。
+
+{
+  "group": "4A Unit 1 · 我们的学校",
+  "title": "参观我们的学校",
+  "note": "Unit 1：school building / ground floor / art room / sports field / library",
+  "lines": [
+    ("A", "Welcome to our school!",                        "欢迎来我们学校！"),
+    ("B", "Wow, the school building is so tall.",          "哇，教学楼好高。"),
+    ("A", "Our classroom is on the ground floor.",         "我们教室在一楼。"),
+    ("B", "What's that room?",                             "那个房间是什么？"),
+    ("A", "It's the art room. The reading room is next to it.", "是美术教室。阅览室就在它旁边。"),
+    ("B", "Where do you do sports?",                       "你们在哪里做运动？"),
+    ("A", "On the sports field behind the library.",       "在图书馆后面的运动场。"),
+    ("B", "Your school looks like a park!",                "你们学校看起来像个公园！"),
+  ],
+},
+
+{
+  "group": "4A Unit 2 · 我和我的朋友",
+  "title": "猜猜她是谁",
+  "note": "Unit 2：a guessing game / helpful / interesting / be good at / keep going",
+  "lines": [
+    ("A", "Let's play a guessing game.",                   "我们玩个猜谜游戏吧。"),
+    ("B", "Great! Who is she?",                            "好极了！她是谁？"),
+    ("A", "She is always helpful.",                        "她总是乐于助人。"),
+    ("A", "She often tells interesting stories.",          "她时常讲有趣的故事。"),
+    ("B", "Is she good at English?",                       "她擅长英语吗？"),
+    ("A", "Yes. She wants to be a writer.",                "是的。她想当作家。"),
+    ("B", "Can she skip with a long rope?",                "她会用长绳跳绳吗？"),
+    ("A", "Yes, she can. Keep going!",                     "会的。继续猜！"),
+    ("B", "I know! She is Lily. She is lovely.",           "我知道了！是莉莉。她很可爱。"),
+  ],
+},
+
+{
+  "group": "4A Unit 3 · 动物",
+  "title": "大象、猴子和北极熊",
+  "note": "Unit 3：trunk / swing on branches / polar bear / thick fur / be kind to",
+  "lines": [
+    ("N", "Elephants live in India and Africa.",           "大象生活在印度和非洲。"),
+    ("N", "They are grey and very big.",                   "它们是灰色的，非常大。"),
+    ("N", "An elephant has a long trunk.",                 "大象有长长的象鼻。"),
+    ("N", "It showers with its trunk.",                    "它用象鼻洗澡。"),
+    ("N", "Monkeys swing on branches.",                    "猴子在树枝上摆荡。"),
+    ("N", "Pandas are black and white. They eat bamboo.",  "熊猫是黑白的。它们吃竹子。"),
+    ("N", "Polar bears live at the North Pole.",           "北极熊住在北极。"),
+    ("N", "They have thick fur, so they are warm.",        "它们有厚厚的毛，所以很暖和。"),
+    ("N", "Be very kind to animals.",                      "要对动物很友好。"),
+  ],
+},
+
+{
+  "group": "4A Unit 4 · 节日和生日",
+  "title": "一封生日邀请",
+  "note": "Unit 4：invitation / party / tradition / a bowl of noodles / come true",
+  "lines": [
+    ("A", "This is an invitation for you.",                "这是给你的一封邀请。"),
+    ("B", "A birthday party? When is it?",                 "生日聚会？什么时候？"),
+    ("A", "On Sunday. We will share a big cake.",          "周日。我们要分享一个大蛋糕。"),
+    ("B", "What can I bring?",                             "我可以带什么？"),
+    ("A", "Just come. In China we eat a bowl of noodles.", "来就行。在中国我们吃一碗面条。"),
+    ("A", "It's a tradition for a long and happy life.",   "这是祝愿幸福长寿的传统。"),
+    ("B", "I wish you good health!",                       "祝你身体健康！"),
+    ("B", "May all your wishes come true.",                "愿你所有的愿望都实现。"),
+  ],
+},
+
+{
+  "group": "4A Unit 5 · 我的街区",
+  "title": "去水乡玩一天",
+  "note": "Unit 5：neighbourhood / museum / water town / boat trip / out of battery",
+  "lines": [
+    ("A", "Let's go around our neighbourhood.",            "我们在街区里转转吧。"),
+    ("B", "Is there a museum here?",                       "这里有博物馆吗？"),
+    ("A", "Yes, and a cinema next to the supermarket.",    "有，超市旁边还有电影院。"),
+    ("B", "Amazing! What about Sunday?",                   "太惊奇了！那周日呢？"),
+    ("A", "We will visit a famous water town.",            "我们要去参观一个著名的水乡。"),
+    ("B", "Can we go on a boat trip?",                     "我们能乘船出游吗？"),
+    ("A", "Of course. The houses are by the water.",       "当然。房子都在水旁。"),
+    ("B", "I will take a lot of photos.",                  "我要拍很多照片。"),
+    ("A", "Don't let your phone run out of battery!",      "别让你的手机没电了！"),
+  ],
+},
+
+{
+  "group": "4A Unit 6 · 秋天",
+  "title": "金色的秋天",
+  "note": "Unit 6：golden / colourful leaves / pick fruit / fly south / collect food",
+  "lines": [
+    ("N", "Autumn is here.",                               "秋天来了。"),
+    ("N", "The leaves are golden and colourful.",          "树叶金黄，五颜六色。"),
+    ("N", "They fall from the trees.",                     "它们从树上掉落。"),
+    ("N", "On the farm, workers pick fruit.",              "在农场，工人们摘水果。"),
+    ("N", "The apples are big and sweet.",                 "苹果又大又甜。"),
+    ("N", "Birds fly south across the sky.",               "鸟儿飞过天空往南飞。"),
+    ("N", "Little animals collect food for winter.",       "小动物为冬天收集食物。"),
+    ("N", "Autumn is a busy and happy time.",              "秋天是忙碌又快乐的时候。"),
+  ],
+},
+
+{
+  "group": "4A Unit 7 · 健康饮食",
+  "title": "早餐吃什么",
+  "note": "Unit 7：breakfast / protein / vitamin / healthy / how often",
+  "lines": [
+    ("A", "What's for breakfast?",                         "早餐吃什么？"),
+    ("B", "Soya milk, eggs and a banana.",                 "豆浆、鸡蛋和一根香蕉。"),
+    ("A", "Eggs give us protein.",                         "鸡蛋给我们蛋白质。"),
+    ("B", "And fruit gives us vitamins.",                  "水果给我们维生素。"),
+    ("A", "How often do you eat vegetables?",              "你多久吃一次蔬菜？"),
+    ("B", "Every day. They are healthy.",                  "每天。它们很健康。"),
+    ("A", "My favourite drink is apple juice.",            "我最喜欢的饮料是苹果汁。"),
+    ("B", "Let's eat well and have lots of energy!",       "我们好好吃饭，充满能量！"),
+  ],
+},
+
+{
+  "group": "4A Unit 8 · 做个诚实的孩子",
+  "title": "煮熟的种子",
+  "note": "Unit 8：seed / pot / empty / tell the truth / winner",
+  "lines": [
+    ("N", "The king gave every child a seed.",             "国王给每个孩子一颗种子。"),
+    ("N", "He said, water it for three months.",           "他说，浇三个月的水。"),
+    ("N", "Ping watered his seed every day.",              "平每天给种子浇水。"),
+    ("N", "But nothing happened. His pot was empty.",      "可是什么也没发生。他的花盆空空的。"),
+    ("N", "Ping told the truth to the king.",              "平对国王说了真话。"),
+    ("N", "All the seeds were boiled.",                    "所有的种子都是煮熟的。"),
+    ("N", "So Ping was the winner.",                       "所以平是获胜的人。"),
+    ("N", "Be honest and never tell a lie.",               "做个诚实的人，从不撒谎。"),
+  ],
+},
+
+{
+  "group": "4A Unit 9 · 时间",
+  "title": "我的一天",
+  "note": "Unit 9：o'clock / half past / hour hand / minute hand / get up",
+  "lines": [
+    ("A", "What time is it?",                              "现在几点？"),
+    ("B", "It's seven o'clock. Time to get up.",           "七点钟。该起床了。"),
+    ("A", "I have lunch at noon.",                         "我中午吃午饭。"),
+    ("B", "I go home at half past four.",                  "我四点半回家。"),
+    ("A", "In the evening I read books.",                  "晚上我看书。"),
+    ("B", "I go to bed before midnight.",                  "我在半夜之前睡觉。"),
+    ("A", "Look, the hour hand points to seven.",          "看，时针指向七。"),
+    ("B", "And the minute hand points to twelve.",         "分针指向十二。"),
+  ],
+},
+
+{
+  "group": "4A Unit 10 · 天气",
+  "title": "明天下雨吗",
+  "note": "Unit 10：weather report / heavy rain / fly low / play in the snow",
+  "lines": [
+    ("A", "What's the weather like today?",                "今天天气怎么样？"),
+    ("B", "It's sunny and warm.",                          "阳光充足，很暖和。"),
+    ("A", "The weather report says heavy rain is coming.", "气象报告说有大雨要来。"),
+    ("B", "Really? How do you know?",                      "真的吗？你怎么知道？"),
+    ("A", "Look, the dragonflies fly low. It's a sign.",   "看，蜻蜓低飞。这是征兆。"),
+    ("B", "The tortoise is out, too. Let's hurry home!",   "陆龟也出来了。我们赶快回家！"),
+    ("A", "Tomorrow it will be cloudy and snowy.",         "明天会阴天还下雪。"),
+    ("B", "Then we can play in the snow!",                 "那我们就能在雪中玩耍了！"),
+  ],
+},
+
 ]
