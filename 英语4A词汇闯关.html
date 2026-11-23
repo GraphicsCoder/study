@@ -312,8 +312,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611232037"></script>
-<script src="词汇逻辑.js?v=202611232037"></script>
+<script src="英语4A词库.js?v=202611232043"></script>
+<script src="词汇逻辑.js?v=202611232043"></script>
 <script>
 (function () {
   "use strict";
@@ -474,6 +474,7 @@
   }
 
   function show(id) {
+    clearTimeout(autoNext);
     ["phome", "pplay", "pover", "pbook", "punit"].forEach(function (p) {
       $(p).classList.toggle("on", p === id);
     });
@@ -654,7 +655,10 @@
     nextQ();
   }
 
+  var autoNext = null;    // 答对之后自动跳下一题的定时器
+
   function nextQ() {
+    clearTimeout(autoNext);
     if (CH) {
       if (CH.i >= CH.modes.length) return challengeOver();
       Q = L.makeQuestion(CH.item, ALL, prog, Math.random, ALL, CH.modes[CH.i]);
@@ -892,9 +896,21 @@
     if ($("qnext").getBoundingClientRect().bottom > window.innerHeight) {
       $("qnext").scrollIntoView({ block: "end", behavior: "smooth" });
     }
-    $("qnext").textContent = CH
-      ? (CH.i < CH.modes.length ? "下一种问法 →" : "看结果 →")
-      : (R.again.length || R.i < R.queue.length ? "下一题 →" : "看结果 →");
+    var label = CH
+      ? (CH.i < CH.modes.length ? "下一种问法" : "看结果")
+      : (R.again.length || R.i < R.queue.length ? "下一题" : "看结果");
+    $("qnext").textContent = label + " →";
+
+    /* 答对就自己往下走：对了的题没什么好看的，每题还要再点一下
+       「下一题」很打断节奏。留一秒多让夸奖念完、让他看一眼这个词。
+       答错不自动跳——那一句「再记一次」正是要停下来看的。 */
+    clearTimeout(autoNext);
+    if (right) {
+      $("qnext").textContent = label + " →（自动）";
+      autoNext = setTimeout(function () {
+        if ($("pplay").classList.contains("on") && answered) nextQ();
+      }, 1300);
+    }
   }
 
   /* 从哪儿来就回哪儿去：从本子里开的关回本子，从单元词表开的关回词表 */
@@ -1003,6 +1019,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611232037" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611232043" data-key="en4a-vocab-v1"></script>
 </body>
 </html>
