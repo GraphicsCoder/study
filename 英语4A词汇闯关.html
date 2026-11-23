@@ -196,8 +196,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611231605"></script>
-<script src="词汇逻辑.js?v=202611231605"></script>
+<script src="英语4A词库.js?v=202611231614"></script>
+<script src="词汇逻辑.js?v=202611231614"></script>
 <script>
 (function () {
   "use strict";
@@ -227,12 +227,19 @@
 
   /* ---------------- 朗读 ----------------
      iOS 要用户手势才肯出声，所以第一次点击时先空放一句解锁；
-     另外 iOS 上连着调 speak 会卡住，统一先 cancel 再延时一点点。 */
+     另外 iOS 上连着调 speak 会卡住，统一先 cancel 再延时一点点。
+
+     声音优先挑英语女声——小朋友更听得进去，也跟两个小游戏里的夸奖声一致。
+     挑不到女声就退而求其次用 en-US，但绝不拿中文声去念英文。 */
   var voiceEn = null, unlocked = false;
   function pickVoice() {
     var vs = speechSynthesis.getVoices() || [];
-    voiceEn = vs.filter(function (v) { return /^en(-|_|$)/i.test(v.lang); })
-                .sort(function (a, b) { return (/United States|US/.test(b.name) ? 1 : 0) - (/United States|US/.test(a.name) ? 1 : 0); })[0] || null;
+    var en = vs.filter(function (v) { return /^en/i.test(v.lang || ""); });
+    var female = en.filter(function (v) {
+      return /samantha|karen|zira|aria|jenny|moira|tessa|victoria|serena|fiona|catherine|susan|female|woman/i.test(v.name || "");
+    });
+    var us = en.filter(function (v) { return /^en[-_]US/i.test(v.lang || ""); });
+    voiceEn = female[0] || us[0] || en[0] || null;
   }
   if (window.speechSynthesis) {
     pickVoice();
@@ -521,6 +528,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611231605" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611231614" data-key="en4a-vocab-v1"></script>
 </body>
 </html>
