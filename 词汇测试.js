@@ -69,6 +69,23 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   eq("全练熟是 100%", s.pct, 100);
   eq("学过的条数 = 总数", s.started, U1.length);
 }
+{
+  // 条子要会动：一关十题全对之后不能还停在 0%
+  const p = {};
+  const s0 = L.unitStat(U1, p);
+  U1.slice(0, 10).forEach(x => L.grade(p, x.id, true, now));
+  const s1 = L.unitStat(U1, p);
+  ok("练过一关进度就往前走", s1.pct > s0.pct, s0.pct + " → " + s1.pct);
+  eq("但还没有词算练熟", s1.mastered, 0);
+  ok("练熟之前不会虚报 100%", s1.pct < 100);
+
+  // 同一批词再练三轮，应该一路涨到这批词满格
+  for (let k = 0; k < 3; k++) U1.slice(0, 10).forEach(x => L.grade(p, x.id, true, now));
+  const s2 = L.unitStat(U1, p);
+  eq("十个词练熟了", s2.mastered, 10);
+  eq("进度 = 10/21 的满格", s2.pct, Math.round(10 / U1.length * 100));
+  eq("练熟比例另算", s2.masteredPct, Math.round(10 / U1.length * 100));
+}
 
 /* ---------- 选词 ---------- */
 {

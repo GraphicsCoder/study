@@ -175,8 +175,8 @@
 
 <header class="top">
   <h1>🔤 4A 词汇闯关</h1>
-  <p>按预习单来的 221 个单词词组 · 认一认 → 听一听 → 想一想 → 拼一拼</p>
-  <div class="allbar"><span id="alltext">掌握 0 / 221</span>
+  <p>按预习单来的 220 个单词词组 · 认一认 → 听一听 → 想一想 → 拼一拼</p>
+  <div class="allbar"><span id="alltext">熟练度 0%</span>
     <span class="bar"><i id="allbar"></i></span></div>
 </header>
 
@@ -251,8 +251,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611231626"></script>
-<script src="词汇逻辑.js?v=202611231626"></script>
+<script src="英语4A词库.js?v=202611231633"></script>
+<script src="词汇逻辑.js?v=202611231633"></script>
 <script>
 (function () {
   "use strict";
@@ -354,13 +354,13 @@
         '<h3>Unit ' + u.u + '</h3>' +
         '<div class="sub">' + esc(u.title) + ' · ' + s.total + ' 词</div>' +
         '<div class="bar"><i style="width:' + s.pct + '%"></i></div>' +
-        '<div class="sub" style="margin-top:4px">掌握 ' + s.mastered + ' / ' + s.total + '</div>';
+        '<div class="sub" style="margin-top:4px">熟练度 ' + s.pct + '% · 练熟 ' + s.mastered + ' / ' + s.total + '</div>';
       b.onclick = function () { start(pool, "Unit " + u.u); };
       box.appendChild(b);
     });
 
     var all = L.unitStat(ALL, prog);
-    $("alltext").textContent = "掌握 " + all.mastered + " / " + all.total;
+    $("alltext").textContent = "熟练度 " + all.pct + "% · 练熟 " + all.mastered + " / " + all.total;
     $("allbar").style.width = all.pct + "%";
 
     // 错词本：错过且还没练熟的词。干扰项不够时会去全库借，所以有一个就能开。
@@ -641,7 +641,8 @@
     $("onums").innerHTML =
       "答对 <em>" + R.right + "</em> 题　答错 <em>" + R.wrong + "</em> 题<br>" +
       "最长连对 <em>" + R.best + "</em> 题<br>" +
-      esc(where) + " 掌握度 <em>" + s.pct + "%</em>（" + s.mastered + " / " + s.total + "）";
+      esc(where) + " 熟练度 <em>" + s.pct + "%</em>　练熟 <em>" + s.mastered + "</em> / " + s.total +
+      '<br><span style="font-size:13px">一个词要连着答对四次才算练熟</span>';
 
     var missed = {};
     (R.queue || []).forEach(function (x) {
@@ -663,6 +664,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611231626" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611231633" data-key="en4a-vocab-v1"></script>
 </body>
 </html>

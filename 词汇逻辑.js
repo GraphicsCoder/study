@@ -98,16 +98,22 @@
     return prog[id];
   }
 
-  /* unit 掌握度：会了几个 / 一共几个，页面上用来画进度条 */
+  /* unit 进度：页面上要画一条会动的条。
+     不能直接用「练熟几个 / 一共几个」——练熟要连对四次，一关十题全对
+     也只让十个词各升一级，条子几乎不动，看着像坏了。所以按等级加权：
+     每个词把自己的等级（封顶在掌握线）折算成分数，全部练熟才是 100%。 */
   function unitStat(pool, prog) {
-    var done = 0, started = 0;
+    var done = 0, started = 0, score = 0;
     pool.forEach(function (x) {
       var r = recOf(prog, x.id);
       if (r.seen) started++;
       if (r.lv >= MASTER_LEVEL) done++;
+      score += Math.min(r.lv, MASTER_LEVEL);
     });
+    var full = pool.length * MASTER_LEVEL;
     return { total: pool.length, started: started, mastered: done,
-             pct: pool.length ? Math.round(done / pool.length * 100) : 0 };
+             pct: full ? Math.round(score / full * 100) : 0,
+             masteredPct: pool.length ? Math.round(done / pool.length * 100) : 0 };
   }
 
   /* ---------------- 选词 ----------------
