@@ -210,8 +210,8 @@ function start(){
 
 function pause(){
   clearGap();
+  playing = false;      // 先改意图再真的停，免得被下面"自动续播"的保护又拉起来
   au.pause();
-  playing = false;
   sleepHold();
   paint();
   paintSleep();
@@ -289,6 +289,25 @@ au.onended = () => {
   step(1, true);
 };
 au.onplay  = () => { errRun = 0; playing = true; paint(); };
+
+/* 从「添加到主屏幕」的图标进来（standalone），锁屏之后再点亮一下屏幕，
+   iOS 会顺手把这个"应用"的音频掐掉——我们自己没按过暂停，声音却停了。
+   所以这里盯着 pause 事件：只要 playing 还是 true（也就是用户并没有
+   按暂停、定时也没到），就把它再放回去。连着失败几次就不犟了，
+   免得在真不让播的时候空转。 */
+let resumeTries = 0;
+function keepPlaying(){
+  if(!playing || !au.paused) return;
+  if(resumeTries > 8) return;
+  resumeTries++;
+  const q = au.play();
+  if(q && q.catch) q.catch(() => {});
+}
+au.addEventListener("pause", () => { if(playing) setTimeout(keepPlaying, 200); });
+au.addEventListener("playing", () => { resumeTries = 0; });
+document.addEventListener("visibilitychange", () => { if(!document.hidden) keepPlaying(); });
+window.addEventListener("focus", keepPlaying);
+window.addEventListener("pageshow", keepPlaying);
 au.ontimeupdate = () => {
   if(inGap) return;                  // 停顿期间进度条停在句尾，别倒回去
   const bar = $("seek");
@@ -487,6 +506,6 @@ function keepVisible(){
 </script>
 <!-- 熏听不接同步：它每播一句就存一次播放位置，接上去会把 Cloudflare KV 的
      每日写入额度刷爆；而且语速、定时关闭这类设置本来就该各设备独立。 -->
-<script src="检查更新.js?v=202611232223" data-build="202611232223"></script>
+<script src="检查更新.js?v=202611232235" data-build="202611232235"></script>
 </body>
 </html>
