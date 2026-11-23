@@ -116,7 +116,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="搬家逻辑.js?v=202611231117"></script>
+<script src="搬家逻辑.js?v=202611231136"></script>
 <script>
 /* =====================================================================
    大象搬家 · 介词拖放
@@ -434,10 +434,6 @@ function step(dt) {
    一个边缘透明的径向渐变。彩色 emoji 不吃 fillStyle，但只要系统有一个字形
    走了单色回退（🛏️ 这种带变体选择符的最容易），它就会用当前这个渐变去涂，
    于是那个东西看着就是透明的——而桌面浏览器上一切正常，很难想到这儿。 */
-/* 每个可放点里画一个极小的示意图：一个灰块代表家具，一个点代表东西。
-   这是为了把「我们的画法」从题目里摘出去——孩子该琢磨的是 behind 这个词
-   什么意思，而不是「这个圈在我们这儿算前还是算后」。
-   后面：点画在块的后上方，被块压住一角；前面：点画在块的前下方，压住块。 */
 /* 要搬的东西。它是主角，任何时候都画成实的：
    原来待命时给了 0.9 的透明度想做「轻飘飘」的感觉，iPad 上看起来就是
    「这个东西是半透明的」，像还没加载完。要轻盈感改用上下浮动就够了。 */
@@ -459,37 +455,17 @@ function drawItem(anchorH) {
   emoji(S.task.item.emoji, it.x, y, size);
 }
 
-function pictogram(s) {
-  const k = s.r * .5;                       // 示意图的半径
-  const bx = s.x, by = s.y;
-  ctx.save();
-  ctx.globalAlpha = (s.prep === "behind" || s.prep === "in front of") ? .55 : .3;
-  const box = (dx, dy) => {
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(bx + dx - k * .55, by + dy - k * .45, k * 1.1, k * .9);
-  };
-  const dot = (dx, dy, r) => {
-    ctx.fillStyle = "#ffd166";
-    ctx.beginPath(); ctx.arc(bx + dx, by + dy, r || k * .3, 0, 6.3); ctx.fill();
-  };
-  switch (s.prep) {
-    case "in":          box(0, 0); dot(0, 0, k * .22); break;
-    case "on":          box(0, k * .5); dot(0, -k * .5); break;
-    case "under":       box(0, -k * .5); dot(0, k * .55); break;
-    case "next to":     box(-k * .6, 0); dot(k * .7, 0); break;
-    case "behind":      dot(k * .35, -k * .45); box(0, k * .15); break;   // 先点后块＝块挡住点
-    case "in front of": box(0, -k * .15); dot(k * .35, k * .5); break;    // 先块后点＝点压住块
-    case "between":     box(-k, 0); box(k, 0); dot(0, 0); break;
-  }
-  ctx.restore();
-}
-
-function emoji(ch, x, y, size) {
+function emoji(ch, x, y, size, alpha) {
   ctx.font = size + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.globalAlpha = 1;
+  /* 这里显式设定不透明度和颜色，是在修「手机上东西是半透明的」那个毛病：
+     画之前可能刚画过柔光，fillStyle 还留着一个边缘透明的渐变。彩色 emoji 不吃
+     fillStyle，但只要有字形走了单色回退，它就会拿那个渐变去涂。
+     要画淡的（虚影）就从这儿传 alpha 进来——在外面设 globalAlpha 会被这行盖掉。 */
+  ctx.globalAlpha = alpha == null ? 1 : alpha;
   ctx.fillStyle = "#fff";
   ctx.fillText(ch, x, y);
+  ctx.globalAlpha = 1;
 }
 
 function draw() {
@@ -505,22 +481,36 @@ function draw() {
     ctx.fillRect(-20, floor, W + 40, H);
 
     // 可以放的位置：画成虚线圈。知道有哪些位置可放，难点才落在「选哪个」上
+    /* 每个位置上画一个「虚影」——就是这件东西放在那儿会长什么样：
+       放到后面的虚影小、而且等一会儿会被家具挡住一截；放到前面的虚影大、
+       压在家具身上。圈和示意图都试过，最后发现都不如直接把结果画出来：
+       孩子不用去理解我们的画法，看见哪个虚影是自己想要的，拖过去就行。 */
     const drawSpot = s => {
       const target = S.tell && S.tell.right === s;
       const bad = S.tell && S.tell.wrong === s;
+      // 正拖着的时候，离手指最近的那个亮起来——拖的过程中就知道会放进哪儿
+      const near = S.item && S.item.drag &&
+                   L.hit(S.spots, S.item.x, S.item.y) === s;
+      // 虚影画小一号（真放上去会更大）：画成实物大小会把家具整个盖住，
+      // 满屏都是同一只小狗，反而看不出场景了
+      const size = s.r * 1.6 * (s.depth === -1 ? .82 : s.depth === 1 ? 1.12 : 1);
+
+      // 平时很淡，只是告诉你「这儿能放」；手指拖近了才亮起来
+      emoji(S.task.item.emoji, s.x, s.y, size,
+            target ? .95 : bad ? .55 : near ? .85 : .22);
+
       ctx.save();
-      ctx.setLineDash(target || bad ? [] : [5, 6]);
-      ctx.lineWidth = target || bad ? 3 : 2;
-      ctx.strokeStyle = target ? "#5ad2a0" : bad ? "#ff7a9c" : "rgba(255,255,255,.42)";
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.3); ctx.stroke();
+      ctx.setLineDash(target || bad || near ? [] : [5, 6]);
+      ctx.lineWidth = target || bad || near ? 3 : 1.5;
+      ctx.strokeStyle = target ? "#5ad2a0" : bad ? "#ff7a9c" : near ? "#ffd166" : "rgba(255,255,255,.3)";
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 1.15, 0, 6.3); ctx.stroke();
       ctx.restore();
       if (target || bad) {
         ctx.fillStyle = target ? "#5ad2a0" : "#ff7a9c";
         ctx.font = "700 13px system-ui,-apple-system,sans-serif";
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillText((target ? "✓ " : "✗ ") + s.prep, s.x, s.y + s.r + 13);
+        ctx.fillText((target ? "✓ " : "✗ ") + s.prep, s.x, s.y + s.r * 1.15 + 13);
       }
-      pictogram(s);
     };
 
     // 远处的（后面）先画，这样等会儿家具会把它挡住一截——
@@ -826,6 +816,6 @@ refreshStart();
 refreshHome();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611231117" data-key="move-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611231136" data-key="move-game-v1" data-nopop="1"></script>
 </body>
 </html>
