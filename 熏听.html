@@ -150,6 +150,7 @@ let playing = false;
 let sleepUntil = 0;
 let sleepLeft  = 0;
 let gapTimer = null;
+let inGap = false;     // 正在播"句间空白"那段静音
 let errRun = 0;              // 连续出错次数，防止整串文件都缺时疯狂空转
 let lastShown = -1;          // 列表里上次定位到的句子，用来避免重复滚动
 
@@ -219,7 +220,41 @@ function pause(){
 // 按钮永远看播放器的真实状态，免得切歌瞬间的事件把 playing 带偏
 function toggle(){ (au.paused && !gapTimer) ? start() : pause(); }
 
-function clearGap(){ if(gapTimer){ clearTimeout(gapTimer); gapTimer = null; } }
+function clearGap(){
+  if(gapTimer){ clearTimeout(gapTimer); gapTimer = null; }
+  inGap = false;
+}
+
+/* 句间停顿原来是 setTimeout 等几秒再播下一句。
+   这在浏览器标签页里没问题，但从「添加到主屏幕」的图标进去（standalone），
+   iOS 一锁屏就把定时器冻住了——第一句放完就再也没有下一句，表现正好是
+   「听一段之后就没声音了」。
+
+   办法是别让播放链条离开 <audio>：停顿本身也做成一段音频——按需合成一段
+   指定秒数的静音 WAV（data: URI，不用额外文件），放完它的 ended 事件
+   自然会把下一句带起来。媒体事件在后台是照常派发的，所以锁屏也接得上。 */
+const silCache = {};
+function silenceURL(sec){
+  const key = Math.min(10, Math.max(0.2, sec)).toFixed(1);
+  if(silCache[key]) return silCache[key];
+  const rate = 8000, n = Math.round(parseFloat(key) * rate);
+  const buf = new Uint8Array(44 + n);
+  const dv = new DataView(buf.buffer);
+  const tag = (off, str) => { for(let i=0;i<str.length;i++) buf[off+i] = str.charCodeAt(i); };
+  tag(0, "RIFF");  dv.setUint32(4, 36 + n, true);  tag(8, "WAVEfmt ");
+  dv.setUint32(16, 16, true);      // fmt 块长度
+  dv.setUint16(20, 1, true);       // PCM
+  dv.setUint16(22, 1, true);       // 单声道
+  dv.setUint32(24, rate, true);
+  dv.setUint32(28, rate, true);    // 每秒字节数（8 位单声道 = 采样率）
+  dv.setUint16(32, 1, true);       // 每帧字节数
+  dv.setUint16(34, 8, true);       // 位深
+  tag(36, "data"); dv.setUint32(40, n, true);
+  buf.fill(128, 44);               // 8 位 PCM 的"零"是 128
+  let bin = "";
+  for(let i=0;i<buf.length;i+=8192) bin += String.fromCharCode.apply(null, buf.subarray(i, i+8192));
+  return (silCache[key] = "data:audio/wav;base64," + btoa(bin));
+}
 
 // auto=true 表示这是一句播完自动续的，单句循环只在这种情况下原地重复
 function step(dir, auto){
@@ -239,11 +274,23 @@ au.onended = () => {
     pause(); render();
     return;
   }
-  if(cfg.gap > 0){ gapTimer = setTimeout(() => step(1, true), cfg.gap * 1000); }
-  else step(1, true);
+  if(inGap){ inGap = false; step(1, true); return; }      // 空白放完了，接下一句
+  if(cfg.gap > 0){
+    inGap = true;
+    au.playbackRate = 1;            // 静音段别跟着语速走，不然停顿时长会变
+    au.src = silenceURL(cfg.gap);
+    const q = au.play();
+    if(q && q.catch) q.catch(() => {   // 万一静音段放不出来，退回老办法
+      inGap = false;
+      gapTimer = setTimeout(() => step(1, true), cfg.gap * 1000);
+    });
+    return;
+  }
+  step(1, true);
 };
 au.onplay  = () => { errRun = 0; playing = true; paint(); };
 au.ontimeupdate = () => {
+  if(inGap) return;                  // 停顿期间进度条停在句尾，别倒回去
   const bar = $("seek");
   if(bar && au.duration) bar.style.width = (au.currentTime / au.duration * 100) + "%";
 };
@@ -251,6 +298,7 @@ au.ontimeupdate = () => {
 // 就停下来，不然会一路空转到底
 au.onerror = () => {
   if(!playing) return;
+  if(inGap){ inGap = false; step(1, true); return; }   // 静音段出问题就直接下一句
   if(++errRun > 5){ pause(); errRun = 0; return; }
   step(1, true);
 };
@@ -413,7 +461,7 @@ function paint(){
   $("en").textContent  = t.t;
   $("cn").textContent  = t.cn || "";
   $("idx").textContent = (cur + 1) + " / " + TRACKS.length;
-  $("bPlay").textContent = (!au.paused || gapTimer) ? "⏸" : "▶";
+  $("bPlay").textContent = (!au.paused || gapTimer || inGap) ? "⏸" : "▶";
   document.body.classList.toggle("blind", !!cfg.blind);
 
   document.querySelectorAll("ol.tl li").forEach(li => {
