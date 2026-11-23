@@ -31,6 +31,11 @@
   .layer button:active{transform:translateY(4px);box-shadow:0 2px 0 #d9a93f}
   .layer button.ghost{background:transparent;color:#cfe9e0;box-shadow:none;font-size:15px;font-weight:500;padding:10px 18px}
   .layer button.ghost:active{transform:none}
+  /* 「选关」原来跟「返回」一样是淡淡的一行字，混在背景里看不见。
+     给它描一圈黄边、加点底色，做成看得出来能按的胶囊。 */
+  .layer button.ghost.key{border:2px solid #ffd166;background:rgba(255,209,102,.14);
+    color:#ffd166;font-size:17px;font-weight:700;padding:11px 26px}
+  .layer button.ghost.key:active{transform:scale(.97)}
   .row{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap;justify-content:center}
   .stat{font-size:15px;color:#cfe9e0;margin-top:10px;line-height:2}
   .stat em{font-style:normal;color:#fff;font-weight:700;font-size:17px}
@@ -85,7 +90,7 @@
      <b>答对 60 题</b>就通关。</p>
   <button id="go">开始</button>
   <div class="row">
-    <button class="ghost" id="pickbtn">🗺 选关</button>
+    <button class="ghost key" id="pickbtn">🗺 选关</button>
     <button class="ghost" id="voicebtn"></button>
   </div>
   <div class="stat" id="startstat"></div>
@@ -104,7 +109,7 @@
   <div class="row">
     <button id="again">再来一局</button>
     <button class="ghost" id="endless" style="display:none">♾ 接着打</button>
-    <button class="ghost" id="pickbtn2">🗺 选关</button>
+    <button class="ghost key" id="pickbtn2">🗺 选关</button>
     <button class="ghost" id="back">回首页</button>
   </div>
 </div>
@@ -114,7 +119,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="接答案逻辑.js?v=202611231419"></script>
+<script src="接答案逻辑.js?v=202611231436"></script>
 <script>
 /* =====================================================================
    大象接答案
@@ -918,6 +923,6 @@ refreshStart();
 refreshHome();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611231419" data-key="catch-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611231436" data-key="catch-game-v1" data-nopop="1"></script>
 </body>
 </html>
