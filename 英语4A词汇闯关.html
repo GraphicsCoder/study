@@ -251,8 +251,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611231633"></script>
-<script src="词汇逻辑.js?v=202611231633"></script>
+<script src="英语4A词库.js?v=202611231642"></script>
+<script src="词汇逻辑.js?v=202611231642"></script>
 <script>
 (function () {
   "use strict";
@@ -398,8 +398,11 @@
   }
 
   /* ---------------- 管理两个本子 ----------------
-     收进来容易，拿出去也得一样容易：会了的词还天天来问，
-     小朋友第一反应是「这游戏没完没了」，那就不想玩了。 */
+     本来每行给了「已掌握」和「移除」两个按钮，其实是一件事：
+     「已掌握」顺手也把词从本子里拿走，「移除」做的也是同一步，
+     差别只在要不要顺带把练习进度拔到掌握线——那是假装练过，
+     数据反而不准了。所以只留一个「移除」：把词从这个本子里拿走，
+     练习进度一个字都不动，想再练就回 unit 里正常练。 */
   var tab = "star";
   function renderBook() {
     $("tabstar").classList.toggle("on", tab === "star");
@@ -420,24 +423,15 @@
         '<div class="w"><b>' + esc(x.w) + '</b>' +
         '<span>' + esc(x.p ? x.p + " " : "") + esc(x.c) + ' · Unit ' + x.unit + '</span></div>';
 
-      var known = document.createElement("button");
-      known.className = "known";
-      known.textContent = "✓ 已掌握";
-      known.onclick = function () {
-        L.markKnown(prog, x.id, Date.now());
-        L.star(prog, x.id, false);
-        save(); renderBook(); renderHome();
-      };
-
       var out = document.createElement("button");
-      out.textContent = "移除";
+      out.className = "known";
+      out.textContent = "✓ 会了，移除";
       out.onclick = function () {
         if (tab === "star") L.star(prog, x.id, false);
         else L.clearWrong(prog, x.id);
         save(); renderBook(); renderHome();
       };
 
-      row.appendChild(known);
       row.appendChild(out);
       box.appendChild(row);
     });
@@ -664,6 +658,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611231633" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611231642" data-key="en4a-vocab-v1"></script>
 </body>
 </html>

@@ -82,20 +82,11 @@
     });
   }
 
-  /* 从错词本里拿掉：把错误记录清零就行，等级不动——
-     「不想再看见它」和「假装没练过」是两回事。 */
+  /* 从本子里拿掉：生词本就是取消收藏，错词本就是把错误记录清零。
+     两个都不动等级——「不想在本子里再看见它」和「假装已经练熟了」
+     是两回事，后者会把复习排期骗歪。 */
   function clearWrong(prog, id) {
     if (prog[id]) prog[id].no = 0;
-  }
-
-  /* 「这个我已经会了」：直接记到掌握线，下次复习排到最远 */
-  function markKnown(prog, id, now) {
-    now = now || Date.now();
-    var r = recOf(prog, id);
-    var keep = prog[id] && prog[id].star;
-    prog[id] = { lv: MASTER_LEVEL, due: now + GAP[MASTER_LEVEL], ok: r.ok, no: 0 };
-    if (keep) prog[id].star = 1;
-    return prog[id];
   }
 
   /* unit 进度：页面上要画一条会动的条。
@@ -277,7 +268,7 @@
     MAX_LEVEL: MAX_LEVEL, MASTER_LEVEL: MASTER_LEVEL, PER_ROUND: PER_ROUND, GAP: GAP,
     recOf: recOf, grade: grade, isMastered: isMastered, unitStat: unitStat,
     star: star, isStarred: isStarred, starred: starred, weak: weak,
-    clearWrong: clearWrong, markKnown: markKnown,
+    clearWrong: clearWrong,
     pickSession: pickSession, kindFor: kindFor, canSpell: canSpell,
     distractors: distractors, makeQuestion: makeQuestion, scramble: scramble,
     check: check, newRound: newRound, answer: answer, nextItem: nextItem,

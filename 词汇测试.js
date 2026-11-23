@@ -279,8 +279,6 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   ok("答对之后还在生词本里", L.isStarred(p, "u1-2"));
   L.grade(p, "u1-2", false, now);
   ok("答错之后也还在生词本里", L.isStarred(p, "u1-2"));
-  L.markKnown(p, "u1-2", now);
-  ok("标成已掌握不会悄悄取消收藏", L.isStarred(p, "u1-2"));
 }
 {
   const p = {};
@@ -303,15 +301,6 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   L.clearWrong(p, U1[0].id);
   ok("移出错词本之后就不在了", !L.weak(ALL, p).map(x => x.id).includes(U1[0].id));
   eq("移出错词本不改等级", p[U1[0].id].lv, 0);
-}
-{
-  const p = {};
-  L.grade(p, "u2-1", false, now);
-  L.markKnown(p, "u2-1", now);
-  ok("标成已掌握就算会了", L.isMastered(p, "u2-1"));
-  eq("已掌握的错误记录清零", p["u2-1"].no, 0);
-  ok("已掌握的下次复习排到很远", p["u2-1"].due - now >= 7 * DAY);
-  ok("已掌握的不再出现在错词本", L.weak(ALL, p).every(x => x.id !== "u2-1"));
 }
 {
   // 生词本也能直接开一关：池子小的时候选项照样凑得齐
