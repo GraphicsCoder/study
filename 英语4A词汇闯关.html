@@ -59,6 +59,9 @@
   .qhead .bar{flex:1;height:7px;border-radius:99px;background:#e7ebf3;overflow:hidden}
   .qhead .bar i{display:block;height:100%;width:0;background:var(--brand);transition:width .3s}
   .combo{color:var(--gold);font-weight:700}
+  .autobtn{font:inherit;font-size:12px;padding:4px 9px;border-radius:99px;cursor:pointer;
+    border:1px solid var(--line);background:var(--card);color:var(--muted);white-space:nowrap}
+  .autobtn.on{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
     padding:16px 16px 14px;text-align:center;box-shadow:0 2px 14px rgba(31,36,48,.05)}
@@ -257,6 +260,7 @@
     <span class="bar"><i id="qbar"></i></span>
     <span id="qnum">1 / 10</span>
     <span class="combo" id="qcombo"></span>
+    <button class="autobtn" id="qauto" title="答对之后要不要自动进下一题"></button>
   </div>
   <div class="card">
     <button class="star" id="qstar" title="收进生词本">☆</button>
@@ -312,8 +316,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611232043"></script>
-<script src="词汇逻辑.js?v=202611232043"></script>
+<script src="英语4A词库.js?v=202611232046"></script>
+<script src="词汇逻辑.js?v=202611232046"></script>
 <script>
 (function () {
   "use strict";
@@ -657,6 +661,23 @@
 
   var autoNext = null;    // 答对之后自动跳下一题的定时器
 
+  /* 「答对自动下一题」是个人口味：有人嫌每题都要点一下烦，
+     有人想自己看一眼再走。所以做成开关，记在本机，不跟着进度同步。 */
+  var AUTOKEY = "en4a-auto";
+  var autoOn = localStorage.getItem(AUTOKEY) !== "0";
+  function paintAuto() {
+    var b = $("qauto");
+    b.textContent = autoOn ? "⏭ 自动" : "✋ 手动";
+    b.classList.toggle("on", autoOn);
+  }
+  $("qauto").onclick = function () {
+    autoOn = !autoOn;
+    try { localStorage.setItem(AUTOKEY, autoOn ? "1" : "0"); } catch (e) {}
+    paintAuto();
+    if (!autoOn) clearTimeout(autoNext);
+  };
+  paintAuto();
+
   function nextQ() {
     clearTimeout(autoNext);
     if (CH) {
@@ -905,8 +926,7 @@
        「下一题」很打断节奏。留一秒多让夸奖念完、让他看一眼这个词。
        答错不自动跳——那一句「再记一次」正是要停下来看的。 */
     clearTimeout(autoNext);
-    if (right) {
-      $("qnext").textContent = label + " →（自动）";
+    if (right && autoOn) {
       autoNext = setTimeout(function () {
         if ($("pplay").classList.contains("on") && answered) nextQ();
       }, 1300);
@@ -1019,6 +1039,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611232043" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611232046" data-key="en4a-vocab-v1"></script>
 </body>
 </html>
