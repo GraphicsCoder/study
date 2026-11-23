@@ -195,9 +195,8 @@
        write   看中文直接默写出来（没提示，作业本上那种）
 
      等级只决定「最多能难到哪儿」，不决定「这次问哪种」：
-       0 级    刚认识，只在 认 / 听 里挑
-       1 级    加上中译英，还不动笔
-       2 级起  五种随便挑
+       0 级    第一次见面，只在 认 / 听 里挑
+       1 级起  五种随便挑（见过一回就该敢动笔了，不然一整关都遇不上默写）
      在允许的范围里随机，并且优先挑这个词还没答对过的问法——
      原来写死成「等级 → 问法」的一一对应，练到后面每道题都是中译英，
      练着练着就只剩一种花样了。 */
@@ -205,9 +204,7 @@
 
   function kindFor(item, lv, rnd, left) {
     var all = modesOf(item);
-    var cap = lv <= 0 ? ["en2cn", "listen"]
-            : lv === 1 ? ["en2cn", "listen", "cn2en"]
-            : KINDS;
+    var cap = lv <= 0 ? ["en2cn", "listen"] : KINDS;
     var pool = all.filter(function (m) { return cap.indexOf(m) >= 0; });
     if (!pool.length) pool = all;
 

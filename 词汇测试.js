@@ -142,8 +142,8 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
     return [...out].sort().join(",");
   }
   eq("0 级只在认和听里挑", kinds(word, 0), "en2cn,listen");
-  eq("1 级还不动笔", kinds(word, 1), "cn2en,en2cn,listen");
-  eq("2 级五种都可能", kinds(word, 2), "cn2en,en2cn,listen,spell,write");
+  eq("见过一回就五种全开", kinds(word, 1), "cn2en,en2cn,listen,spell,write");
+  eq("2 级还是五种", kinds(word, 2), "cn2en,en2cn,listen,spell,write");
   eq("高级也不会只剩一种", kinds(word, 5), "cn2en,en2cn,listen,spell,write");
   eq("词组只在认和想之间换", kinds(phrase, 5), "cn2en,en2cn");
   ok("词组永远不出拼写题",
