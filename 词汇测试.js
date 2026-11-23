@@ -239,5 +239,73 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   eq("空关卡不给星", L.stars({ total: 0, right: 0, wrong: 0 }), 0);
 }
 
+/* ---------- 生词本 / 错词本 ---------- */
+{
+  const p = {};
+  ok("默认没收进生词本", !L.isStarred(p, "u1-1"));
+  L.star(p, "u1-1", true);
+  ok("点一下收进生词本", L.isStarred(p, "u1-1"));
+  ok("收藏不影响等级", L.recOf(p, "u1-1").lv === 0);
+  L.star(p, "u1-1", false);
+  ok("再点一下移出生词本", !L.isStarred(p, "u1-1"));
+  ok("移出后进度记录还在", "u1-1" in p);
+
+  // 练过的词收藏，不能把练习进度冲掉
+  L.grade(p, "u1-2", true, now);
+  L.grade(p, "u1-2", true, now);
+  L.star(p, "u1-2", true);
+  eq("收藏不覆盖等级", p["u1-2"].lv, 2);
+  eq("收藏不覆盖对题数", p["u1-2"].ok, 2);
+
+  // 踩过的坑：答题会整条替换进度记录，顺手把收藏标记冲掉了
+  L.grade(p, "u1-2", true, now);
+  ok("答对之后还在生词本里", L.isStarred(p, "u1-2"));
+  L.grade(p, "u1-2", false, now);
+  ok("答错之后也还在生词本里", L.isStarred(p, "u1-2"));
+  L.markKnown(p, "u1-2", now);
+  ok("标成已掌握不会悄悄取消收藏", L.isStarred(p, "u1-2"));
+}
+{
+  const p = {};
+  L.star(p, U1[0].id, true);
+  L.star(p, U1[3].id, true);
+  const s = L.starred(ALL, p);
+  eq("生词本按收藏来", s.length, 2);
+  ok("取出来的就是收藏的那两个", s.every(x => L.isStarred(p, x.id)));
+}
+{
+  const p = {};
+  L.grade(p, U1[0].id, false, now);               // 错一次，没练熟 → 进错词本
+  L.grade(p, U1[1].id, true, now);                // 全对 → 不进
+  for (let i = 0; i < 5; i++) L.grade(p, U1[2].id, true, now);
+  L.grade(p, U1[2].id, false, now);               // 错过但等级还高
+  const w = L.weak(ALL, p).map(x => x.id);
+  ok("错过又没练熟的在错词本里", w.includes(U1[0].id));
+  ok("没错过的不在错词本里", !w.includes(U1[1].id));
+
+  L.clearWrong(p, U1[0].id);
+  ok("移出错词本之后就不在了", !L.weak(ALL, p).map(x => x.id).includes(U1[0].id));
+  eq("移出错词本不改等级", p[U1[0].id].lv, 0);
+}
+{
+  const p = {};
+  L.grade(p, "u2-1", false, now);
+  L.markKnown(p, "u2-1", now);
+  ok("标成已掌握就算会了", L.isMastered(p, "u2-1"));
+  eq("已掌握的错误记录清零", p["u2-1"].no, 0);
+  ok("已掌握的下次复习排到很远", p["u2-1"].due - now >= 7 * DAY);
+  ok("已掌握的不再出现在错词本", L.weak(ALL, p).every(x => x.id !== "u2-1"));
+}
+{
+  // 生词本也能直接开一关：池子小的时候选项照样凑得齐
+  const p = {};
+  L.star(p, U1[0].id, true);
+  const pool = L.starred(ALL, p);
+  const round = L.newRound(pool, p, now, seeded(4), ALL);
+  eq("一个词也能开一关", round.total, 1);
+  const q = L.makeQuestion(round.queue[0], pool, p, seeded(4), ALL);
+  if (q.kind !== "spell") eq("选项仍是四个", q.choices.length, 4);
+}
+
 console.log(fail ? `\n${fail} 项没过，${pass} 项通过` : `全部 ${pass} 项通过`);
 process.exit(fail ? 1 : 0);

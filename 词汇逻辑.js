@@ -52,11 +52,51 @@
       ok: r.ok + (right ? 1 : 0),
       no: r.no + (right ? 0 : 1)
     };
+    // 收藏标记跟练习进度是两件事，答题不该把它冲掉
+    if (prog[id] && prog[id].star) next.star = 1;
     prog[id] = next;
     return next;
   }
 
   function isMastered(prog, id) { return recOf(prog, id).lv >= MASTER_LEVEL; }
+
+  /* ---------------- 生词本 / 错词本 ----------------
+     两个本子都只是对同一张进度表的不同筛法，不另开存储：
+       生词本  自己点星星收进来的（star），想练哪个练哪个
+       错词本  答错过、又还没练熟的（no>0 且没到 MASTER_LEVEL），自动攒
+     「已经会了」的词留在本子里只会浪费时间，所以两个本子都要能当场移除。 */
+  function star(prog, id, on) {
+    var r = prog[id] || (prog[id] = { lv: 0, due: 0, ok: 0, no: 0 });
+    if (on) r.star = 1; else delete r.star;
+    return !!r.star;
+  }
+  function isStarred(prog, id) { return !!(prog[id] && prog[id].star); }
+
+  function starred(pool, prog) {
+    return pool.filter(function (x) { return isStarred(prog, x.id); });
+  }
+  function weak(pool, prog) {
+    return pool.filter(function (x) {
+      var r = recOf(prog, x.id);
+      return r.no > 0 && r.lv < MASTER_LEVEL;
+    });
+  }
+
+  /* 从错词本里拿掉：把错误记录清零就行，等级不动——
+     「不想再看见它」和「假装没练过」是两回事。 */
+  function clearWrong(prog, id) {
+    if (prog[id]) prog[id].no = 0;
+  }
+
+  /* 「这个我已经会了」：直接记到掌握线，下次复习排到最远 */
+  function markKnown(prog, id, now) {
+    now = now || Date.now();
+    var r = recOf(prog, id);
+    var keep = prog[id] && prog[id].star;
+    prog[id] = { lv: MASTER_LEVEL, due: now + GAP[MASTER_LEVEL], ok: r.ok, no: 0 };
+    if (keep) prog[id].star = 1;
+    return prog[id];
+  }
 
   /* unit 掌握度：会了几个 / 一共几个，页面上用来画进度条 */
   function unitStat(pool, prog) {
@@ -230,6 +270,8 @@
   var API = {
     MAX_LEVEL: MAX_LEVEL, MASTER_LEVEL: MASTER_LEVEL, PER_ROUND: PER_ROUND, GAP: GAP,
     recOf: recOf, grade: grade, isMastered: isMastered, unitStat: unitStat,
+    star: star, isStarred: isStarred, starred: starred, weak: weak,
+    clearWrong: clearWrong, markKnown: markKnown,
     pickSession: pickSession, kindFor: kindFor, canSpell: canSpell,
     distractors: distractors, makeQuestion: makeQuestion, scramble: scramble,
     check: check, newRound: newRound, answer: answer, nextItem: nextItem,
