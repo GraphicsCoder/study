@@ -150,8 +150,9 @@
   .books button[disabled]{opacity:.55;cursor:default}
   .books .starbook{border-color:#f0d79a}
   .books .wrongbook{border-color:#f0c3ad}
-  .manage{margin-top:10px;width:100%;font:inherit;font-size:14px;padding:11px;border-radius:14px;
-    border:1px dashed var(--line);background:transparent;color:var(--muted);cursor:pointer}
+  .playbook{width:100%;margin-bottom:10px;font:inherit;font-size:16px;font-weight:600;padding:13px;
+    border-radius:14px;border:none;background:var(--brand);color:#fff;cursor:pointer}
+  .playbook[disabled]{background:#cfd6e4;cursor:default}
   @media (max-width:360px){ .books{grid-template-columns:1fr} }
 
   /* 管理面板 */
@@ -194,16 +195,16 @@
     <button class="starbook" id="starbtn"></button>
     <button class="wrongbook" id="wrongbtn"></button>
   </div>
-  <button class="manage" id="managebtn">🧹 看看生词本 / 错词本</button>
   <a class="back" href="index.html">← 回导航页</a>
 </div>
 
-<!-- 管理本子 -->
+<!-- 本子：打开就是列表，上面一条「练这一本」 -->
 <div class="panel" id="pbook">
   <div class="mtabs">
     <button id="tabstar" class="on">⭐ 生词本</button>
     <button id="tabwrong">📕 错词本</button>
   </div>
+  <button class="playbook" id="playbook"></button>
   <div class="mlist" id="mlist"></div>
   <a class="back" href="#" id="bookback">← 回选单元</a>
 </div>
@@ -258,8 +259,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611231722"></script>
-<script src="词汇逻辑.js?v=202611231722"></script>
+<script src="英语4A词库.js?v=202611231728"></script>
+<script src="词汇逻辑.js?v=202611231728"></script>
 <script>
 (function () {
   "use strict";
@@ -379,25 +380,21 @@
       d.wait === null ? "🎉 所有词都练熟了！" :
       "😴 这一轮都复习过了，下一批 " + waitText(d.wait) + "后再来";
 
-    // 错词本：错过且还没练熟的词。干扰项不够时会去全库借，所以有一个就能开。
+    /* 首页上两个本子就是入口，点进去是「本子」那一页：
+       上面一条「练这一本」，下面是列表。原来还额外挂了个「管理」按钮，
+       点开是同一页，白白多一道门。 */
     var weak = L.weak(ALL, prog);
     var wb = $("wrongbtn");
-    wb.disabled = weak.length === 0;
     wb.innerHTML = "📕 错词本 · " + weak.length + " 个" +
-      '<span class="s">' + (weak.length ? "四种问法都答对才算过关" : "还没有错词，先去闯几关") + "</span>";
-    wb.onclick = function () { if (weak.length) start(weak, "错词本"); };
+      '<span class="s">' + (weak.length ? "练一练，或者测一测把词划掉" : "还没有错词，先去闯几关") + "</span>";
+    wb.onclick = function () { tab = "wrong"; renderBook(); show("pbook"); };
 
     // 生词本：自己点星星收进来的，想重点练哪个就练哪个
     var star = L.starred(ALL, prog);
     var sb = $("starbtn");
-    sb.disabled = star.length === 0;
     sb.innerHTML = "⭐ 生词本 · " + star.length + " 个" +
       '<span class="s">' + (star.length ? "只练你标记过的词" : "答题时点右上角☆收进来") + "</span>";
-    sb.onclick = function () { if (star.length) start(star, "生词本"); };
-
-    $("managebtn").textContent = star.length + weak.length
-      ? "🧹 看看生词本 / 错词本"
-      : "🧹 生词本 / 错词本 · 现在都是空的";
+    sb.onclick = function () { tab = "star"; renderBook(); show("pbook"); };
   }
 
   /* 结算页解释一句「为什么还没练熟」：
@@ -443,6 +440,14 @@
     $("tabstar").classList.toggle("on", tab === "star");
     $("tabwrong").classList.toggle("on", tab === "wrong");
     var list = tab === "star" ? L.starred(ALL, prog) : L.weak(ALL, prog);
+    var play = $("playbook");
+    play.disabled = list.length === 0;
+    play.textContent = list.length
+      ? "▶ 练这一本（" + list.length + " 个词）"
+      : "▶ 这一本是空的";
+    play.onclick = function () {
+      if (list.length) start(list, tab === "star" ? "生词本" : "错词本");
+    };
     var box = $("mlist");
     box.innerHTML = "";
     if (!list.length) {
@@ -488,7 +493,6 @@
   }
   $("tabstar").onclick = function () { tab = "star"; renderBook(); };
   $("tabwrong").onclick = function () { tab = "wrong"; renderBook(); };
-  $("managebtn").onclick = function () { renderBook(); show("pbook"); };
   $("bookback").onclick = function (e) { e.preventDefault(); renderHome(); show("phome"); };
 
   /* 答题中的星星 */
@@ -791,6 +795,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611231722" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611231728" data-key="en4a-vocab-v1"></script>
 </body>
 </html>
