@@ -301,15 +301,15 @@
     $("alltext").textContent = "掌握 " + all.mastered + " / " + all.total;
     $("allbar").style.width = all.pct + "%";
 
-    // 错词本：错过且还没练熟的词
+    // 错词本：错过且还没练熟的词。干扰项不够时会去全库借，所以有一个就能开。
     var weak = ALL.filter(function (x) {
       var r = L.recOf(prog, x.id);
       return r.no > 0 && r.lv < L.MASTER_LEVEL;
     });
     var wb = $("wrongbtn");
-    wb.disabled = weak.length < 4;
+    wb.disabled = weak.length === 0;
     wb.textContent = weak.length
-      ? "📕 错词本（" + weak.length + " 个）" + (weak.length < 4 ? " · 再练几关才够开一关" : "")
+      ? "📕 错词本（" + weak.length + " 个）· 专挑错过的再练一遍"
       : "📕 错词本 · 还没有错词，先去闯几关吧";
     wb.onclick = function () { start(weak, "错词本"); };
   }
