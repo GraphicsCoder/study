@@ -259,8 +259,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611231728"></script>
-<script src="词汇逻辑.js?v=202611231728"></script>
+<script src="英语4A词库.js?v=202611231737"></script>
+<script src="词汇逻辑.js?v=202611231737"></script>
 <script>
 (function () {
   "use strict";
@@ -715,22 +715,33 @@
       : (R.again.length || R.i < R.queue.length ? "下一题 →" : "看结果 →");
   }
 
+  /* 从哪儿来就回哪儿去：从本子里开的关，退出该回本子，不是回选单元页 */
+  function fromBook() { return where === "生词本" || where === "错词本"; }
+  function goBack() {
+    if (fromBook()) {
+      tab = where === "生词本" ? "star" : "wrong";
+      renderBook(); show("pbook");
+    } else {
+      renderHome(); show("phome");
+    }
+  }
+
   $("qnext").onclick = nextQ;
   $("qspeak").onclick = function () { speak(Q && Q.speak, Q && Q.kind === "listen" ? .75 : .85); };
   $("quit").onclick = function (e) {
     e.preventDefault();
     if (CH) {
       if (CH.i > 1 && !confirm("测试还没做完，现在退出就算没过。确定吗？")) return;
-      CH = null; renderBook(); show("pbook"); return;
+      CH = null; tab = "wrong"; renderBook(); show("pbook"); return;
     }
     if (R.right + R.wrong > 0 && !confirm("这一关还没打完，确定退出吗？已经答过的都算数。")) return;
-    renderHome(); show("phome");
+    goBack();
   };
 
   /* ---------------- 结算 ---------------- */
   function over() {
     $("oagain").textContent = "再来一关";
-    $("oback").textContent = "换个单元";
+    $("oback").textContent = fromBook() ? "回" + where : "换个单元";
     var n = L.stars(R);
     $("ostars").innerHTML = [0, 1, 2].map(function (i) {
       return i < n ? "★" : '<span class="off">★</span>';
@@ -781,20 +792,20 @@
     if (CH) {
       var item = CH.item;
       if (CH.failed) return startChallenge(item);   // 没过就重考这一个
-      CH = null; renderBook(); show("pbook"); return;  // 过了就回去挑下一个
+      CH = null; tab = "wrong"; renderBook(); show("pbook"); return;  // 过了就回去挑下一个
     }
     start(pool, where);
   };
   $("oback").onclick = function () {
     $("oagain").textContent = "再来一关";
     $("oback").textContent = "换个单元";
-    if (CH) { CH = null; renderBook(); show("pbook"); return; }
-    renderHome(); show("phome");
+    if (CH) { CH = null; tab = "wrong"; renderBook(); show("pbook"); return; }
+    goBack();
   };
 
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611231728" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611231737" data-key="en4a-vocab-v1"></script>
 </body>
 </html>
