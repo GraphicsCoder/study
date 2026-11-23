@@ -258,8 +258,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611231709"></script>
-<script src="词汇逻辑.js?v=202611231709"></script>
+<script src="英语4A词库.js?v=202611231722"></script>
+<script src="词汇逻辑.js?v=202611231722"></script>
 <script>
 (function () {
   "use strict";
@@ -475,13 +475,11 @@
           save(); renderBook(); renderHome();
         };
       } else {
-        /* 错词本不让手动勾销：四种问法全答对过才算真会了，自动消失。
-           不然「移除」就成了一键把错题扫到地毯底下。 */
-        out.className = "waiting";
-        out.textContent = "还差 " + left.length + " 种问法";
-        out.disabled = true;
-        out.title = "把 " + left.map(function (m) { return MODE_CN[m]; }).join("、") +
-                    " 都答对一次，它就自动离开错词本";
+        /* 要把词移出错词本，得在这儿当场连考它的每一种问法。
+           平时练习里蒙对一次不算——那正是错词本想拦住的情况。 */
+        out.className = "known";
+        out.textContent = "🎓 测一测，过了就移除";
+        out.onclick = function () { startChallenge(x); };
       }
 
       row.appendChild(out);
@@ -516,7 +514,21 @@
   /* ---------------- 一关 ---------------- */
   var R = null, Q = null, pool = null, where = "", answered = false, picked = [];
 
+  /* 错词本的「过关测试」：当场把这一个词的四种问法连考一遍。
+     全对才把它从错词本里划掉，中间错一次就算没过——
+     平时练习顺手蒙对不算数，要移除就得在这儿证明一次。 */
+  var CH = null;   // { item, modes, i, failed }
+
+  function startChallenge(item) {
+    CH = { item: item, modes: L.modesOf(item), i: 0, failed: false };
+    pool = [item]; where = "过关测试"; R = null;
+    $("qwhere").textContent = "过关测试 · " + item.w;
+    show("pplay");
+    nextQ();
+  }
+
   function start(p, name) {
+    CH = null;
     pool = p; where = name;
     R = L.newRound(pool, prog, Date.now(), Math.random, ALL);
     $("qwhere").textContent = name;
@@ -525,10 +537,18 @@
   }
 
   function nextQ() {
+    if (CH) {
+      if (CH.i >= CH.modes.length) return challengeOver();
+      Q = L.makeQuestion(CH.item, ALL, prog, Math.random, ALL, CH.modes[CH.i]);
+      CH.i++;
+      answered = false; picked = [];
+      render();
+      return;
+    }
     var item = L.nextItem(R);
     if (!item) return over();
-    /* 错词本是来「销账」的：专挑这个词还没答对过的问法出，
-       四种问法都过一遍，它才会自己从错词本里消失。 */
+    /* 错词本平时也按「还差哪几种问法」来出题，
+       但真正把它移出本子要靠上面的过关测试。 */
     var force = null;
     if (where === "错词本") {
       var left = L.modesLeft(item, prog);
@@ -544,10 +564,12 @@
               cn2en: "想一想 · 中文对应哪个英文", spell: "拼一拼 · 把字母排好" };
 
   function render() {
-    var done = R.right + R.wrong;
-    $("qnum").textContent = (done + 1) + " / " + R.total;
-    $("qbar").style.width = Math.min(100, done / R.total * 100) + "%";
-    $("qcombo").textContent = R.combo >= 3 ? "🔥 连对 " + R.combo : "";
+    var done = CH ? CH.i - 1 : R.right + R.wrong;
+    var total = CH ? CH.modes.length : R.total;
+    $("qnum").textContent = (done + 1) + " / " + total;
+    $("qbar").style.width = Math.min(100, done / total * 100) + "%";
+    $("qcombo").textContent = CH ? (CH.failed ? "这次没过" : "全对才算过")
+                                 : (R.combo >= 3 ? "🔥 连对 " + R.combo : "");
     $("qtag").textContent = TAG[Q.kind];
     $("qsay").textContent = "";
     $("qsay").className = "say";
@@ -591,10 +613,20 @@
     });
   }
 
+  /* 判一题。过关测试不走 round 的那套统计，但一样要把成绩记进进度表，
+     这样「这种问法会了」才算数。 */
+  function judge(ans) {
+    if (!CH) return L.answer(R, Q, ans, prog, Date.now());
+    var right = L.check(Q, ans);
+    L.grade(prog, Q.item.id, right, Date.now(), Q.kind);
+    if (!right) CH.failed = true;
+    return right;
+  }
+
   function choose(btn, c) {
     if (answered) return;
     answered = true;
-    var right = L.answer(R, Q, c, prog, Date.now());
+    var right = judge(c);
     save();
     [].forEach.call($("qopts").children, function (b) {
       b.disabled = true;
@@ -648,7 +680,7 @@
     if (answered || picked.length !== Q.answer.length) return;
     answered = true;
     var word = picked.map(function (p) { return p.ch; }).join("");
-    var right = L.answer(R, Q, word, prog, Date.now());
+    var right = judge(word);
     save();
     [].forEach.call($("qslots").children, function (s) {
       s.style.color = right ? "var(--ok)" : "var(--no)";
@@ -668,23 +700,33 @@
     } else {
       say.className = "say bad";
       say.innerHTML = "再记一次：<b>" + esc(Q.item.w) + "</b> " + esc(Q.item.c) +
-                      "<br><span style='font-size:13px'>等会儿它还会再来一次</span>";
+                      "<br><span style='font-size:13px'>" +
+                      (CH ? "这次测试没过，它还留在错词本里" : "等会儿它还会再来一次") +
+                      "</span>";
       speak(Q.item.w, .75);
     }
     $("qnext").classList.add("on");
-    $("qnext").textContent = R.again.length || R.i < R.queue.length ? "下一题 →" : "看结果 →";
+    $("qnext").textContent = CH
+      ? (CH.i < CH.modes.length ? "下一种问法 →" : "看结果 →")
+      : (R.again.length || R.i < R.queue.length ? "下一题 →" : "看结果 →");
   }
 
   $("qnext").onclick = nextQ;
   $("qspeak").onclick = function () { speak(Q && Q.speak, Q && Q.kind === "listen" ? .75 : .85); };
   $("quit").onclick = function (e) {
     e.preventDefault();
+    if (CH) {
+      if (CH.i > 1 && !confirm("测试还没做完，现在退出就算没过。确定吗？")) return;
+      CH = null; renderBook(); show("pbook"); return;
+    }
     if (R.right + R.wrong > 0 && !confirm("这一关还没打完，确定退出吗？已经答过的都算数。")) return;
     renderHome(); show("phome");
   };
 
   /* ---------------- 结算 ---------------- */
   function over() {
+    $("oagain").textContent = "再来一关";
+    $("oback").textContent = "换个单元";
     var n = L.stars(R);
     $("ostars").innerHTML = [0, 1, 2].map(function (i) {
       return i < n ? "★" : '<span class="off">★</span>';
@@ -711,12 +753,44 @@
     show("pover");
   }
 
-  $("oagain").onclick = function () { start(pool, where); };
-  $("oback").onclick = function () { renderHome(); show("phome"); };
+  /* 过关测试的结算：全对才真的把词从错词本里划掉 */
+  function challengeOver() {
+    var item = CH.item, passed = !CH.failed;
+    if (passed) L.clearWrong(prog, item.id);
+    save();
+    $("ostars").innerHTML = passed ? "🎓" : "💪";
+    $("otitle").textContent = passed ? "过关！这个词从错词本里划掉了" : "还差一点，它继续留在错词本";
+    $("onums").innerHTML =
+      "<em>" + esc(item.w) + "</em> " + esc(item.c) + "<br>" +
+      CH.modes.map(function (m) { return MODE_CN[m]; }).join(" · ") +
+      " 共 " + CH.modes.length + " 关<br>" +
+      '<span style="font-size:13px">' +
+      (passed ? "四种问法一次过，这才算真会了" : "测试里只要错一次就不算过，缓一缓再来") +
+      "</span>";
+    $("oreview").innerHTML = "";
+    $("oagain").textContent = passed ? "再测一个" : "再测一次";
+    $("oback").textContent = "回错词本";
+    show("pover");
+  }
+
+  $("oagain").onclick = function () {
+    if (CH) {
+      var item = CH.item;
+      if (CH.failed) return startChallenge(item);   // 没过就重考这一个
+      CH = null; renderBook(); show("pbook"); return;  // 过了就回去挑下一个
+    }
+    start(pool, where);
+  };
+  $("oback").onclick = function () {
+    $("oagain").textContent = "再来一关";
+    $("oback").textContent = "换个单元";
+    if (CH) { CH = null; renderBook(); show("pbook"); return; }
+    renderHome(); show("phome");
+  };
 
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611231709" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611231722" data-key="en4a-vocab-v1"></script>
 </body>
 </html>

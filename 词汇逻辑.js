@@ -103,14 +103,11 @@
   }
   /* 错词本的出入规则：
        进来   答错过（no>0）
-       出去   四种问法（能出的那几种）全都答对过一次
-     光是「再答对一次」就放走太便宜了——很可能只是认得英文选中文，
-     反过来让他写就又不会。所以要把这个词的每一种问法都过一遍。 */
+       出去   在「过关测试」里把这个词能出的每一种问法连着答对一次
+     平时练习答对不会自动把它放走——那很可能只是认得英文选中文，
+     反过来让他写就又不会。要移除就当场证明一次，由页面调 clearWrong。 */
   function weak(pool, prog) {
-    return pool.filter(function (x) {
-      var r = recOf(prog, x.id);
-      return r.no > 0 && !passedAll(x, prog);
-    });
+    return pool.filter(function (x) { return recOf(prog, x.id).no > 0; });
   }
 
   /* 现在有多少词该复习了、下一批还要等多久。

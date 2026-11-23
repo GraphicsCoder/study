@@ -378,8 +378,10 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   ok("差最后一种拼写，仍然在本子里", L.weak([word], p).length === 1);
 
   L.grade(p, word.id, true, now, "spell");
-  ok("四种全过就自动离开错词本", L.weak([word], p).length === 0);
   ok("四种全过算过关", L.passedAll(word, p));
+  ok("但平时练习不会自动放它走", L.weak([word], p).length === 1);
+  L.clearWrong(p, word.id);                        // 过关测试通过，页面来划掉
+  ok("过关测试通过才离开错词本", L.weak([word], p).length === 0);
 }
 {
   // 过关之后又栽在同一种问法上，这一关要重新打
@@ -398,7 +400,8 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   L.grade(p, phrase.id, false, now, "en2cn");
   L.grade(p, phrase.id, true, now, "en2cn");
   L.grade(p, phrase.id, true, now, "cn2en");
-  ok("词组过两种就出本子", L.weak([phrase], p).length === 0);
+  ok("词组过两关就算全过", L.passedAll(phrase, p));
+  eq("词组的过关测试只考两种", L.modesOf(phrase).length, 2);
 }
 {
   // 指定问法出题：错词本靠它补齐没过的那几关
