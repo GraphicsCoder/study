@@ -451,13 +451,13 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   const word = U1.find(x => !x.phrase && L.canSpell(x));
   const phrase = U1.find(x => x.phrase);
   const round = L.newDrill([word, phrase], p, seeded(8), ALL);
-  eq("四种 + 两种 = 六道题", round.total, 6);
+  ok("词少也凑够一关", round.total >= L.MIN_DRILL, String(round.total));
   ok("队列里排的是词加问法", round.queue.every(e => e.item && e.kind));
   eq("单词的四种问法都排上了",
-     round.queue.filter(e => e.item.id === word.id).map(e => e.kind).sort().join(","),
+     [...new Set(round.queue.filter(e => e.item.id === word.id).map(e => e.kind))].sort().join(","),
      "cn2en,en2cn,listen,spell");
-  eq("词组只排两种",
-     round.queue.filter(e => e.item.id === phrase.id).map(e => e.kind).sort().join(","),
+  eq("词组只出它那两种",
+     [...new Set(round.queue.filter(e => e.item.id === phrase.id).map(e => e.kind))].sort().join(","),
      "cn2en,en2cn");
   ok("标明了这是本子那种关", round.drill === true);
 }
@@ -499,6 +499,19 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   }
   ok("一关打完四种问法全过了", L.passedAll(word, p));
   eq("没有漏掉的题", round.again.length, 0);
+}
+
+{
+  // 本子里只有一个词，也该凑出一关的量，而不是问两题就完
+  const p = {};
+  const phrase = U1.find(x => x.phrase);
+  const round = L.newDrill([phrase], p, seeded(14), ALL);
+  ok("一个词组也能凑够一关", round.total >= L.MIN_DRILL, String(round.total));
+  eq("但问法还是只有它那两种",
+     [...new Set(round.queue.map(e => e.kind))].sort().join(","), "cn2en,en2cn");
+  const word = U1.find(x => !x.phrase && L.canSpell(x));
+  const r2 = L.newDrill([word], p, seeded(15), ALL);
+  ok("一个单词同理", r2.total >= L.MIN_DRILL, String(r2.total));
 }
 
 console.log(fail ? `\n${fail} 项没过，${pass} 项通过` : `全部 ${pass} 项通过`);

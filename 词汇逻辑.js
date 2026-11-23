@@ -291,8 +291,10 @@
   /* 本子（生词本 / 错词本）里的一关：不是一个词问一道，
      而是把每个词的每一种问法都排成一道题——本子本来就是
      「这几个没拿下」，当然要把认 / 听 / 想 / 拼都过一遍。
-     题太多就先排没答对过的那些，一关最多 MAX_DRILL 道。 */
-  var MAX_DRILL = 20;
+     题太多就先排没答对过的那些，一关最多 MAX_DRILL 道；
+     本子里只有一两个词时，就把这一轮再滚一遍，凑够 MIN_DRILL 道——
+     不然点一下「练这一本」答两题就结束了，像没练。 */
+  var MAX_DRILL = 20, MIN_DRILL = 8;
 
   function newDrill(items, prog, rnd, all) {
     var fresh = [], done = [];
@@ -301,7 +303,11 @@
         (modesLeft(x, prog).indexOf(m) >= 0 ? fresh : done).push({ item: x, kind: m });
       });
     });
-    var q = shuffle(fresh, rnd).concat(shuffle(done, rnd)).slice(0, MAX_DRILL);
+    var one = shuffle(fresh, rnd).concat(shuffle(done, rnd));
+    var q = one.slice(0, MAX_DRILL);
+    while (q.length && q.length < MIN_DRILL) {
+      q = q.concat(shuffle(one, rnd).slice(0, MIN_DRILL - q.length));
+    }
     return {
       queue: q, i: 0, right: 0, wrong: 0, combo: 0, best: 0, again: [],
       total: q.length, pool: items, all: all || items, drill: true
@@ -354,7 +360,7 @@
     clearWrong: clearWrong, dueInfo: dueInfo,
     pickSession: pickSession, kindFor: kindFor, canSpell: canSpell,
     distractors: distractors, makeQuestion: makeQuestion, scramble: scramble,
-    check: check, newRound: newRound, newDrill: newDrill, MAX_DRILL: MAX_DRILL, answer: answer, nextItem: nextItem,
+    check: check, newRound: newRound, newDrill: newDrill, MAX_DRILL: MAX_DRILL, MIN_DRILL: MIN_DRILL, answer: answer, nextItem: nextItem,
     stars: stars, shuffle: shuffle
   };
 
