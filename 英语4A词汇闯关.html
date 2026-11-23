@@ -153,6 +153,16 @@
   .playbook{width:100%;margin-bottom:10px;font:inherit;font-size:16px;font-weight:600;padding:13px;
     border-radius:14px;border:none;background:var(--brand);color:#fff;cursor:pointer}
   .playbook[disabled]{background:#cfd6e4;cursor:default}
+  .usub{font-size:13.5px;color:var(--muted);margin-bottom:10px}
+  /* 词表右边的状态牌：一眼看出哪些已经拿下了 */
+  .state{font-size:12px;padding:5px 9px;border-radius:99px;white-space:nowrap;
+    background:#f1f3f8;color:var(--muted)}
+  .state.done{background:var(--ok-soft);color:var(--ok);font-weight:600}
+  .state.doing{background:var(--brand-soft);color:var(--brand)}
+  .state.bad{background:var(--no-soft);color:var(--no)}
+  .mrow .starcell{border:none;background:transparent;font-size:20px;color:#cfd5e0;
+    cursor:pointer;padding:4px 2px}
+  .mrow .starcell.on{color:var(--gold)}
   @media (max-width:360px){ .books{grid-template-columns:1fr} }
 
   /* 管理面板 */
@@ -209,6 +219,15 @@
   <a class="back" href="#" id="bookback">← 回选单元</a>
 </div>
 
+<!-- 单元词表：这一关要背哪些词，心里先有个数 -->
+<div class="panel" id="punit">
+  <h2 id="utitle" style="margin:0 0 4px;font-size:20px"></h2>
+  <div class="usub" id="usub"></div>
+  <button class="playbook" id="playunit">▶ 开始这一关</button>
+  <div class="mlist" id="ulist"></div>
+  <a class="back" href="#" id="unitback">← 回选单元</a>
+</div>
+
 <!-- 答题 -->
 <div class="panel" id="pplay">
   <div class="qhead">
@@ -259,8 +278,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611231756"></script>
-<script src="词汇逻辑.js?v=202611231756"></script>
+<script src="英语4A词库.js?v=202611231805"></script>
+<script src="词汇逻辑.js?v=202611231805"></script>
 <script>
 (function () {
   "use strict";
@@ -363,7 +382,7 @@
         '<div class="sub">' + esc(u.title) + ' · ' + s.total + ' 词</div>' +
         '<div class="bar"><i style="width:' + s.pct + '%"></i></div>' +
         '<div class="sub" style="margin-top:4px">熟练度 ' + s.pct + '% · 练熟 ' + s.mastered + ' / ' + s.total + '</div>';
-      b.onclick = function () { start(pool, "Unit " + u.u); };
+      b.onclick = function () { openUnit(u); };
       box.appendChild(b);
     });
 
@@ -421,11 +440,67 @@
   }
 
   function show(id) {
-    ["phome", "pplay", "pover", "pbook"].forEach(function (p) {
+    ["phome", "pplay", "pover", "pbook", "punit"].forEach(function (p) {
       $(p).classList.toggle("on", p === id);
     });
     window.scrollTo(0, 0);
   }
+
+  /* ---------------- 单元词表 ----------------
+     点一个 unit 先看见这一关要背哪些词：中文在旁边，练熟的标出来，
+     哪些还没碰过一目了然。心里有个范围，背起来才不虚。 */
+  var openedUnit = null;
+  function stateOf(x) {
+    var r = L.recOf(prog, x.id);
+    if (r.lv >= L.MASTER_LEVEL) return { cls: "done", txt: "👑 练熟" };
+    if (!r.seen) return { cls: "", txt: "🌱 没练过" };
+    if (r.no > 0) return { cls: "bad", txt: "📕 错过 · " + r.lv + " 级" };
+    return { cls: "doing", txt: "练到 " + r.lv + " 级" };
+  }
+
+  function openUnit(u) {
+    openedUnit = u;
+    renderUnit();
+    show("punit");
+  }
+
+  function renderUnit() {
+    var u = openedUnit, list = DB.unit(u.u), s = L.unitStat(list, prog);
+    $("utitle").textContent = "Unit " + u.u + " · " + u.title;
+    $("usub").textContent =
+      list.length + " 个单词词组 · 熟练度 " + s.pct + "% · 练熟 " + s.mastered +
+      " · 没练过 " + (list.length - s.started);
+    $("playunit").onclick = function () { start(list, "Unit " + u.u); };
+
+    var box = $("ulist");
+    box.innerHTML = "";
+    list.forEach(function (x) {
+      var st = stateOf(x);
+      var row = document.createElement("div");
+      row.className = "mrow";
+      row.innerHTML =
+        '<div class="w"><b>' + esc(x.w) + '</b>' +
+        '<span>' + esc(x.p ? x.p + " " : "") + esc(x.c) + '</span></div>' +
+        '<span class="state ' + st.cls + '">' + st.txt + '</span>';
+
+      // 词表里也能直接收进生词本，不用等它出现在题目上
+      var sb = document.createElement("button");
+      sb.className = "starcell" + (L.isStarred(prog, x.id) ? " on" : "");
+      sb.textContent = L.isStarred(prog, x.id) ? "★" : "☆";
+      sb.title = "收进生词本";
+      sb.onclick = function () {
+        var on = L.star(prog, x.id, !L.isStarred(prog, x.id));
+        save();
+        sb.textContent = on ? "★" : "☆";
+        sb.classList.toggle("on", on);
+      };
+      row.appendChild(sb);
+      box.appendChild(row);
+    });
+  }
+  $("unitback").onclick = function (e) {
+    e.preventDefault(); renderHome(); show("phome");
+  };
 
   /* ---------------- 管理两个本子 ----------------
      本来每行给了「已掌握」和「移除」两个按钮，其实是一件事：
@@ -714,12 +789,15 @@
       : (R.again.length || R.i < R.queue.length ? "下一题 →" : "看结果 →");
   }
 
-  /* 从哪儿来就回哪儿去：从本子里开的关，退出该回本子，不是回选单元页 */
+  /* 从哪儿来就回哪儿去：从本子里开的关回本子，从单元词表开的关回词表 */
   function fromBook() { return where === "生词本" || where === "错词本"; }
+  function fromUnit() { return openedUnit && where === "Unit " + openedUnit.u; }
   function goBack() {
     if (fromBook()) {
       tab = where === "生词本" ? "star" : "wrong";
       renderBook(); show("pbook");
+    } else if (fromUnit()) {
+      renderUnit(); show("punit");
     } else {
       renderHome(); show("phome");
     }
@@ -740,7 +818,7 @@
   /* ---------------- 结算 ---------------- */
   function over() {
     $("oagain").textContent = "再来一关";
-    $("oback").textContent = fromBook() ? "回" + where : "换个单元";
+    $("oback").textContent = fromBook() ? "回" + where : fromUnit() ? "回词表" : "换个单元";
     var n = L.stars(R);
     $("ostars").innerHTML = [0, 1, 2].map(function (i) {
       return i < n ? "★" : '<span class="off">★</span>';
@@ -806,6 +884,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611231756" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611231805" data-key="en4a-vocab-v1"></script>
 </body>
 </html>
