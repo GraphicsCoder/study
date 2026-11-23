@@ -719,26 +719,44 @@
     setTimeout(function () { input.focus(); }, 50);
   }
 
-  /* 已登录：状态面板 */
+  /* 已登录：状态面板
+     开着的时候其实不需要再盯着 Gist ID 看——那串东西只在出问题、
+     或者要手动对账时才有用，所以收进「技术信息」里，默认只留
+     「立即同步 / 新设备扫码」这两件真会按的事。 */
   function panelLogged() {
     var code = localStorage.getItem(CODE) || "";
+    var gid = (localStorage.getItem(GID) || "").trim();
     box.innerHTML =
       '<h3>☁ 同步已开启</h3>' +
-      (mode() === "gist"
-        ? '<div class="who">GitHub Gist<br>ID：<b>' +
-          esc(localStorage.getItem(GID) || "（保存后自动创建）") + '</b></div>'
-        : '<div class="who">自建服务器<br>登录名：<b>' + esc(code) + '</b></div>') +
+      '<div class="who">' +
+        (mode() === "gist"
+          ? '这台设备的进度会自动存到你的 GitHub Gist。'
+          : '这台设备的进度会自动存到你的自建服务器。') +
+      '</div>' +
 
       '<div class="btns">' +
         '<button class="primary" id="syncnow">立即同步</button>' +
-        (mode() === "gist" && (localStorage.getItem(GID) || "").trim()
+        (mode() === "gist" && gid
           ? '<button id="syncqrbtn">📱 新设备扫码</button>' : "") +
         '<button class="danger" id="syncout">退出登录</button>' +
         '<button class="ghost" id="syncclose">关闭</button>' +
       '</div>' +
+      '<p class="hint"><span class="more" id="syncinfo">🔎 技术信息 ›</span>' +
+        '<span id="syncinfobox" style="display:none">' +
+          (mode() === "gist"
+            ? '<br>Gist ID：<b>' + esc(gid || "（保存后自动创建）") + '</b>'
+            : '<br>登录名：<b>' + esc(code) + '</b>') +
+        '</span></p>' +
       '<p class="hint"><span class="more" id="syncsrv2">⚙️ 同步方式 / 测试连接 ›</span></p>';
 
+    box.querySelector("#syncinfo").onclick = function () {
+      var b = box.querySelector("#syncinfobox");
+      var open = b.style.display !== "none";
+      b.style.display = open ? "none" : "inline";
+      this.textContent = open ? "🔎 技术信息 ›" : "🔎 技术信息 ⌄";
+    };
     box.querySelector("#syncnow").onclick = function () { close(); boot(); };
+
     if (box.querySelector("#syncqrbtn"))
       box.querySelector("#syncqrbtn").onclick = function () { panelQR(panelLogged); };
     box.querySelector("#syncsrv2").onclick = function () { panelServer(panelLogged); };
