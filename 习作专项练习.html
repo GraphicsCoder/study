@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>语文专项训练 · 习作把话写具体（四年级）</title>
+<link rel="icon" href="favicon.svg?v=2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<style>
+  :root{
+    --bg:#f7f6f4; --card:#fff; --ink:#1f2430; --muted:#6b7280;
+    --line:#e7e3dd; --brand:#a8432a; --brand-soft:#fbeee9;
+    --ok:#15803d; --ok-soft:#e8f6ed; --no:#c2410c; --no-soft:#fdeee6;
+    --warn:#92400e; --warn-soft:#fef6e7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.65;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 16px 80px}
+  header.top{background:linear-gradient(135deg,#a8432a,#c9704f);color:#fff;
+    border-radius:16px;padding:22px 24px;margin-bottom:18px}
+  header.top h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  header.top p{margin:0;opacity:.93;font-size:14px}
+  header.top a{color:#fff}
+  .score-bar{display:flex;align-items:center;gap:12px;margin-top:14px;
+    background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px}
+  .bar{flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:#fff;transition:width .35s}
+
+  details.guide{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.guide summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px}
+  details.guide summary::marker{color:var(--brand)}
+  details.guide h4{margin:14px 0 6px;font-size:15px;color:#8a3522}
+  .rule{background:var(--brand-soft);border-radius:10px;padding:10px 14px;margin:8px 0 14px;font-size:15px;line-height:1.95}
+  .pitfall{background:var(--warn-soft);border-left:4px solid #e9a23b;border-radius:8px;padding:10px 14px;margin:8px 0 14px;font-size:14px}
+  .steps4{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
+  .steps4 div{flex:1;min-width:150px;background:var(--brand-soft);border-radius:10px;padding:10px 14px;font-size:14px}
+  .steps4 .k{font-size:20px;font-weight:700;color:#8a3522;line-height:1.3}
+  table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 14px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:#f3f1ed;font-weight:600}
+  td b{color:var(--brand)}
+
+  nav.jump{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  nav.jump a{font-size:13px;text-decoration:none;color:var(--brand);background:#fff;
+    border:1px solid var(--line);border-radius:99px;padding:6px 12px}
+  nav.jump a:hover{background:var(--brand-soft)}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .tools .pill{font-size:13px;color:var(--muted);margin-left:auto}
+  details.mistakes{background:var(--card);border:1px solid #f0b48e;border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.mistakes summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px;color:var(--no)}
+  ol.mlist{margin:0 0 14px;padding-left:22px;font-size:14.5px}
+  ol.mlist li{margin:7px 0}
+  ol.mlist a{color:var(--brand);text-decoration:none}
+  ol.mlist a:hover{text-decoration:underline}
+  ol.mlist .where{color:var(--muted);font-size:12.5px;margin-left:6px}
+  .empty{color:var(--muted);font-size:14px;padding:4px 0 14px}
+
+  section.set{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px 20px;margin-bottom:20px;scroll-margin-top:12px}
+  section.set h2{margin:0 0 4px;font-size:19px}
+  .tip{font-size:13.5px;color:var(--muted);margin:0 0 14px}
+  .setbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .setbar .sc{font-size:13px;color:var(--muted);margin-left:auto}
+
+  /* 阅读材料 */
+  .passage{background:#fdfcfa;border:1px solid var(--line);border-left:4px solid var(--brand);
+    border-radius:10px;padding:16px 18px;margin:10px 0 18px;font-size:16px;line-height:2.05}
+  .passage h3{margin:0 0 2px;font-size:18px;text-align:center;letter-spacing:1px}
+  .passage .by{text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px}
+  .passage p{margin:0 0 10px;text-indent:2em}
+  .passage .pn{color:var(--brand);font-weight:700;margin-right:2px}
+  .passage .mat{font-weight:600;color:#8a3522;text-indent:0;margin:14px 0 4px}
+  .passage table{margin:4px 0 10px;font-size:14px}
+  .passage ol{margin:4px 0 10px;padding-left:24px}
+  .passage ol li{margin:4px 0}
+
+  .item{border-top:1px dashed var(--line);padding:14px 0;border-left:3px solid transparent;scroll-margin-top:16px;transition:background .3s}
+  .item.wrong{border-left-color:var(--no);background:#fff8f4;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.half{border-left-color:#e9a23b;background:var(--warn-soft);padding-left:12px;border-radius:0 8px 8px 0}
+  .item.fixed{border-left-color:#86d7a5;background:#f7fcf9;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flagged{border-left-color:#e9a23b;background:var(--warn-soft);padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flash{background:#fff3cd}
+  .q{font-size:16px;margin:0 0 9px;line-height:1.9}
+  .q .n{display:inline-block;min-width:26px;color:var(--muted);font-size:14px}
+  .q .tag{font-size:12px;border-radius:99px;padding:2px 8px;margin-right:6px;
+    background:var(--brand-soft);color:#8a3522;vertical-align:1px;white-space:nowrap}
+  .badge{font-size:12px;border-radius:99px;padding:2px 9px;margin-left:8px;vertical-align:2px;white-space:nowrap}
+  .badge.wrong{background:var(--no-soft);color:var(--no);border:1px solid #f0b48e}
+  .badge.half{background:var(--warn-soft);color:var(--warn);border:1px solid #e9a23b}
+  .badge.fixed{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+  .badge.ok{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+
+  .opts{display:flex;flex-direction:column;gap:7px;margin:0 0 8px 26px}
+  button.opt{font-family:inherit;font-size:15px;padding:9px 14px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;text-align:left;line-height:1.6}
+  button.opt:hover{background:var(--brand-soft)}
+  button.opt.pick{border-color:var(--brand);background:var(--brand-soft);font-weight:600}
+  button.opt.good{border-color:#86d7a5;background:var(--ok-soft);color:var(--ok);font-weight:600}
+  button.opt.bad{border-color:#f0b48e;background:var(--no-soft);color:var(--no)}
+  input.blank{width:120px;padding:4px 7px;font-size:16px;font-family:inherit;text-align:center;
+    border:0;border-bottom:2px solid #c9ced8;background:#fcfcfd;margin:0 3px}
+  input.blank:focus{outline:none;border-bottom-color:var(--brand);background:#fff}
+  input.blank.good{border-bottom-color:#2f9e5f;background:var(--ok-soft);color:var(--ok)}
+  input.blank.bad{border-bottom-color:#e07a3f;background:var(--no-soft);color:var(--no)}
+  textarea.ans{display:block;width:calc(100% - 26px);margin:0 0 8px 26px;min-height:76px;
+    padding:10px 12px;font-size:16px;font-family:inherit;line-height:1.9;
+    border:1px solid var(--line);border-radius:10px;background:#fcfcfd;resize:vertical}
+  textarea.ans:focus{outline:none;border-color:var(--brand);background:#fff}
+  .selfbar{display:none;gap:8px;flex-wrap:wrap;margin:0 0 8px 26px;align-items:center}
+  .selfbar.show{display:flex}
+  .selfbar .lab{font-size:13.5px;color:var(--muted)}
+  button.self{font-size:13.5px;padding:7px 12px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;font-family:inherit}
+  button.self.pick[data-v="1"]{border-color:#86d7a5;background:var(--ok-soft);color:var(--ok);font-weight:600}
+  button.self.pick[data-v="0.5"]{border-color:#e9a23b;background:var(--warn-soft);color:var(--warn);font-weight:600}
+  button.self.pick[data-v="0"]{border-color:#f0b48e;background:var(--no-soft);color:var(--no);font-weight:600}
+
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:26px}
+  button{font-family:inherit;font-size:13.5px;padding:8px 13px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink)}
+  button:hover{background:#f3f1ed}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.primary:hover{filter:brightness(1.07)}
+  button.flag{padding:7px 10px;line-height:1}
+  button.flag.on{background:var(--warn-soft);border-color:#e9a23b}
+  .fb{margin:8px 0 0 26px;font-size:14px;display:none}
+  .fb.show{display:block}
+  .fb .good{color:var(--ok)} .fb .bad{color:var(--no)} .fb .note{color:var(--warn)}
+  .reveal{display:none;margin:8px 0 0 26px;font-size:15px;background:var(--ok-soft);
+    border-left:4px solid #86d7a5;border-radius:8px;padding:10px 14px;line-height:1.9}
+  .reveal.show{display:block}
+  .reveal b{color:#13603f}
+  .reveal ul{margin:6px 0 0;padding-left:22px}
+  .reveal li{margin:3px 0}
+  .why{display:block;color:#4a5568;font-size:13.5px;margin-top:5px}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:10px}
+
+  body.only-wrong .item:not(.wrong):not(.half):not(.flagged){display:none}
+  body.only-wrong section.set.nowrong{display:none}
+  body.only-wrong details.guide{display:none}
+
+  /* ---------- 手机 / 小屏适配 ---------- */
+  @media (max-width:640px){
+    .wrap{padding:12px 10px 60px}
+    header.top{padding:16px 14px;border-radius:12px;margin-bottom:14px}
+    header.top h1{font-size:20px}
+    header.top p{font-size:13px;line-height:1.8}
+    .score-bar{font-size:12.5px;padding:7px 10px;gap:8px}
+    details.guide,details.mistakes{padding:2px 12px;border-radius:12px}
+    details.guide summary,details.mistakes summary{font-size:15px}
+    .rule{font-size:14px;padding:10px 11px}
+    .pitfall{font-size:13px;padding:10px 11px}
+    .steps4 div{min-width:100%}
+    table{font-size:12.5px}
+    th,td{padding:5px 6px}
+    nav.jump{gap:6px}
+    nav.jump a{font-size:12.5px;padding:5px 10px}
+    .tools{gap:6px}
+    .tools .pill{margin-left:0;width:100%;font-size:12.5px}
+    section.set{padding:14px 12px;border-radius:12px;margin-bottom:14px}
+    section.set h2{font-size:17px}
+    .tip{font-size:13px}
+    .setbar .sc{margin-left:0;width:100%}
+    .passage{padding:13px 14px;font-size:15.5px;line-height:1.95}
+    .passage h3{font-size:17px}
+    .q{font-size:15px}
+    .q .n{min-width:20px}
+    .opts,.row,.selfbar{margin-left:6px}
+    .fb,.reveal{margin-left:6px}
+    .reveal{padding:9px 11px;font-size:14px}
+    textarea.ans{width:calc(100% - 6px);margin-left:6px}
+    button.opt{font-size:14px;padding:9px 11px}
+    button{font-size:13px;padding:9px 11px}
+    button.flag{padding:9px 10px}
+    input.blank{font-size:16px;width:100px;max-width:42vw}
+  }
+  @media print{
+    body{background:#fff}
+    nav.jump,.tools,.setbar button,.row button,.selfbar,header.top .score-bar,details.mistakes{display:none}
+    .reveal{display:block !important}
+    section.set{break-inside:avoid;border:0;padding:0}
+    .passage{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>习作 · 把话写具体</h1>
+  <p>四年级语文 · 6 个专项 · 35 题 · 写具体 / 比喻拟人 / 五感和动作 / 照样子写句子 / 段落 / 开头结尾<br>
+  <a href="index.html">🏠 全部练习</a> ｜ 语文：<a href="阅读理解专项练习.html">阅读理解</a> ｜ 英语：<a href="英语4A词汇闯关.html">4A 词汇闯关</a></p>
+  <div class="score-bar">
+    <span>总进度</span><span class="bar"><i id="totalBar"></i></span>
+    <span id="totalTxt">0 / 0 题答对</span>
+  </div>
+</header>
+
+<details class="guide" open>
+  <summary>✍️ 怎么把一句话写具体（先看这里）</summary>
+
+  <h4>① 三步把干巴句子撑起来</h4>
+  <div class="steps4">
+    <div><div class="k">一问</div>对着句子问自己：<b>谁？什么样的？怎样地？在哪儿？结果怎么样？</b>问题越多，能写的就越多。</div>
+    <div><div class="k">二加</div>把答出来的词<b>加回句子里</b>：加修饰语（什么样的）、加状语（怎样地）、加结果。</div>
+    <div><div class="k">三换</div>把笼统的词<b>换成看得见的画面</b>：别写"很开心"，写"嘴角咧到耳朵根"。</div>
+    <div><div class="k">查</div>读一遍：<b>有没有废话</b>？具体 ≠ 啰嗦，重复和凑字数要删掉。</div>
+  </div>
+
+  <h4>② 写具体的五个常用办法</h4>
+  <table>
+    <tr><th>办法</th><th>干巴的</th><th>具体的</th></tr>
+    <tr><td><b>加修饰</b></td><td>小狗跑过来。</td><td><b>那只黄色的</b>小狗<b>摇着尾巴</b>，<b>飞快地</b>朝我跑过来。</td></tr>
+    <tr><td><b>拆动作</b></td><td>我吃了个苹果。</td><td>我<b>擦了擦</b>苹果，<b>咬下</b>一大口，果汁<b>顺着下巴流</b>了下来。</td></tr>
+    <tr><td><b>用感官</b></td><td>厨房在做菜。</td><td>油锅<b>滋啦</b>一响，<b>香味</b>一下子钻进鼻子，我<b>的口水都快下来了</b>。</td></tr>
+    <tr><td><b>打比方</b></td><td>月亮很弯。</td><td>月亮<b>像一把银色的小镰刀</b>，挂在树梢上。</td></tr>
+    <tr><td><b>不说情绪，写表现</b></td><td>我很紧张。</td><td>我<b>手心全是汗</b>，<b>心跳得像敲鼓</b>，<b>腿肚子直打颤</b>。</td></tr>
+  </table>
+
+  <h4>③ 比喻和拟人，别认错</h4>
+  <div class="rule">
+    <b>比喻</b>——把甲<u>说成</u>乙，两样东西<b>不是同一类</b>。例：云朵像棉花糖。<br>
+    ⚠ 有"好像"<b>不一定</b>是比喻：<i>他好像在哪儿见过你</i>（表猜测）、<i>弟弟长得像爸爸</i>（同类相比），都不是。<br>
+    <b>拟人</b>——把东西<u>当人写</u>，它会笑、会说、会招手。例：风一吹，小草<b>点着头</b>。<br>
+    <b>排比</b>——三句以上结构相似连用；<b>夸张</b>——故意说大说小；<b>反问</b>——明知故问，答案在问句里。
+  </div>
+
+  <h4>④ 一段话怎么写</h4>
+  <table>
+    <tr><th>要求</th><th>做法</th></tr>
+    <tr><td><b>围绕一个意思</b></td><td>先写<b>中心句</b>（这段要说什么），后面每句都为它服务，<b>跑题的句子要删</b>。</td></tr>
+    <tr><td><b>按顺序写</b></td><td>事情按<b>先后</b>，景物按<b>方位</b>（由远到近、从上到下），活动按<b>过程</b>。</td></tr>
+    <tr><td><b>写出层次</b></td><td>常用<b>有的……有的……还有的……</b>、<b>先……接着……然后……最后……</b>。</td></tr>
+  </table>
+
+  <div class="pitfall">
+    <b>最常丢分的五处</b><br>
+    ① <b>只写结论不写过程</b>——"我很高兴""很好玩"是评语，不是描写；<br>
+    ② <b>啰嗦当具体</b>——同一个意思换着说三遍，还是一句话的信息；<br>
+    ③ <b>比喻不恰当</b>——本体和喻体不像，或者是同类相比；<br>
+    ④ <b>一段里装两个意思</b>——中心句一个，跑题的句子要删掉；<br>
+    ⑤ <b>开头结尾套话</b>——"在我的记忆长河里"这种开头，不如直接从事情开始写。
+  </div>
+</details>
+
+<nav class="jump" id="jump"></nav>
+<div class="tools">
+  <button id="btnOnlyWrong">只看错题 🔍</button>
+  <button id="btnRedo">重做所有错题</button>
+  <button id="btnClearMarks">清除错题记录</button>
+  <span class="pill" id="markStat"></span>
+</div>
+<details class="mistakes" id="mbox">
+  <summary id="msum">📕 错题本（0）</summary>
+  <div id="mlist"></div>
+</details>
+
+<div id="app"></div>
+<footer>选择题和填空题自动批改 · 写话题对照参考答案和自检点后自评 · 做错自动进错题本 · 记录保存在本机浏览器 · Ctrl+P 打印自动显示答案</footer>
+</div>
+
+<script>
+/* 题型：
+   choice = 单选题，自动批改
+   fill   = 填空题（q 里的 【】 是空），自动批改，as 里给可接受的多种说法
+   open   = 开放题，写完对照参考答案后自评（对 / 不全 / 不对）
+*/
+const DATA = [
+{
+  id:"w1", title:"专项一 · 把句子写具体",
+  tip:"练：对着干巴句子提问，把「什么样的、怎样地、结果怎样」补进去。具体 ≠ 字数多。",
+  passage:{ title:"看一个例子是怎么长大的", html:`
+    <p><b>原句：</b>小狗跑过来。</p>
+    <p><b>一问：</b>什么样的小狗？怎样跑？朝谁跑？跑过来做什么？</p>
+    <p><b>二加：</b>那只黄色的小狗摇着尾巴，飞快地朝我跑过来。</p>
+    <p><b>三换：</b>把"很高兴"换成看得见的动作——它一边跑一边把耳朵甩得啪啪响，到我脚边就打了个滚。</p>`},
+  items:[
+    {t:"choice", q:`下面哪一句写得最具体？`, opts:[
+      `天很冷。`,
+      `天非常非常冷。`,
+      `今天真是冷极了，冷得不得了。`,
+      `风一吹，脸上像被人用小刀子划了一下，手指冻得不听使唤。`],
+     a:3, why:`"非常非常""冷极了"只是把同一个结论喊得更大声，信息还是"冷"。D 没有说"冷"，却让人感觉到冷——这才叫写具体。`},
+
+    {t:"choice", q:`要把"风吹着树叶"写具体，先问自己哪一组问题最有用？`, opts:[
+      `风是谁发明的？树叶是什么颜色的？`,
+      `什么样的风？怎样吹？树叶被吹成什么样子？发出什么声音？`,
+      `这是哪一年？作者几岁？`,
+      `这句话有几个字？`],
+     a:1, why:`写具体靠的是"什么样的 / 怎样地 / 结果怎样"这三类问题，问的都是句子本身能长出来的内容。`},
+
+    {t:"choice", q:`下面哪一句不是写具体，而是啰嗦？`, opts:[
+      `她端着一碗热汤，小步小步地往前挪，眼睛一直盯着碗沿。`,
+      `那碗汤很烫很烫，特别烫，烫得不行，非常非常烫。`,
+      `汤面上浮着几点油花，白汽一股一股往上冒。`,
+      `她把碗放下时，手指尖红了一圈。`],
+     a:1, why:`换着花样重复"烫"，并没有给出新画面。具体是"多了内容"，啰嗦是"多了字数"。`},
+
+    {t:"fill", q:`把结论换成表现：不说"他很着急"，可以写他【　　】（写一个动作或身体反应）。`,
+     as:[[`跺脚`,`来回走`,`不停看表`,`一直看表`,`搓手`,`抓头发`,`满头大汗`,`来回踱步`,`跑来跑去`,`不停地跺脚`,`额头冒汗`,`坐立不安`]],
+     why:`"着急"是结论，读者看不见。写他跺脚、搓手、一分钟看三次表，读者自己就会得出"他很着急"。`},
+
+    {t:"open", q:`把"妈妈在做饭。"扩写成 30 字以上的一句或两句话，要求至少写到一个动作和一种声音或气味。`,
+     ref:`妈妈系着那条蓝围裙，把切好的青菜倒进锅里，"滋啦"一声，白汽腾起来，香味顺着厨房门飘了满屋。`,
+     points:[`写出妈妈在做什么具体动作（切、倒、翻炒……）`,`有声音（滋啦、咕嘟）或气味（香味、油烟味）`,`句子通顺，不少于 30 字`,`没有只喊"做得很好吃"这类结论`],
+     why:`做饭这件事能写的有三样：动作、声音、气味。抓住其中两样，句子立刻就有画面了。`},
+
+    {t:"open", q:`把"下课了，操场上很热闹。"写成一段 50 字左右的话，用上"有的……有的……还有的……"。`,
+     ref:`下课铃一响，操场一下子满了：有的追着跑，鞋底把土都带起来；有的围成一圈踢毽子，毽子在半空忽上忽下；还有的靠在栏杆上说悄悄话，笑得直不起腰。`,
+     points:[`用上"有的……有的……还有的……"`,`每一个"有的"后面都有具体动作，不是只写"有的在玩"`,`能写出声音或样子`,`开头或结尾点出"热闹"`],
+     why:`"有的……有的……"是把笼统的"热闹"拆成几个看得见的场面，最省力也最有效的办法。`},
+
+    {t:"open", q:`不许出现"紧张"两个字，写三句话表现"我"上台前的紧张。`,
+     ref:`我的手心全是汗，在裤子上擦了一遍又一遍。心跳得像有人在里面擂鼓，连耳朵都嗡嗡的。我低头看稿子，上面的字好像全在打转。`,
+     points:[`至少三句，每句写一个不同的身体反应或动作`,`没有出现"紧张"两个字`,`写到了手、心跳、腿、眼睛之类具体部位`,`读起来确实让人感到紧张`],
+     why:`写情绪的秘诀：情绪词是不许用的，只能写它在身体上留下的痕迹。`}
+  ]
+},
+{
+  id:"w2", title:"专项二 · 用上比喻和拟人",
+  tip:"练：认出比喻和拟人，并且自己写得出、写得恰当。有「好像」不一定是比喻。",
+  passage:{ title:"两个句子，两种写法", html:`
+    <p><b>比喻</b>：月亮像一把银色的小镰刀，挂在树梢上。（把<u>月亮</u>说成<u>镰刀</u>，两样东西不是同一类）</p>
+    <p><b>拟人</b>：风一吹，小草齐刷刷地点起头来。（小草会"点头"，这是人的动作）</p>
+    <p><b>不是比喻</b>：弟弟长得像爸爸。（同类相比）／ 他好像在哪儿见过你。（表示猜测）</p>`},
+  items:[
+    {t:"choice", q:`下面哪一句是比喻句？`, opts:[
+      `这朵云好像要下雨了。`,
+      `妹妹的脸红扑扑的，像两个熟透的苹果。`,
+      `他长得像他哥哥。`,
+      `我好像听见有人叫我。`],
+     a:1, why:`A、D 的"好像"表示猜测，C 是同类相比。只有 B 把"脸"说成"苹果"，本体和喻体不同类，才是比喻。`},
+
+    {t:"choice", q:`下面哪一句用了拟人？`, opts:[
+      `湖面平得像一面镜子。`,
+      `柳条在水面上轻轻地划着。`,
+      `小河唱着歌，一路向东跑去。`,
+      `远处的山一层比一层淡。`],
+     a:2, why:`"唱歌""跑"都是人才会做的事，安在小河身上就是拟人。A 是比喻，B、D 是普通描写。`},
+
+    {t:"choice", q:`"教室里安静得像＿＿＿＿。"填哪个最恰当？`, opts:[
+      `一个大操场`,
+      `深夜的图书馆`,
+      `一台洗衣机`,
+      `过年的时候`],
+     a:1, why:`比喻要贴切：喻体必须本来就安静。洗衣机吵、操场空旷但不一定安静、过年更热闹。`},
+
+    {t:"fill", q:`补成比喻句：秋天的枫叶红得像【　　】。`,
+     as:[[`火`,`一团火`,`火焰`,`燃烧的火`,`火把`,`晚霞`,`一片晚霞`,`红灯笼`,`小手掌`]],
+     why:`喻体要和"红"这个特点对得上，火、晚霞、灯笼都行；写"像树叶"就成了同类相比，不算比喻。`},
+
+    {t:"open", q:`用拟人的写法，写一句关于秋风的话。`,
+     ref:`秋风踮着脚走进院子，把树上的叶子一片一片地摘下来，又轻轻放在地上。`,
+     points:[`给秋风安上人的动作或心情（走、摘、叹气、招手……）`,`句子通顺，意思完整`,`不是单纯写"秋风很凉"`,`能看出画面`],
+     why:`拟人的做法很简单：先想"如果它是个人，它在做什么"，再把这个动作写下来。`},
+
+    {t:"open", q:`用比喻写一句话，描写天上的云。要求本体和喻体不是同一类东西。`,
+     ref:`一大团白云堆在山顶上，像刚从锅里盛出来的棉花糖，软得能陷进去。`,
+     points:[`出现"像 / 好像 / 仿佛 / 是"之类的比喻词`,`喻体和云不是同一类（不能说"像另一朵云"）`,`抓住了云的某一个特点：白、软、厚、飘`,`句子通顺`],
+     why:`检查比喻是否成立，就看两样东西"不同类"又"在某一点上像"，缺一个都不算。`}
+  ]
+},
+{
+  id:"w3", title:"专项三 · 用感官写，把动作拆开",
+  tip:"练：眼睛、耳朵、鼻子、舌头、身体，五个入口；一个动作拆成几个小动作。",
+  passage:{ title:"同一件事的两种写法", html:`
+    <p><b>笼统：</b>我吃了一个苹果，很好吃。</p>
+    <p><b>拆开动作 + 用上感官：</b>我在袖子上把苹果蹭了两下，咔嚓咬下一大口。果汁顺着下巴往下淌，甜里带一点酸，连牙齿都被凉得一激灵。</p>`},
+  items:[
+    {t:"choice", q:`"远处传来几声闷闷的雷响。"这句话用的是哪种感官？`, opts:[`视觉（看）`,`听觉（听）`,`嗅觉（闻）`,`味觉（尝）`],
+     a:1, why:`"雷响"是耳朵接收到的，属于听觉。写景时如果只用眼睛看，文章会很单薄。`},
+
+    {t:"choice", q:`下面哪一句同时用到了两种以上的感官？`, opts:[
+      `桂花开了，满树都是。`,
+      `桂花是金黄色的。`,
+      `风一吹，碎金似的桂花落了一身，香味往鼻子里直钻，落在脖子上凉丝丝的。`,
+      `桂花很香。`],
+     a:2, why:`C 里有看（碎金似的）、闻（香味）、身体的感觉（凉丝丝）。感官越多，画面越立体。`},
+
+    {t:"choice", q:`把"他打开了门"拆成几个小动作，下面哪一种拆法是对的？`, opts:[
+      `他打开门，他把门打开，门被他打开了。`,
+      `他掏出钥匙，对准锁孔插进去，手腕一拧，"咔哒"一声，门开了。`,
+      `他很快地打开了门。`,
+      `门开了，他进去了，他关上了门。`],
+     a:1, why:`拆动作是把一个大动作切成"掏—插—拧—响—开"几个小步骤，不是把同一句话换着说。`},
+
+    {t:"open", q:`用三种以上的感官，写"厨房里正在炸带鱼"这个场面，50 字左右。`,
+     ref:`油锅先是"滋"地轻响了一下，接着炸开了一片噼里啪啦。带鱼的边上慢慢翘起金黄的壳，香味裹着一点鱼腥味直往鼻子里钻，油星子蹦到手背上，烫得我直往后缩。`,
+     points:[`至少三种感官：看 / 听 / 闻 / 尝 / 身体感觉`,`有具体的声音词（滋、噼里啪啦）`,`写出颜色或样子的变化`,`不少于 50 字且通顺`],
+     why:`厨房题材最适合练感官：声音、气味、颜色、烫，四样都是现成的。`},
+
+    {t:"open", q:`把"我爬上了山顶。"扩写成一段话，要求把"爬"这个动作拆成至少三个小动作，并写出身体的感觉。`,
+     ref:`我手脚并用地抓住路边的石棱，一步一停往上挪。腿越来越沉，像绑了沙袋；汗顺着下巴滴在石头上，留下一个个小黑点。最后一级台阶，我是用手撑着膝盖顶上去的。`,
+     points:[`至少三个小动作（抓、挪、撑、停、喘……）`,`写出身体感觉（腿沉、喘、汗、心跳）`,`有先后顺序，读得出过程`,`不少于 40 字`],
+     why:`"爬上山顶"四个字只是结果。把过程拆开写，辛苦才看得见，最后的成就感才站得住。`}
+  ]
+},
+{
+  id:"w4", title:"专项四 · 照样子写句子",
+  tip:"练：排比、反问、夸张、关联词、把字句被字句——考试里「仿写句子」的那一类。",
+  passage:{ title:"几个样子", html:`
+    <p><b>排比：</b>春天是一支歌，是一幅画，是一首读不完的诗。</p>
+    <p><b>反问：</b>这么美的风景，难道不值得多看两眼吗？（意思 = 值得多看两眼）</p>
+    <p><b>夸张：</b>教室里静得连一根针掉在地上都听得见。</p>
+    <p><b>把字句 / 被字句：</b>他把书包放在了桌上。 ↔ 书包被他放在了桌上。</p>`},
+  items:[
+    {t:"choice", q:`"难道这不是一个奇迹吗？"改成陈述句，哪一句对？`, opts:[
+      `这不是一个奇迹。`,
+      `这是一个奇迹。`,
+      `这难道是一个奇迹。`,
+      `这是不是一个奇迹？`],
+     a:1, why:`反问句改陈述句：去掉"难道……吗"，有"不"去掉"不"，没"不"加上"不"，问号改句号。`},
+
+    {t:"fill", q:`填关联词：【　　】明天下雨，运动会【　　】要照常举行。`,
+     as:[[`即使`,`就算`,`哪怕`,`就是`],[`也`,`都`]],
+     why:`前后是"让一步再说"的关系，用"即使……也……"。关联词要先看两句话之间是什么关系，再挑词。`},
+
+    {t:"fill", q:`把字句改被字句：风把我的作业纸吹到了院子里。改成：我的作业纸【　　】吹到了院子里。`,
+     as:[[`被风`,`让风`,`给风`]],
+     why:`把字句变被字句：原来的"把"前面那个人或物挪到"被"后面，受影响的东西提到最前面。`},
+
+    {t:"choice", q:`下面哪一句是夸张？`, opts:[
+      `他饿得能吃下一头牛。`,
+      `他今天吃了三碗饭。`,
+      `他吃饭的样子像只小老虎。`,
+      `他不太饿，只吃了半碗。`],
+     a:0, why:`"能吃下一头牛"故意说大，是夸张；C 是比喻；B、D 是如实叙述。`},
+
+    {t:"open", q:`照样子写排比句：<br>例：书是一把钥匙，是一扇窗户，是一条通向远方的路。<br>以"友谊"或"秋天"开头写一句。`,
+     ref:`秋天是一地金黄的落叶，是一阵带着桂花香的风，是一筐刚从树上摘下来的沉甸甸的果子。`,
+     points:[`三个或三个以上分句`,`结构相似（都用"是……"或都用同样的句式）`,`内容贴着主题，不跑题`,`读起来有节奏`],
+     why:`排比的关键是"结构一样、数量三个起"，内容要从同一个主题里长出来。`},
+
+    {t:"open", q:`用夸张的写法，写一句表现"今天真热"的话。`,
+     ref:`太阳底下站了五分钟，我觉得自己快被烤成一张煎饼了。`,
+     points:[`明显地把程度往大里说`,`不写"今天很热很热"这种干喊`,`句子有画面感`,`通顺`],
+     why:`夸张要往"不可能"的方向走一步，但得让人一读就明白你在说什么。`}
+  ]
+},
+{
+  id:"w5", title:"专项五 · 一段话怎么写",
+  tip:"练：围绕一个意思写、按顺序写、把跑题的句子挑出来、给句子排序。",
+  passage:{ title:"围绕一个意思写的样子", html:`
+    <p>①课间十分钟，走廊里最忙的是三班门口那块空地。②两个男生背靠背跳皮筋，裤脚甩得啪啪响。③旁边一圈人踢毽子，毽子落下去又被一脚挑起来。④连平时最安静的小方都挤在人群里，喊得脸通红。</p>
+    <p>第①句是<b>中心句</b>——这段要写"课间走廊很忙"；后面每一句都在给它作证。</p>`},
+  items:[
+    {t:"choice", q:`上面这段话的中心句是哪一句？`, opts:[`第①句`,`第②句`,`第③句`,`第④句`],
+     a:0, why:`中心句常在段首，它先说出这一段的意思，后面的句子都围着它转。`},
+
+    {t:"choice", q:`写"我们班的图书角很受欢迎"这一段，下面哪一句应该删掉？`, opts:[
+      `一下课，图书角前面就围了一圈人。`,
+      `最抢手的是那本《昆虫记》，常常刚放回去就被人抽走。`,
+      `我家门口新开了一家面包店，味道很好。`,
+      `连值日生都要先看两页再去扫地。`],
+     a:2, why:`一段话只能围绕一个意思。面包店和图书角没关系，再好的句子也要删。`},
+
+    {t:"fill", q:`把下面的句子排成一段通顺的话，按顺序填序号（如 ③①②④）：<br>①我把种子轻轻放进去，盖上一层薄土。<br>②第二天一早，我第一件事就是去看它。<br>③放学回家，我找来一个旧花盆，装上松软的泥土。<br>④浇过水，我把花盆端到阳台上，让它晒太阳。<br>答：【　　】`,
+     as:[[`③①④②`]],
+     why:`按事情发展的先后排：找花盆装土 → 放种子盖土 → 浇水搬去阳台 → 第二天去看。`},
+
+    {t:"choice", q:`写景的一段话，下面哪种顺序最清楚？`, opts:[
+      `想到哪儿写到哪儿`,
+      `按方位：由远到近、从上到下`,
+      `按字数多少排`,
+      `先写结尾再写开头`],
+     a:1, why:`写景常用方位顺序（远—近、上—下、左—右），读者才能跟着你的眼睛走一遍。`},
+
+    {t:"open", q:`以"放学路上的小摊真香"为中心句，写一段 60 字左右的话，后面每句都要围着这个意思写。`,
+     ref:`放学路上的小摊真香。老远就闻见烤红薯那股甜味，顺着风一阵一阵往鼻子里钻。再走两步，煎饼摊上"刺啦"一声，鸡蛋摊开在铁板上，香味一下子漫了半条街。我咽了口口水，脚步不自觉地慢了下来。`,
+     points:[`第一句就是中心句`,`后面至少三句都在写"香"`,`用上气味、声音或动作的具体描写`,`没有跑题的句子`],
+     why:`围绕一个意思写，检查办法很简单：把每一句都和中心句对一遍，对不上的就删。`}
+  ]
+},
+{
+  id:"w6", title:"专项六 · 开头、结尾和题目",
+  tip:"练：开门见山地开头、首尾呼应的结尾、给作文起个好题目。",
+  passage:{ title:"两种开头", html:`
+    <p><b>套话开头：</b>在我记忆的长河里，有许许多多难忘的事，就像天上的星星数也数不清……（写了三行还没进入正题）</p>
+    <p><b>开门见山：</b>那天我第一次自己煮饭，差点把一袋米全撒在地上。（一句话就把人拉进事情里）</p>`},
+  items:[
+    {t:"choice", q:`写《第一次做饭》，下面哪个开头最好？`, opts:[
+      `在我记忆的长河里，有许许多多难忘的事情，就像天上的星星一样数也数不清。`,
+      `今天我很开心，因为我做了一件很有意义的事情。`,
+      `米袋比我想的沉，一不留神，哗啦一下，白花花的米撒了一地。`,
+      `大家好，今天我要给你们讲一个故事。`],
+     a:2, why:`开门见山，从最有画面的那一刻切进去，读者立刻想知道"后来呢"。套话开头谁都会写，也谁都不爱看。`},
+
+    {t:"choice", q:`"首尾呼应"是指：`, opts:[
+      `开头和结尾字数一样多`,
+      `结尾再提一次开头提到的事物或句子，让文章合上`,
+      `开头和结尾都用感叹号`,
+      `结尾把开头原样抄一遍`],
+     a:1, why:`呼应是"回扣"，不是"复制"。开头写米撒了一地，结尾写"那碗饭是我自己煮的"，就扣上了。`},
+
+    {t:"choice", q:`下面哪个题目最吸引人、也最贴合"写一次煮饭失败又成功的经历"？`, opts:[
+      `记一件事`,
+      `我的一天`,
+      `那碗有点硬的米饭`,
+      `做饭`],
+     a:2, why:`好题目要具体、要有一点悬念。"那碗有点硬的米饭"既点出事，又让人想知道为什么硬。`},
+
+    {t:"open", q:`给"一次拔河比赛"这篇作文想两个题目，要求不用《一次拔河比赛》这种直白的写法。`,
+     ref:`《最后三厘米》《手心里的那条绳》`,
+     points:[`两个题目`,`都和拔河这件事有关`,`具体，有画面或有悬念`,`没有直接用"一次……比赛"的格式`],
+     why:`起题目的两个办法：抓一个关键细节（绳子、手心、三厘米），或者抓最后的那句话。`},
+
+    {t:"open", q:`一篇作文的开头是："操场边那棵老槐树，是我们班的秘密基地。"请写一个和它呼应的结尾。`,
+     ref:`毕业那天，我们又在老槐树下站了一会儿。风一吹，叶子沙沙地响，好像在替我们把那些秘密收好。`,
+     points:[`结尾里再次出现老槐树`,`和"秘密基地"这个说法有呼应`,`有一点感情，不只是"真难忘啊"`,`句子通顺`],
+     why:`首尾呼应最简单的做法：把开头那个具体的东西，在结尾再写一次，但要写出变化或感受。`},
+
+    {t:"choice", q:`下面哪种结尾最空洞？`, opts:[
+      `我把那张纸小心地夹进了日记本，像夹住了那天的太阳。`,
+      `这件事让我明白了：做事不能只看别人，自己试过才知道。`,
+      `啊，多么难忘的一天啊！多么有意义的一天啊！`,
+      `回家的路上，奶奶一直没说话，只是把我的手握得更紧了。`],
+     a:2, why:`一连串感叹号没有任何新信息，是典型的"喊口号"结尾。好结尾要么留一个画面，要么说一句自己的体会。`}
+  ]
+},
+];
+
+/* ===================== 引擎 ===================== */
+const TOTAL = DATA.reduce((n,s)=>n+s.items.length,0);
+const SET_TOTAL={}; DATA.forEach(s=>SET_TOTAL[s.id]=s.items.length);
+const KEY="writing-practice-v1";
+let saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||"{}"); }catch(e){ saved={}; }
+const correct=new Set(saved.correct||[]), wrong=new Set(saved.wrong||[]),
+      half=new Set(saved.half||[]), fixedS=new Set(saved.fixed||[]), flag=new Set(saved.flag||[]);
+const picked=saved.picked||{};
+const INDEX={};
+const CN=["①","②","③","④","⑤","⑥","⑦","⑧"];
+const TAG={choice:"选择",fill:"填空",open:"简答"};
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+// 批改填空：去掉空格和常见标点再比，避免因为一个句号判错
+const norm=s=>String(s).replace(/[\s，,。．.、；;：:！!？?"'“”‘’（）()《》【】]/g,"").trim();
+
+function render(){
+  const app=document.getElementById("app"), jump=document.getElementById("jump");
+  DATA.forEach(set=>{
+    jump.insertAdjacentHTML("beforeend",`<a href="#${set.id}">${set.title.split(" · ")[0]}</a>`);
+    const sec=document.createElement("section");
+    sec.className="set"; sec.id=set.id;
+
+    // 习作这边的"短文"其实是例子，所以 passage 允许整段写成 html，也允许没有
+    const p=set.passage;
+    const body = !p ? "" : (p.html ? p.html
+      : p.paras.map((t,i)=>`<p><span class="pn">${CN[i]}</span>${esc(t)}</p>`).join(""));
+    sec.innerHTML=`<h2>${set.title}</h2><p class="tip">${set.tip}</p>
+      <div class="setbar">
+        <button class="primary" data-act="check" data-set="${set.id}">检查本节</button>
+        <button data-act="reveal" data-set="${set.id}">显示本节答案</button>
+        <button data-act="clear" data-set="${set.id}">清空重做</button>
+        <span class="sc" id="sc-${set.id}"></span>
+      </div>
+      ${p?`<div class="passage"><h3>${esc(p.title)}</h3>${p.by?`<div class="by">${esc(p.by)}</div>`:""}${body}</div>`:""}`;
+
+    set.items.forEach((it,i)=>{
+      const id=`${set.id}-${i}`;
+      INDEX[id]={item:it,setId:set.id,setTitle:set.title.split(" · ")[0],num:i+1};
+      const div=document.createElement("div");
+      div.className="item"; div.id="it-"+id;
+
+      // 题干：fill 的 【　　】 换成输入框
+      let n=0, qh="";
+      if(it.t==="fill"){
+        it.q.split(/(【.*?】)/).forEach(seg=>{
+          if(/^【.*?】$/.test(seg)){ qh+=`<input class="blank" id="in-${id}-${n}" autocomplete="off">`; n++; }
+          else qh+=esc(seg);
+        });
+        it._n=n;
+      } else qh=esc(it.q);
+
+      const head=`<p class="q"><span class="n">${i+1}.</span><span class="tag">${TAG[it.t]}</span>${qh}<span class="badge" id="bd-${id}"></span></p>`;
+
+      let body2="", rv="";
+      if(it.t==="choice"){
+        body2=`<div class="opts" id="op-${id}">`+it.opts.map((o,k)=>
+          `<button class="opt" data-act="pick" data-id="${id}" data-k="${k}">${String.fromCharCode(65+k)}. ${esc(o)}</button>`).join("")+`</div>`;
+        rv=`<b>${String.fromCharCode(65+it.a)}. ${esc(it.opts[it.a])}</b><span class="why">${esc(it.why)}</span>`;
+      }else if(it.t==="fill"){
+        rv=`<b>${it.as.map(a=>esc(a[0])).join("　|　")}</b>`+
+           `<span class="why">（意思对即可）${esc(it.why)}</span>`;
+      }else{
+        body2=`<textarea class="ans" id="tx-${id}" placeholder="写在这里……想好了再写，写完点下面的「对照参考答案」"></textarea>
+          <div class="selfbar" id="sb-${id}"><span class="lab">对照之后，自己评一下：</span>
+            <button class="self" data-act="self" data-id="${id}" data-v="1">✓ 答对了</button>
+            <button class="self" data-act="self" data-id="${id}" data-v="0.5">◐ 答得不全</button>
+            <button class="self" data-act="self" data-id="${id}" data-v="0">✗ 没答对</button>
+          </div>`;
+        rv=`<b>参考答案：</b>${esc(it.ref)}<ul>`+
+           it.points.map(x=>`<li>${esc(x)}</li>`).join("")+`</ul>`+
+           `<span class="why">${esc(it.why)}</span>`;
+      }
+
+      const mainBtn = it.t==="open"
+        ? `<button class="primary" data-act="show" data-id="${id}">对照参考答案</button>`
+        : `<button data-act="one" data-id="${id}">检查</button>
+           <button data-act="ans" data-id="${id}">答案</button>`;
+
+      div.innerHTML=head+body2+`
+        <div class="row">
+          ${mainBtn}
+          <button class="flag" data-act="flag" data-id="${id}" title="标记这道题，之后要复习">🚩</button>
+        </div>
+        <div class="fb" id="fb-${id}"></div>
+        <div class="reveal" id="rv-${id}">${it.t==="open"?"":"<b>参考答案：</b>"}${rv}</div>`;
+      sec.appendChild(div);
+    });
+    app.appendChild(sec);
+  });
+
+  // 回填上次做的内容
+  const inputs=saved.inputs||{};
+  Object.keys(inputs).forEach(k=>{ const el=document.getElementById("in-"+k); if(el) el.value=inputs[k]; });
+  const texts=saved.texts||{};
+  Object.keys(texts).forEach(k=>{ const el=document.getElementById("tx-"+k); if(el) el.value=texts[k]; });
+  Object.keys(picked).forEach(id=>{
+    const r=INDEX[id]; if(!r) return;
+    if(r.item.t==="choice"){
+      const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${picked[id]}"]`);
+      if(b) b.classList.add("pick");
+    }else if(r.item.t==="open"){
+      setShow(id,true);   // 上次已经自评过，答案保持展开，按钮文字也要跟着对
+      const b=document.querySelector(`button.self[data-id="${id}"][data-v="${picked[id]}"]`);
+      if(b) b.classList.add("pick");
+    }
+  });
+  correct.forEach(id=>{ const r=INDEX[id]; if(!r) return;
+    if(r.item.t==="choice"){ const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${r.item.a}"]`); if(b){b.classList.remove("pick");b.classList.add("good");} }
+    else if(r.item.t==="fill"){ for(let k=0;k<(r.item._n||0);k++){ const e=document.getElementById(`in-${id}-${k}`); if(e) e.classList.add("good"); } }
+  });
+  DATA.forEach(s=>updateSetScore(s.id));
+  updateTotal(); Object.keys(INDEX).forEach(updateMarks); renderMistakes();
+}
+
+function save(){
+  const inputs={}, texts={};
+  document.querySelectorAll("input.blank").forEach(el=>{ if(el.value.trim()) inputs[el.id.slice(3)]=el.value; });
+  document.querySelectorAll("textarea.ans").forEach(el=>{ if(el.value.trim()) texts[el.id.slice(3)]=el.value; });
+  localStorage.setItem(KEY,JSON.stringify({inputs,texts,picked,correct:[...correct],
+    wrong:[...wrong],half:[...half],fixed:[...fixedS],flag:[...flag]}));
+}
+
+function checkOne(id){
+  const r=INDEX[id]; if(!r) return;
+  const it=r.item, fb=document.getElementById("fb-"+id);
+  let res=null; fb.className="fb show";
+
+  if(it.t==="choice"){
+    const sel=picked[id];
+    if(sel===undefined){ fb.innerHTML='<span class="note">先选一个～</span>'; correct.delete(id); }
+    else{
+      document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach((b,k)=>{
+        b.className="opt"+(k===it.a?" good":(k===sel?" bad":""));
+      });
+      if(sel===it.a){ correct.add(id); res=true; fb.innerHTML='<span class="good">✓ 对！</span> <span class="why">'+esc(it.why)+'</span>'; }
+      else{ correct.delete(id); res=false;
+        fb.innerHTML='<span class="bad">✗ 应该选 '+String.fromCharCode(65+it.a)+'</span> <span class="why">'+esc(it.why)+'</span>'; }
+    }
+  }else if(it.t==="fill"){
+    let all=true, empty=true, firstBad=-1;
+    it.as.forEach((acc,k)=>{
+      const el=document.getElementById(`in-${id}-${k}`), v=norm(el.value);
+      if(v) empty=false;
+      const good = v!=="" && acc.some(a=>norm(a)===v);
+      el.className="blank"+(v?(good?" good":" bad"):"");
+      if(!good){ all=false; if(firstBad<0) firstBad=k; }
+    });
+    if(empty){ fb.innerHTML='<span class="note">还没写哦～</span>'; correct.delete(id); }
+    else if(all){ correct.add(id); res=true; fb.innerHTML='<span class="good">✓ 对！</span> <span class="why">'+esc(it.why)+'</span>'; }
+    else{ correct.delete(id); res=false;
+      fb.innerHTML='<span class="bad">✗ 第 '+(firstBad+1)+' 个空还不对。</span>'+
+        ' <span class="note">（意思对但写法不同，可以点「答案」自己判断）</span> <span class="why">💡 '+esc(it.why)+'</span>'; }
+  }else{
+    // 开放题：按自评结果计分
+    const v=picked[id];
+    if(v===undefined){ fb.innerHTML='<span class="note">先点「对照参考答案」，再自己评一下～</span>'; correct.delete(id); }
+    else if(v==="1"){ correct.add(id); half.delete(id); res=true; fb.innerHTML='<span class="good">✓ 自评：答对了</span>'; }
+    else if(v==="0.5"){ correct.delete(id); res=false; half.add(id);
+      fb.innerHTML='<span class="note">◐ 自评：答得不全 —— 对照上面的要点，把漏掉的补上。</span>'; }
+    else{ correct.delete(id); half.delete(id); res=false;
+      fb.innerHTML='<span class="bad">✗ 自评：没答对 —— 收进错题本，过两天再写一遍。</span>'; }
+  }
+
+  if(res===false){ wrong.add(id); fixedS.delete(id); }
+  else if(res===true){ half.delete(id); if(wrong.has(id)){ wrong.delete(id); fixedS.add(id);
+    fb.innerHTML+=' <span class="note">👏 错题订正成功！</span>'; } }
+  updateMarks(id); renderMistakes(); updateSetScore(r.setId); updateTotal(); save();
+}
+
+function updateMarks(id){
+  const el=document.getElementById("it-"+id), bd=document.getElementById("bd-"+id);
+  if(!el) return;
+  const isHalf=half.has(id)&&!correct.has(id);
+  el.classList.toggle("wrong",wrong.has(id)&&!isHalf);
+  el.classList.toggle("half",isHalf);
+  el.classList.toggle("fixed",fixedS.has(id)&&!wrong.has(id));
+  el.classList.toggle("flagged",flag.has(id)&&!wrong.has(id)&&!fixedS.has(id)&&!isHalf);
+  const fb=document.querySelector(`button.flag[data-id="${id}"]`); if(fb) fb.classList.toggle("on",flag.has(id));
+  if(isHalf) bd.className="badge half",bd.textContent="◐ 不全";
+  else if(wrong.has(id)) bd.className="badge wrong",bd.textContent="✗ 错题";
+  else if(fixedS.has(id)) bd.className="badge fixed",bd.textContent="✓ 已订正";
+  else if(correct.has(id)) bd.className="badge ok",bd.textContent="✓";
+  else if(flag.has(id)) bd.className="badge",bd.textContent="🚩";
+  else bd.className="badge",bd.textContent="";
+}
+
+function renderMistakes(){
+  const ids=Object.keys(INDEX).filter(id=>wrong.has(id)||flag.has(id));
+  document.getElementById("msum").textContent=
+    `📕 错题本（${wrong.size} 道待订正${flag.size?"，🚩 "+flag.size+" 道待复习":""}）`;
+  document.getElementById("mlist").innerHTML = !ids.length
+    ? '<p class="empty">还没有错题 👍 做错的题会自动收进这里，点题目可以跳回去订正。</p>'
+    : '<ol class="mlist">'+ids.map(id=>{const r=INDEX[id];
+        const q=r.item.q.replace(/【.*?】/g,"____");
+        return `<li>${half.has(id)?"◐":"✗"} <a href="#it-${id}" data-go="${id}">${esc(q.length>30?q.slice(0,30)+"…":q)}</a>
+        <span class="where">（${r.setTitle} 第 ${r.num} 题）</span></li>`;}).join("")+'</ol>';
+  document.getElementById("markStat").textContent=
+    `错题 ${wrong.size} 道 · 已订正 ${fixedS.size} 道 · 标记 ${flag.size} 道`;
+  DATA.forEach(s=>{ let has=false; eachId(s.id,id=>{ if(wrong.has(id)||flag.has(id)) has=true; });
+    document.getElementById(s.id).classList.toggle("nowrong",!has); });
+}
+
+function eachId(setId,fn){
+  DATA.find(s=>s.id===setId).items.forEach((it,i)=>fn(`${setId}-${i}`,it));
+}
+function updateSetScore(setId){
+  let n=0; eachId(setId,id=>{ if(correct.has(id)) n++; });
+  const t=SET_TOTAL[setId];
+  document.getElementById("sc-"+setId).textContent=`本节：${n} / ${t}`+(n===t?"  🎉 全对！":"");
+}
+function updateTotal(){
+  document.getElementById("totalTxt").textContent=`${correct.size} / ${TOTAL} 题答对`;
+  document.getElementById("totalBar").style.width=(correct.size/TOTAL*100)+"%";
+}
+/* 开放题的「对照参考答案」是可以收起的：孩子手滑点开，或者想再想一想
+   自己重答一遍，都能把答案盖回去。参考答案、自评按钮、按钮文字一起切换。 */
+function setShow(id,on){
+  const rv=document.getElementById("rv-"+id), sb=document.getElementById("sb-"+id);
+  if(!rv) return;
+  rv.classList.toggle("show",on);
+  if(sb) sb.classList.toggle("show",on);
+  const b=document.querySelector(`button[data-act="show"][data-id="${id}"]`);
+  if(b) b.textContent = on ? "收起参考答案" : "对照参考答案";
+}
+function clearItem(id){
+  const r=INDEX[id], it=r.item;
+  delete picked[id];
+  document.querySelectorAll(`button.opt[data-id="${id}"],button.self[data-id="${id}"]`)
+    .forEach(b=>b.className=b.classList.contains("self")?"self":"opt");
+  for(let k=0;k<(it._n||0);k++){ const e=document.getElementById(`in-${id}-${k}`); if(e){ e.value=""; e.className="blank"; } }
+  const tx=document.getElementById("tx-"+id); if(tx) tx.value="";
+  document.getElementById("fb-"+id).className="fb";
+  if(it.t==="open") setShow(id,false);
+  else document.getElementById("rv-"+id).classList.remove("show");
+  correct.delete(id); half.delete(id);
+}
+function flash(id){
+  const el=document.getElementById("it-"+id); if(!el) return;
+  document.body.classList.remove("only-wrong");
+  document.getElementById("btnOnlyWrong").textContent="只看错题 🔍";
+  el.scrollIntoView({behavior:"smooth",block:"center"});
+  el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),1200);
+}
+
+document.addEventListener("click",e=>{
+  const go=e.target.closest("a[data-go]"); if(go){ flash(go.dataset.go); return; }
+  const b=e.target.closest("button"); if(!b) return;
+  const act=b.dataset.act, id=b.dataset.id;
+  if(act==="pick"){
+    picked[id]=+b.dataset.k;
+    document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach(x=>x.className="opt");
+    b.classList.add("pick"); save(); checkOne(id);
+  }
+  if(act==="self"){
+    picked[id]=b.dataset.v;
+    document.querySelectorAll(`button.self[data-id="${id}"]`).forEach(x=>x.className="self");
+    b.classList.add("pick"); save(); checkOne(id);
+  }
+  if(act==="show") setShow(id, !document.getElementById("rv-"+id).classList.contains("show"));
+  if(act==="one") checkOne(id);
+  if(act==="ans") document.getElementById("rv-"+id).classList.toggle("show");
+  if(act==="flag"){ flag.has(id)?flag.delete(id):flag.add(id); updateMarks(id); renderMistakes(); save(); }
+  if(act==="check") eachId(b.dataset.set,x=>checkOne(x));
+  if(act==="reveal"){
+    const on=b.textContent.indexOf("显示")>-1;
+    eachId(b.dataset.set,(x,it)=>{
+      if(it.t==="open") setShow(x,on);
+      else document.getElementById("rv-"+x).classList.toggle("show",on);
+    });
+    b.textContent=on?"隐藏本节答案":"显示本节答案";
+  }
+  if(act==="clear"){
+    eachId(b.dataset.set,x=>{ clearItem(x); updateMarks(x); });
+    updateSetScore(b.dataset.set); updateTotal(); renderMistakes(); save();
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter"||!e.target.classList.contains("blank")) return;
+  const id=e.target.id.slice(3,e.target.id.lastIndexOf("-"));
+  const k=+e.target.id.slice(e.target.id.lastIndexOf("-")+1);
+  const next=document.getElementById(`in-${id}-${k+1}`);
+  if(next) next.focus(); else checkOne(id);
+});
+document.addEventListener("input",e=>{
+  if(e.target.classList.contains("blank")||e.target.classList.contains("ans")) save();
+});
+document.getElementById("btnOnlyWrong").addEventListener("click",function(){
+  const on=document.body.classList.toggle("only-wrong");
+  this.textContent=on?"显示全部题目 ↩":"只看错题 🔍";
+  if(on) document.getElementById("mbox").open=false;
+});
+document.getElementById("btnRedo").addEventListener("click",()=>{
+  const ids=[...wrong];
+  if(!ids.length){ alert("现在没有错题，太棒了 🎉"); return; }
+  ids.forEach(id=>{ clearItem(id); updateMarks(id); });
+  DATA.forEach(s=>updateSetScore(s.id)); updateTotal(); renderMistakes(); save(); flash(ids[0]);
+});
+document.getElementById("btnClearMarks").addEventListener("click",()=>{
+  if(!confirm("清除所有错题记录和🚩标记？（已写的答案会保留）")) return;
+  [...wrong,...fixedS,...flag,...half].forEach(id=>{
+    wrong.delete(id); fixedS.delete(id); flag.delete(id); half.delete(id); updateMarks(id); });
+  renderMistakes(); save();
+});
+render();
+</script>
+<script src="同步.js?v=202611232202" data-key="writing-practice-v1"></script>
+<script src="回到顶部.js"></script>
+</body>
+</html>
