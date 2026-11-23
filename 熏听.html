@@ -315,10 +315,10 @@ function render(){
           '<li data-i="' + (g.from + k) + '">' + esc(t.t)
           + (t.cn ? '<span class="c">' + esc(t.cn) + '</span>' : '') + '</li>').join("")
       + '</ol></details>').join("")
-  + '</div>'
+  + '</div>';
 
-  + '<footer>共 ' + TRACKS.length + ' 句 · 进度和设置存在这台设备上<br>'
-  + '改了题目或材料，重跑 <code>python 生成熏听音频.py</code> 就会更新</footer>';
+  // 页脚原来写着句数和「重跑 python 生成熏听音频.py」——那是给维护的人看的，
+  // 听的人不需要知道，撤掉。
 
   $("bPlay").onclick = toggle;
   $("bPrev").onclick = () => step(-1, false);
