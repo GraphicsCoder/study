@@ -288,6 +288,26 @@
 
   /* ---------------- 一关 ---------------- */
 
+  /* 本子（生词本 / 错词本）里的一关：不是一个词问一道，
+     而是把每个词的每一种问法都排成一道题——本子本来就是
+     「这几个没拿下」，当然要把认 / 听 / 想 / 拼都过一遍。
+     题太多就先排没答对过的那些，一关最多 MAX_DRILL 道。 */
+  var MAX_DRILL = 20;
+
+  function newDrill(items, prog, rnd, all) {
+    var fresh = [], done = [];
+    items.forEach(function (x) {
+      modesOf(x).forEach(function (m) {
+        (modesLeft(x, prog).indexOf(m) >= 0 ? fresh : done).push({ item: x, kind: m });
+      });
+    });
+    var q = shuffle(fresh, rnd).concat(shuffle(done, rnd)).slice(0, MAX_DRILL);
+    return {
+      queue: q, i: 0, right: 0, wrong: 0, combo: 0, best: 0, again: [],
+      total: q.length, pool: items, all: all || items, drill: true
+    };
+  }
+
   function newRound(pool, prog, now, rnd, all) {
     var items = pickSession(pool, prog, now, PER_ROUND, rnd);
     return {
@@ -307,8 +327,9 @@
     } else {
       round.wrong++;
       round.combo = 0;
-      // 错词补到队尾，必须当场再答对一次才放过——错完就溜等于没学
-      round.again.push(q.item);
+      // 错题补到队尾，必须当场再答对一次才放过——错完就溜等于没学
+      // 本子那种关要连问法一起补回去，否则重来时又换成简单的问法了
+      round.again.push(round.drill ? { item: q.item, kind: q.kind } : q.item);
     }
     return right;
   }
@@ -333,7 +354,7 @@
     clearWrong: clearWrong, dueInfo: dueInfo,
     pickSession: pickSession, kindFor: kindFor, canSpell: canSpell,
     distractors: distractors, makeQuestion: makeQuestion, scramble: scramble,
-    check: check, newRound: newRound, answer: answer, nextItem: nextItem,
+    check: check, newRound: newRound, newDrill: newDrill, MAX_DRILL: MAX_DRILL, answer: answer, nextItem: nextItem,
     stars: stars, shuffle: shuffle
   };
 

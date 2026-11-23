@@ -259,8 +259,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611231744"></script>
-<script src="词汇逻辑.js?v=202611231744"></script>
+<script src="英语4A词库.js?v=202611231752"></script>
+<script src="词汇逻辑.js?v=202611231752"></script>
 <script>
 (function () {
   "use strict";
@@ -534,7 +534,10 @@
   function start(p, name) {
     CH = null;
     pool = p; where = name;
-    R = L.newRound(pool, prog, Date.now(), Math.random, ALL);
+    /* 本子里的一关要把每个词的四种问法都过一遍；
+       unit 里的一关还是老样子，一个词问一道，按等级来。 */
+    R = fromBook() ? L.newDrill(p, prog, Math.random, ALL)
+                   : L.newRound(pool, prog, Date.now(), Math.random, ALL);
     $("qwhere").textContent = name;
     show("pplay");
     nextQ();
@@ -549,15 +552,11 @@
       render();
       return;
     }
-    var item = L.nextItem(R);
-    if (!item) return over();
-    /* 错词本平时也按「还差哪几种问法」来出题，
-       但真正把它移出本子要靠上面的过关测试。 */
-    var force = null;
-    if (where === "错词本") {
-      var left = L.modesLeft(item, prog);
-      force = left[0] || null;
-    }
+    var next = L.nextItem(R);
+    if (!next) return over();
+    // 本子那种关，队列里排的是「词 + 指定问法」
+    var item = R.drill ? next.item : next;
+    var force = R.drill ? next.kind : null;
     Q = L.makeQuestion(item, pool, prog, Math.random, ALL, force);
     answered = false;
     picked = [];
@@ -755,7 +754,8 @@
       '<br><span style="font-size:13px">' + levelTip() + '</span>';
 
     var missed = {};
-    (R.queue || []).forEach(function (x) {
+    (R.queue || []).forEach(function (e) {
+      var x = R.drill ? e.item : e;
       var r = L.recOf(prog, x.id);
       if (r.no > 0 && r.lv < L.MASTER_LEVEL) missed[x.id] = x;
     });
@@ -806,6 +806,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611231744" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611231752" data-key="en4a-vocab-v1"></script>
 </body>
 </html>

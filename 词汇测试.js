@@ -445,5 +445,61 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   ok("答对之后这一种就算过了", L.modesLeft(word, p).indexOf("cn2en") < 0);
 }
 
+/* ---------- 本子里的一关：每个词的每种问法都要练到 ---------- */
+{
+  const p = {};
+  const word = U1.find(x => !x.phrase && L.canSpell(x));
+  const phrase = U1.find(x => x.phrase);
+  const round = L.newDrill([word, phrase], p, seeded(8), ALL);
+  eq("四种 + 两种 = 六道题", round.total, 6);
+  ok("队列里排的是词加问法", round.queue.every(e => e.item && e.kind));
+  eq("单词的四种问法都排上了",
+     round.queue.filter(e => e.item.id === word.id).map(e => e.kind).sort().join(","),
+     "cn2en,en2cn,listen,spell");
+  eq("词组只排两种",
+     round.queue.filter(e => e.item.id === phrase.id).map(e => e.kind).sort().join(","),
+     "cn2en,en2cn");
+  ok("标明了这是本子那种关", round.drill === true);
+}
+{
+  // 词太多时一关有上限，而且先排没答对过的问法
+  const p = {};
+  const words = U1.slice(0, 10);
+  words.forEach(x => L.modesOf(x).forEach(m => L.grade(p, x.id, true, now, m)));
+  const target = U1[10];
+  const round = L.newDrill(words.concat([target]), p, seeded(12), ALL);
+  eq("一关最多 20 道", round.total, L.MAX_DRILL);
+  const first = round.queue.slice(0, L.modesOf(target).length).map(e => e.item.id);
+  ok("没练过的那个词排在最前面", first.every(id => id === target.id), first.join(","));
+}
+{
+  // 答错要带着问法补回队尾：重来时还得答同一种问法
+  const p = {};
+  const word = U1.find(x => !x.phrase && L.canSpell(x));
+  const rnd = seeded(19);
+  const round = L.newDrill([word], p, rnd, ALL);
+  const e = L.nextItem(round);
+  const q = L.makeQuestion(e.item, [word], p, rnd, ALL, e.kind);
+  L.answer(round, q, "——错的——", p, now);
+  eq("错题回到队尾", round.again.length, 1);
+  eq("连问法一起带回去", round.again[0].kind, q.kind);
+  ok("补回来的还是同一个词", round.again[0].item.id === word.id);
+}
+{
+  // 整关跑通：所有问法都答对，错词本那份账就销干净了
+  const p = {};
+  const word = U1.find(x => !x.phrase && L.canSpell(x));
+  L.grade(p, word.id, false, now, "en2cn");
+  const rnd = seeded(23);
+  const round = L.newDrill([word], p, rnd, ALL);
+  let e, guard = 0;
+  while ((e = L.nextItem(round)) && guard++ < 30) {
+    const q = L.makeQuestion(e.item, [word], p, rnd, ALL, e.kind);
+    L.answer(round, q, q.answer, p, now);
+  }
+  ok("一关打完四种问法全过了", L.passedAll(word, p));
+  eq("没有漏掉的题", round.again.length, 0);
+}
+
 console.log(fail ? `\n${fail} 项没过，${pass} 项通过` : `全部 ${pass} 项通过`);
 process.exit(fail ? 1 : 0);
