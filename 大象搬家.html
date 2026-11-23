@@ -117,7 +117,7 @@
   <button id="resume">继续</button>
 </div>
 
-<script src="搬家逻辑.js?v=202611231140"></script>
+<script src="搬家逻辑.js?v=202611231419"></script>
 <script>
 /* =====================================================================
    大象搬家 · 介词拖放
@@ -273,6 +273,8 @@ function relayout() {
 }
 
 function newTask() {
+  // 结算已经盖上来了就别再出新题：选项条会跟着冒出来，浮在结算页上点都点不掉
+  if (S.mode !== "play") { hideChoices(); return; }
   const lv = L.levelFor(S.g.solved);
   const due = S.retry.length && S.t >= S.retry[0].at ? S.retry.shift() : null;
   S.task = due ? due.task : L.makeTask(lv, Math.random, save.stats);
@@ -653,6 +655,8 @@ function answerChoice(i, btn) {
   });
   if (ok) {
     rewardRight(S.item.x, S.item.y);
+    // 通关了就交给 victory()，别再排下一题——那会把选项条铺到结算页上
+    if (!S.endless && L.isCleared(S.g.solved)) return;
     setTimeout(() => { hideChoices(); newTask(); }, 1100);
   } else {
     penalize();
@@ -801,14 +805,18 @@ $("back").onclick = () => { location.href = "index.html"; };
 $("homebtn").onclick = goBack;
 $("saybtn").onclick = () => { unlockSpeech(); if (S.task) say(S.task.kind === "ask" ? S.task.q : S.task.en); };
 $("cnbtn").onclick = () => { save.cn = !save.cn; persist(); refreshCn(); };
-$("pausebtn").onclick = () => {
-  if (S.mode === "play") { S.mode = "pause"; layer("paused", true); }
-  else if (S.mode === "pause") { S.mode = "play"; layer("paused", false); }
-};
-$("resume").onclick = () => { S.mode = "play"; layer("paused", false); };
+function pause() { S.mode = "pause"; layer("paused", true); hideChoices(); }
+function resume() {
+  S.mode = "play";
+  layer("paused", false);
+  // 暂停时把选项收了，回来要按需放回去——不然问答题变成只能看着
+  if (S.task && S.task.kind === "ask" && !S.task.done) showChoices();
+}
+$("pausebtn").onclick = () => { S.mode === "play" ? pause() : S.mode === "pause" && resume(); };
+$("resume").onclick = resume;
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden" && S.mode === "play") {
-    S.mode = "pause"; layer("paused", true);
+    pause();
     if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
   }
 });
@@ -818,6 +826,6 @@ refreshStart();
 refreshHome();
 requestAnimationFrame(frame);
 </script>
-<script src="同步.js?v=202611231140" data-key="move-game-v1" data-nopop="1"></script>
+<script src="同步.js?v=202611231419" data-key="move-game-v1" data-nopop="1"></script>
 </body>
 </html>
