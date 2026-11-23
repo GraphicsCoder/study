@@ -47,10 +47,13 @@
 
   /* 一个词一共会被问哪几种问法。
      词组没法听写也不好拼，长单词拼起来超出耐心，所以不是每个词都有四关。 */
+  /* 一个词一共会被问哪几种问法。
+     词组不出拼写和默写（在 iPad 上敲一长串太折磨），长单词没有字母块
+     拼写关，但默写照样要写——那本来就是作业本上最常见的一题。 */
   function modesOf(item) {
     if (item.phrase) return ["en2cn", "cn2en"];
-    if (canSpell(item)) return ["en2cn", "listen", "cn2en", "spell"];
-    return ["en2cn", "listen", "cn2en"];
+    if (canSpell(item)) return ["en2cn", "listen", "cn2en", "spell", "write"];
+    return ["en2cn", "listen", "cn2en", "write"];
   }
 
   /* 这个词还差哪几种问法没答对过 */
@@ -184,20 +187,21 @@
   }
 
   /* ---------------- 出题 ----------------
-     四种问法：
+     五种问法：
        en2cn   看见英文选中文（最容易，只要求脸熟）
        listen  听发音选中文（把音和义接上）
        cn2en   看中文选英文（反过来想得起来）
-       spell   看中文把字母拼出来（真的会写了）
+       spell   看中文把打乱的字母排好（有提示的写）
+       write   看中文直接默写出来（没提示，作业本上那种）
 
      等级只决定「最多能难到哪儿」，不决定「这次问哪种」：
        0 级    刚认识，只在 认 / 听 里挑
-       1 级    除了拼写都行
-       2 级起  四种随便挑
+       1 级    加上中译英，还不动笔
+       2 级起  五种随便挑
      在允许的范围里随机，并且优先挑这个词还没答对过的问法——
      原来写死成「等级 → 问法」的一一对应，练到后面每道题都是中译英，
      练着练着就只剩一种花样了。 */
-  var KINDS = ["en2cn", "listen", "cn2en", "spell"];
+  var KINDS = ["en2cn", "listen", "cn2en", "spell", "write"];
 
   function kindFor(item, lv, rnd, left) {
     var all = modesOf(item);
@@ -242,6 +246,15 @@
     var lv = recOf(prog, item.id).lv;
     var kind = force || kindFor(item, lv, rnd, modesLeft(item, prog));
     if (kind === "spell" && !canSpell(item)) kind = "cn2en";
+    if (kind === "write" && item.phrase) kind = "cn2en";
+    if (kind === "write") {
+      // 默写：只给中文和「几个字母」，自己把词写出来，和作业本上一样
+      return {
+        kind: "write", item: item, lv: lv,
+        ask: item.c, hint: item.w.length + " 个字母",
+        answer: item.w, speak: item.w
+      };
+    }
     if (kind === "spell") {
       return {
         kind: "spell", item: item, lv: lv,
@@ -281,10 +294,15 @@
   }
 
   function check(q, ans) {
-    if (q.kind === "spell") return norm(ans) === norm(q.answer);
+    // 手写的答案宽容一点：大小写、首尾空格、键盘打出的弯引号都不计较
+    if (q.kind === "spell" || q.kind === "write") return norm(ans) === norm(q.answer);
     return ans === q.answer;
   }
-  function norm(s) { return String(s || "").trim().toLowerCase(); }
+  function norm(s) {
+    return String(s || "").trim().toLowerCase()
+      .replace(/[‘’ʼ]/g, "'")      // ’ → '
+      .replace(/\s+/g, " ");
+  }
 
   /* ---------------- 一关 ---------------- */
 

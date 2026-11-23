@@ -142,16 +142,16 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
     return [...out].sort().join(",");
   }
   eq("0 级只在认和听里挑", kinds(word, 0), "en2cn,listen");
-  eq("1 级还不考拼写", kinds(word, 1), "cn2en,en2cn,listen");
-  eq("2 级四种都可能", kinds(word, 2), "cn2en,en2cn,listen,spell");
-  eq("高级也不会只剩一种", kinds(word, 5), "cn2en,en2cn,listen,spell");
+  eq("1 级还不动笔", kinds(word, 1), "cn2en,en2cn,listen");
+  eq("2 级五种都可能", kinds(word, 2), "cn2en,en2cn,listen,spell,write");
+  eq("高级也不会只剩一种", kinds(word, 5), "cn2en,en2cn,listen,spell,write");
   eq("词组只在认和想之间换", kinds(phrase, 5), "cn2en,en2cn");
   ok("词组永远不出拼写题",
      DB.phrases().every(x => [0, 2, 5].every(lv => kinds(x, lv, 40).indexOf("spell") < 0)));
 
   const longWord = { w: "neighbourhood", phrase: false };
   ok("太长的词不出拼写题", !L.canSpell(longWord));
-  eq("太长的词只在三种里挑", kinds(longWord, 5), "cn2en,en2cn,listen");
+  eq("太长的词不拼但要默", kinds(longWord, 5), "cn2en,en2cn,listen,write");
 
   // 没答对过的问法优先出，别老在会了的那一种上打转
   const p = {};
@@ -167,7 +167,7 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
 {
   const p = {};
   const rnd = seeded(21);
-  let spellSeen = 0, listenSeen = 0;
+  let spellSeen = 0, listenSeen = 0, writeSeen = 0;
   ALL.forEach(item => {
     [0, 1, 2, 3, 5].forEach(lv => {
       const pp = { [item.id]: { lv, due: 0, ok: 0, no: 0 } };
@@ -178,6 +178,13 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
         eq("字母块数量对得上", q.tiles.length, item.w.length);
         eq("字母块凑回去就是答案", q.tiles.slice().sort().join(""), item.w.split("").sort().join(""));
         ok("拼写题给中文作题面", q.ask === item.c);
+      } else if (q.kind === "write") {
+        writeSeen++;
+        eq("默写题答案就是这个词", q.answer, item.w);
+        ok("默写题给中文作题面", q.ask === item.c);
+        ok("默写题没有选项", !q.choices);
+        ok("默写题没有字母块", !q.tiles);
+        ok("提示只说有几个字母", /\d+ 个字母/.test(q.hint));
       } else {
         eq("四选一", q.choices.length, 4);
         eq("选项不重复", new Set(q.choices).size, 4);
@@ -191,6 +198,7 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   });
   ok("确实出到过拼写题", spellSeen > 40, String(spellSeen));
   ok("确实出到过听力题", listenSeen > 100, String(listenSeen));
+  ok("确实出到过默写题", writeSeen > 40, String(writeSeen));
 }
 {
   // 干扰项不能和正确答案撞义，也不能跨类（词组混进单词里一眼识破）
@@ -228,6 +236,15 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   ok("大小写不计较", L.check(q, "BamBoo"));
   ok("前后空格不计较", L.check(q, "  bamboo "));
   ok("拼错算错", !L.check(q, "bambo"));
+  const w = { kind: "write", answer: "bamboo" };
+  ok("默写写对算对", L.check(w, "bamboo"));
+  ok("默写不计较大小写", L.check(w, "Bamboo"));
+  ok("默写不计较首尾空格", L.check(w, " bamboo  "));
+  ok("默写错一个字母就算错", !L.check(w, "banboo"));
+  const w2 = { kind: "write", answer: "keep one's word" };
+  ok("键盘打出的弯引号也认", L.check(w2, "keep one’s word"));
+  ok("中间多个空格不计较", L.check(w2, "keep  one's   word"));
+
   const c = { kind: "en2cn", answer: "教室" };
   ok("选对算对", L.check(c, "教室"));
   ok("选错算错", !L.check(c, "礼堂"));
@@ -376,25 +393,26 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   const word = U1.find(x => !x.phrase && L.canSpell(x));
   const longWord = DB.all().find(x => !x.phrase && !L.canSpell(x));
   const phrase = U1.find(x => x.phrase);
-  eq("能拼的单词有四种问法", L.modesOf(word).join(","), "en2cn,listen,cn2en,spell");
-  eq("太长的单词没有拼写关", L.modesOf(longWord).join(","), "en2cn,listen,cn2en");
+  eq("能拼的单词有五种问法", L.modesOf(word).join(","), "en2cn,listen,cn2en,spell,write");
+  eq("太长的单词不拼但要默", L.modesOf(longWord).join(","), "en2cn,listen,cn2en,write");
   eq("词组只有两种问法", L.modesOf(phrase).join(","), "en2cn,cn2en");
 
   const p = {};
   L.grade(p, word.id, false, now, "en2cn");       // 答错进错词本
   ok("错了就在错词本里", L.weak([word], p).length === 1);
-  eq("一开始四种都没过", L.modesLeft(word, p).length, 4);
+  eq("一开始五种都没过", L.modesLeft(word, p).length, 5);
 
   L.grade(p, word.id, true, now, "en2cn");
-  eq("过了一种还剩三种", L.modesLeft(word, p).length, 3);
+  eq("过了一种还剩四种", L.modesLeft(word, p).length, 4);
   ok("只过一种还在错词本里", L.weak([word], p).length === 1);
 
   L.grade(p, word.id, true, now, "listen");
   L.grade(p, word.id, true, now, "cn2en");
-  ok("差最后一种拼写，仍然在本子里", L.weak([word], p).length === 1);
-
   L.grade(p, word.id, true, now, "spell");
-  ok("四种全过算过关", L.passedAll(word, p));
+  ok("差最后一种默写，仍然在本子里", L.weak([word], p).length === 1);
+
+  L.grade(p, word.id, true, now, "write");
+  ok("每一种都过了才算过关", L.passedAll(word, p));
   ok("但平时练习不会自动放它走", L.weak([word], p).length === 1);
   L.clearWrong(p, word.id);                        // 过关测试通过，页面来划掉
   ok("过关测试通过才离开错词本", L.weak([word], p).length === 0);
@@ -453,9 +471,9 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
   const round = L.newDrill([word, phrase], p, seeded(8), ALL);
   ok("词少也凑够一关", round.total >= L.MIN_DRILL, String(round.total));
   ok("队列里排的是词加问法", round.queue.every(e => e.item && e.kind));
-  eq("单词的四种问法都排上了",
+  eq("单词的每种问法都排上了",
      [...new Set(round.queue.filter(e => e.item.id === word.id).map(e => e.kind))].sort().join(","),
-     "cn2en,en2cn,listen,spell");
+     "cn2en,en2cn,listen,spell,write");
   eq("词组只出它那两种",
      [...new Set(round.queue.filter(e => e.item.id === phrase.id).map(e => e.kind))].sort().join(","),
      "cn2en,en2cn");
@@ -497,7 +515,7 @@ const MIN = 60000, DAY = 24 * 60 * MIN;
     const q = L.makeQuestion(e.item, [word], p, rnd, ALL, e.kind);
     L.answer(round, q, q.answer, p, now);
   }
-  ok("一关打完四种问法全过了", L.passedAll(word, p));
+  ok("一关打完每种问法都过了", L.passedAll(word, p));
   eq("没有漏掉的题", round.again.length, 0);
 }
 

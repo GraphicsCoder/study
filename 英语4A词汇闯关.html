@@ -91,6 +91,13 @@
     background:var(--card);cursor:pointer}
   .spellbtns .go{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
   .spellbtns .go[disabled]{opacity:.4}
+  /* 默写：一个大输入框，键盘打上去，和作业本上一样没有任何提示 */
+  #qinput{width:100%;margin-top:16px;font:inherit;font-size:24px;font-weight:700;text-align:center;
+    letter-spacing:1px;padding:12px 10px;border:2px solid var(--line);border-radius:14px;
+    background:var(--card);color:var(--ink)}
+  #qinput:focus{outline:none;border-color:var(--brand)}
+  #qinput.right{border-color:var(--ok);color:var(--ok)}
+  #qinput.wrong{border-color:var(--no);color:var(--no)}
 
   .say{margin-top:14px;font-size:15px;min-height:46px;color:var(--muted)}
   .say b{color:var(--ink)}
@@ -192,7 +199,7 @@
 
 <header class="top">
   <h1>🔤 4A 词汇闯关</h1>
-  <p>按预习单来的 220 个单词词组 · 认一认 → 听一听 → 想一想 → 拼一拼</p>
+  <p>按预习单来的 220 个单词词组 · 认一认 → 听一听 → 想一想 → 拼一拼 → 默一默</p>
   <div class="allbar"><span id="alltext">熟练度 0%</span>
     <span class="bar"><i id="allbar"></i></span></div>
   <div class="duetip" id="duetip"></div>
@@ -255,6 +262,15 @@
       </div>
     </div>
 
+    <div id="qwrite" style="display:none">
+      <input id="qinput" type="text" autocomplete="off" autocorrect="off"
+             autocapitalize="none" spellcheck="false" placeholder="在这里默写">
+      <div class="spellbtns">
+        <button id="qwclear">清空</button>
+        <button class="go" id="qwgo" disabled>确定</button>
+      </div>
+    </div>
+
     <div class="say" id="qsay"></div>
     <button class="next" id="qnext">下一题 →</button>
   </div>
@@ -278,8 +294,8 @@
 </div>
 <div id="praise"></div>
 
-<script src="英语4A词库.js?v=202611231805"></script>
-<script src="词汇逻辑.js?v=202611231805"></script>
+<script src="英语4A词库.js?v=202611232017"></script>
+<script src="词汇逻辑.js?v=202611232017"></script>
 <script>
 (function () {
   "use strict";
@@ -510,7 +526,7 @@
      练习进度一个字都不动，想再练就回 unit 里正常练。 */
   var tab = "star";
   // 四种问法的小名，错词本上用它显示「还差哪几关」
-  var MODE_CN = { en2cn: "认", listen: "听", cn2en: "想", spell: "拼" };
+  var MODE_CN = { en2cn: "认", listen: "听", cn2en: "想", spell: "拼", write: "默" };
   function renderBook() {
     $("tabstar").classList.toggle("on", tab === "star");
     $("tabwrong").classList.toggle("on", tab === "wrong");
@@ -639,7 +655,8 @@
   }
 
   var TAG = { en2cn: "认一认 · 这个词什么意思", listen: "听一听 · 听到的是哪个意思",
-              cn2en: "想一想 · 中文对应哪个英文", spell: "拼一拼 · 把字母排好" };
+              cn2en: "想一想 · 中文对应哪个英文", spell: "拼一拼 · 把字母排好",
+              write: "默一默 · 自己把这个词写出来" };
 
   function render() {
     var done = CH ? CH.i - 1 : R.right + R.wrong;
@@ -656,22 +673,28 @@
     $("qnext").classList.remove("on");
 
     var ask = $("qask");
-    ask.className = "ask" + (Q.kind === "cn2en" || Q.kind === "spell" ? " cn" : "");
+    var cn = Q.kind === "cn2en" || Q.kind === "spell" || Q.kind === "write";
+    ask.className = "ask" + (cn ? " cn" : "");
     ask.textContent = Q.kind === "listen" ? "🎧" : Q.ask;
     $("qhint").textContent =
-      Q.kind === "spell" ? Q.hint :
+      Q.kind === "spell" || Q.kind === "write" ? Q.hint :
       Q.kind === "listen" ? "点下面的喇叭，听清楚再选" :
       Q.item.p || "";
 
-    $("qspeak").style.display = Q.kind === "cn2en" ? "none" : "";
+    // 默写题考的就是「写得出来」，答之前不给听，否则等于报答案
+    $("qspeak").style.display = (Q.kind === "cn2en" || Q.kind === "write") ? "none" : "";
     $("qspeak").textContent = Q.kind === "listen" ? "🔊 播放" : "🔊 再读一遍";
 
+    $("qopts").style.display = "none";
+    $("qspell").style.display = "none";
+    $("qwrite").style.display = "none";
     if (Q.kind === "spell") {
-      $("qopts").style.display = "none";
       $("qspell").style.display = "";
       renderSpell();
+    } else if (Q.kind === "write") {
+      $("qwrite").style.display = "";
+      renderWrite();
     } else {
-      $("qspell").style.display = "none";
       $("qopts").style.display = "";
       renderOpts();
     }
@@ -711,6 +734,40 @@
       if (b.textContent === Q.answer) b.classList.add("right");
     });
     if (!right) btn.classList.add("wrong");
+    feedback(right);
+  }
+
+  /* ---- 默写题 ----
+     没有字母块、没有选项，只有中文和一个输入框：
+     作业本上「中译英默写」就是这么考的。iOS 键盘爱自动大写和纠错，
+     所以输入框上把 autocorrect / autocapitalize 全关掉。 */
+  function renderWrite() {
+    var inp = $("qinput");
+    inp.value = "";
+    inp.disabled = false;
+    inp.className = "";
+    $("qwgo").disabled = true;
+    inp.oninput = function () { $("qwgo").disabled = !inp.value.trim(); };
+    inp.onkeydown = function (e) { if (e.key === "Enter") submitWrite(); };
+    $("qwclear").onclick = function () {
+      if (answered) return;
+      inp.value = ""; $("qwgo").disabled = true; inp.focus();
+    };
+    $("qwgo").onclick = submitWrite;
+    // 手机上自动弹键盘反而容易挡住题面，交给小朋友自己点
+  }
+
+  function submitWrite() {
+    if (answered) return;
+    var inp = $("qinput");
+    var val = inp.value.trim();
+    if (!val) return;
+    answered = true;
+    var right = judge(val);
+    save();
+    inp.disabled = true;
+    inp.className = right ? "right" : "wrong";
+    $("qwgo").disabled = true;
     feedback(right);
   }
 
@@ -884,6 +941,6 @@
   renderHome();
 })();
 </script>
-<script src="同步.js?v=202611231805" data-key="en4a-vocab-v1"></script>
+<script src="同步.js?v=202611232017" data-key="en4a-vocab-v1"></script>
 </body>
 </html>
