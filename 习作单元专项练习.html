@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>语文专项训练 · 习作单元全解（四年级上）</title>
+<link rel="icon" href="favicon.svg?v=2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<style>
+  :root{
+    --bg:#f7f6f4; --card:#fff; --ink:#1f2430; --muted:#6b7280;
+    --line:#e7e3dd; --brand:#a8432a; --brand-soft:#fbeee9;
+    --ok:#15803d; --ok-soft:#e8f6ed; --no:#c2410c; --no-soft:#fdeee6;
+    --warn:#92400e; --warn-soft:#fef6e7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.65;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 16px 80px}
+  header.top{background:linear-gradient(135deg,#a8432a,#c9704f);color:#fff;
+    border-radius:16px;padding:22px 24px;margin-bottom:18px}
+  header.top h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  header.top p{margin:0;opacity:.93;font-size:14px}
+  header.top a{color:#fff}
+  .score-bar{display:flex;align-items:center;gap:12px;margin-top:14px;
+    background:rgba(255,255,255,.18);border-radius:10px;padding:8px 12px;font-size:14px}
+  .bar{flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:#fff;transition:width .35s}
+
+  details.guide{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.guide summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px}
+  details.guide summary::marker{color:var(--brand)}
+  details.guide h4{margin:14px 0 6px;font-size:15px;color:#8a3522}
+  .rule{background:var(--brand-soft);border-radius:10px;padding:10px 14px;margin:8px 0 14px;font-size:15px;line-height:1.95}
+  .pitfall{background:var(--warn-soft);border-left:4px solid #e9a23b;border-radius:8px;padding:10px 14px;margin:8px 0 14px;font-size:14px}
+  .steps4{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px}
+  .steps4 div{flex:1;min-width:150px;background:var(--brand-soft);border-radius:10px;padding:10px 14px;font-size:14px}
+  .steps4 .k{font-size:20px;font-weight:700;color:#8a3522;line-height:1.3}
+  table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 14px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:#f3f1ed;font-weight:600}
+  td b{color:var(--brand)}
+
+  nav.jump{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  nav.jump a{font-size:13px;text-decoration:none;color:var(--brand);background:#fff;
+    border:1px solid var(--line);border-radius:99px;padding:6px 12px}
+  nav.jump a:hover{background:var(--brand-soft)}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .tools .pill{font-size:13px;color:var(--muted);margin-left:auto}
+  details.mistakes{background:var(--card);border:1px solid #f0b48e;border-radius:14px;padding:4px 18px;margin-bottom:18px}
+  details.mistakes summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:16px;color:var(--no)}
+  ol.mlist{margin:0 0 14px;padding-left:22px;font-size:14.5px}
+  ol.mlist li{margin:7px 0}
+  ol.mlist a{color:var(--brand);text-decoration:none}
+  ol.mlist a:hover{text-decoration:underline}
+  ol.mlist .where{color:var(--muted);font-size:12.5px;margin-left:6px}
+  .empty{color:var(--muted);font-size:14px;padding:4px 0 14px}
+
+  section.set{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px 20px;margin-bottom:20px;scroll-margin-top:12px}
+  section.set h2{margin:0 0 4px;font-size:19px}
+  .tip{font-size:13.5px;color:var(--muted);margin:0 0 14px}
+  .setbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .setbar .sc{font-size:13px;color:var(--muted);margin-left:auto}
+
+  /* 阅读材料 */
+  .passage{background:#fdfcfa;border:1px solid var(--line);border-left:4px solid var(--brand);
+    border-radius:10px;padding:16px 18px;margin:10px 0 18px;font-size:16px;line-height:2.05}
+  .passage h3{margin:0 0 2px;font-size:18px;text-align:center;letter-spacing:1px}
+  .passage .by{text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px}
+  .passage p{margin:0 0 10px;text-indent:2em}
+  .passage .pn{color:var(--brand);font-weight:700;margin-right:2px}
+  .passage .mat{font-weight:600;color:#8a3522;text-indent:0;margin:14px 0 4px}
+  .passage table{margin:4px 0 10px;font-size:14px}
+  .passage ol{margin:4px 0 10px;padding-left:24px}
+  .passage ol li{margin:4px 0}
+
+  .item{border-top:1px dashed var(--line);padding:14px 0;border-left:3px solid transparent;scroll-margin-top:16px;transition:background .3s}
+  .item.wrong{border-left-color:var(--no);background:#fff8f4;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.half{border-left-color:#e9a23b;background:var(--warn-soft);padding-left:12px;border-radius:0 8px 8px 0}
+  .item.fixed{border-left-color:#86d7a5;background:#f7fcf9;padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flagged{border-left-color:#e9a23b;background:var(--warn-soft);padding-left:12px;border-radius:0 8px 8px 0}
+  .item.flash{background:#fff3cd}
+  .q{font-size:16px;margin:0 0 9px;line-height:1.9}
+  .q .n{display:inline-block;min-width:26px;color:var(--muted);font-size:14px}
+  .q .tag{font-size:12px;border-radius:99px;padding:2px 8px;margin-right:6px;
+    background:var(--brand-soft);color:#8a3522;vertical-align:1px;white-space:nowrap}
+  .badge{font-size:12px;border-radius:99px;padding:2px 9px;margin-left:8px;vertical-align:2px;white-space:nowrap}
+  .badge.wrong{background:var(--no-soft);color:var(--no);border:1px solid #f0b48e}
+  .badge.half{background:var(--warn-soft);color:var(--warn);border:1px solid #e9a23b}
+  .badge.fixed{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+  .badge.ok{background:var(--ok-soft);color:var(--ok);border:1px solid #86d7a5}
+
+  .opts{display:flex;flex-direction:column;gap:7px;margin:0 0 8px 26px}
+  button.opt{font-family:inherit;font-size:15px;padding:9px 14px;border-radius:10px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;text-align:left;line-height:1.6}
+  button.opt:hover{background:var(--brand-soft)}
+  button.opt.pick{border-color:var(--brand);background:var(--brand-soft);font-weight:600}
+  button.opt.good{border-color:#86d7a5;background:var(--ok-soft);color:var(--ok);font-weight:600}
+  button.opt.bad{border-color:#f0b48e;background:var(--no-soft);color:var(--no)}
+  input.blank{width:120px;padding:4px 7px;font-size:16px;font-family:inherit;text-align:center;
+    border:0;border-bottom:2px solid #c9ced8;background:#fcfcfd;margin:0 3px}
+  input.blank:focus{outline:none;border-bottom-color:var(--brand);background:#fff}
+  input.blank.good{border-bottom-color:#2f9e5f;background:var(--ok-soft);color:var(--ok)}
+  input.blank.bad{border-bottom-color:#e07a3f;background:var(--no-soft);color:var(--no)}
+  textarea.ans{display:block;width:calc(100% - 26px);margin:0 0 8px 26px;min-height:76px;
+    padding:10px 12px;font-size:16px;font-family:inherit;line-height:1.9;
+    border:1px solid var(--line);border-radius:10px;background:#fcfcfd;resize:vertical}
+  textarea.ans:focus{outline:none;border-color:var(--brand);background:#fff}
+  .selfbar{display:none;gap:8px;flex-wrap:wrap;margin:0 0 8px 26px;align-items:center}
+  .selfbar.show{display:flex}
+  .selfbar .lab{font-size:13.5px;color:var(--muted)}
+  button.self{font-size:13.5px;padding:7px 12px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;font-family:inherit}
+  button.self.pick[data-v="1"]{border-color:#86d7a5;background:var(--ok-soft);color:var(--ok);font-weight:600}
+  button.self.pick[data-v="0.5"]{border-color:#e9a23b;background:var(--warn-soft);color:var(--warn);font-weight:600}
+  button.self.pick[data-v="0"]{border-color:#f0b48e;background:var(--no-soft);color:var(--no);font-weight:600}
+
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:26px}
+  button{font-family:inherit;font-size:13.5px;padding:8px 13px;border-radius:9px;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink)}
+  button:hover{background:#f3f1ed}
+  button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  button.primary:hover{filter:brightness(1.07)}
+  button.flag{padding:7px 10px;line-height:1}
+  button.flag.on{background:var(--warn-soft);border-color:#e9a23b}
+  .fb{margin:8px 0 0 26px;font-size:14px;display:none}
+  .fb.show{display:block}
+  .fb .good{color:var(--ok)} .fb .bad{color:var(--no)} .fb .note{color:var(--warn)}
+  .reveal{display:none;margin:8px 0 0 26px;font-size:15px;background:var(--ok-soft);
+    border-left:4px solid #86d7a5;border-radius:8px;padding:10px 14px;line-height:1.9}
+  .reveal.show{display:block}
+  .reveal b{color:#13603f}
+  .reveal ul{margin:6px 0 0;padding-left:22px}
+  .reveal li{margin:3px 0}
+  .why{display:block;color:#4a5568;font-size:13.5px;margin-top:5px}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:10px}
+
+  body.only-wrong .item:not(.wrong):not(.half):not(.flagged){display:none}
+  body.only-wrong section.set.nowrong{display:none}
+  body.only-wrong details.guide{display:none}
+
+  /* ---------- 手机 / 小屏适配 ---------- */
+  @media (max-width:640px){
+    .wrap{padding:12px 10px 60px}
+    header.top{padding:16px 14px;border-radius:12px;margin-bottom:14px}
+    header.top h1{font-size:20px}
+    header.top p{font-size:13px;line-height:1.8}
+    .score-bar{font-size:12.5px;padding:7px 10px;gap:8px}
+    details.guide,details.mistakes{padding:2px 12px;border-radius:12px}
+    details.guide summary,details.mistakes summary{font-size:15px}
+    .rule{font-size:14px;padding:10px 11px}
+    .pitfall{font-size:13px;padding:10px 11px}
+    .steps4 div{min-width:100%}
+    table{font-size:12.5px}
+    th,td{padding:5px 6px}
+    nav.jump{gap:6px}
+    nav.jump a{font-size:12.5px;padding:5px 10px}
+    .tools{gap:6px}
+    .tools .pill{margin-left:0;width:100%;font-size:12.5px}
+    section.set{padding:14px 12px;border-radius:12px;margin-bottom:14px}
+    section.set h2{font-size:17px}
+    .tip{font-size:13px}
+    .setbar .sc{margin-left:0;width:100%}
+    .passage{padding:13px 14px;font-size:15.5px;line-height:1.95}
+    .passage h3{font-size:17px}
+    .q{font-size:15px}
+    .q .n{min-width:20px}
+    .opts,.row,.selfbar{margin-left:6px}
+    .fb,.reveal{margin-left:6px}
+    .reveal{padding:9px 11px;font-size:14px}
+    textarea.ans{width:calc(100% - 6px);margin-left:6px}
+    button.opt{font-size:14px;padding:9px 11px}
+    button{font-size:13px;padding:9px 11px}
+    button.flag{padding:9px 10px}
+    input.blank{font-size:16px;width:100px;max-width:42vw}
+  }
+  @media print{
+    body{background:#fff}
+    nav.jump,.tools,.setbar button,.row button,.selfbar,header.top .score-bar,details.mistakes{display:none}
+    .reveal{display:block !important}
+    section.set{break-inside:avoid;border:0;padding:0}
+    .passage{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <h1>习作 · 四年级上（统编版 · 上海）</h1>
+  <p>八次单元习作全覆盖 + 四项通用功夫 · 12 个专项 · 审题选材 / 列提纲 / 详略 / 过渡 / 开头结尾 / 改作文<br>
+  <a href="index.html">🏠 全部练习</a> ｜ 语文：<a href="习作专项练习.html">习作·把话写具体</a> ｜ <a href="阅读理解专项练习.html">阅读理解</a> ｜ <a href="划线部分提问专项练习.html">划线部分提问</a></p>
+  <div class="score-bar">
+    <span>总进度</span><span class="bar"><i id="totalBar"></i></span>
+    <span id="totalTxt">0 / 0 题答对</span>
+  </div>
+</header>
+
+<details class="guide" open>
+  <summary>📐 写作文的固定流程（每次都照这个来）</summary>
+
+  <h4>① 五步法：想清楚再下笔，写完一定要改</h4>
+  <div class="steps4">
+    <div><div class="k">审题</div>圈出题目里的<b>限定词</b>：写人还是写事？几件？什么时候？有没有"最""第一次""我和"？圈错一个字，全篇白写。</div>
+    <div><div class="k">选材</div>在脑子里找<b>三件</b>，挑那件<b>你记得住细节</b>的。记不清细节的事，写出来一定空。</div>
+    <div><div class="k">提纲</div>先写<b>四五行提纲</b>：开头 / 起因 / 经过（哪一段最详） / 结果 / 结尾。两分钟，省后面二十分钟。</div>
+    <div><div class="k">写</div>照提纲写，<b>详的那段至少写满 8 句</b>，略的地方一两句带过。</div>
+    <div><div class="k">改</div>读一遍：有没有错别字、有没有一逗到底、详略有没有反、有没有跑题的句子。</div>
+  </div>
+
+  <h4>② 提纲模板（写事类，最常考）</h4>
+  <table>
+    <tr><th>段</th><th>写什么</th><th>大约字数（全篇 400 字）</th></tr>
+    <tr><td>开头</td><td>一句话把<b>时间、地点、什么事</b>带出来，或者直接从一个<b>画面/声音</b>开始</td><td>40 字</td></tr>
+    <tr><td>起因</td><td>为什么会有这件事（<b>略写</b>）</td><td>50 字</td></tr>
+    <tr><td><b>经过</b></td><td><b>最要紧的一段</b>：拆动作、写语言、写心里想的、写别人的反应</td><td><b>180 字以上</b></td></tr>
+    <tr><td>结果</td><td>后来怎么样了</td><td>60 字</td></tr>
+    <tr><td>结尾</td><td>一句感受或一个画面，<b>和开头呼应</b></td><td>40 字</td></tr>
+  </table>
+
+  <h4>③ 老师扣分最多的七处（上海四上作文通常 30 分）</h4>
+  <div class="pitfall">
+    ① <b>跑题</b>——题目要"一件事"，写成了三件；要"我和××"，全篇没有"我"。这一条直接掉档。<br>
+    ② <b>详略不分</b>——起因写了十句，最精彩的经过只有两句。<br>
+    ③ <b>只有过程没有细节</b>——"然后我们就比赛了，然后我赢了"，没有一个动作、一句话。<br>
+    ④ <b>不分段 / 一逗到底</b>——整篇一大块，或者整段只有逗号。<br>
+    ⑤ <b>套话开头结尾</b>——"在我的记忆长河里""这件事让我明白了一个深刻的道理"。<br>
+    ⑥ <b>错别字和标点</b>——引号里的话不会点，冒号引号不会配。<br>
+    ⑦ <b>字数不够</b>——四上要求 <b>400 字左右</b>，不足 300 字要扣档。
+  </div>
+
+  <h4>④ 过渡和顺序：让文章有"台阶"</h4>
+  <table>
+    <tr><th>按什么顺序</th><th>常用的词</th></tr>
+    <tr><td><b>时间 / 事情先后</b></td><td>起先……接着……然后……最后……；没过多久；说时迟那时快</td></tr>
+    <tr><td><b>游览 / 方位</b></td><td>一进门；穿过……就来到；沿着小路往前；走到尽头</td></tr>
+    <tr><td><b>观察的变化</b></td><td>第一天；过了三天；又过了一个星期；现在</td></tr>
+    <tr><td><b>心情的变化</b></td><td>一开始；可是；就在这时；直到……我才</td></tr>
+  </table>
+
+  <h4>⑤ 改作文：课本上的修改符号要会用</h4>
+  <div class="rule">
+    <b>删除号</b>（把多余的字圈掉）／ <b>增补号</b> ∨（在下面补上漏掉的字）／
+    <b>对调号</b> ∽（把前后两个词换位置）／ <b>改正号</b>（把错字画圈，在旁边写对的）。<br>
+    自己改的顺序：<b>一读错别字 → 二读标点 → 三读句子通不通 → 四看详略和分段</b>。<br>
+    ⚠ 一句话太长就断成两句，这是四年级最容易见效的一招。
+  </div>
+</details>
+<nav class="jump" id="jump"></nav>
+<div class="tools">
+  <button id="btnOnlyWrong">只看错题 🔍</button>
+  <button id="btnRedo">重做所有错题</button>
+  <button id="btnClearMarks">清除错题记录</button>
+  <span class="pill" id="markStat"></span>
+</div>
+<details class="mistakes" id="mbox">
+  <summary id="msum">📕 错题本（0）</summary>
+  <div id="mlist"></div>
+</details>
+
+<div id="app"></div>
+<footer>选择题和填空题自动批改 · 写话题对照参考答案和自检点后自评 · 做错自动进错题本 · 记录保存在本机浏览器 · Ctrl+P 打印自动显示答案</footer>
+</div>
+
+<script>
+/* 题型：
+   choice = 单选题，自动批改
+   fill   = 填空题（q 里的 【】 是空），自动批改，as 里给可接受的多种说法
+   open   = 开放题，写完对照参考答案后自评（对 / 不全 / 不对）
+*/
+const DATA = [
+{
+  id:"u1", title:"单元一 · 推荐一个好地方",
+  tip:"考点：推荐 = 一个地方 + 理由具体 + 让人想去。光写“很美很好玩”不算理由。",
+  passage:{ title:"课本要求和一段示范", html:`
+    <p class="mat">这次习作要做到三件事</p>
+    <ol>
+      <li>把这个地方<b>是什么样的</b>写出来（看得见的画面，不是“风景优美”）；</li>
+      <li>把<b>推荐的理由</b>写清楚，理由最好有两三条，每条后面跟一个具体例子；</li>
+      <li>写出<b>你自己在那儿的经历</b>，别人才会相信你真的喜欢。</li>
+    </ol>
+    <p class="mat">示范（节选）</p>
+    <p>我想推荐外婆家门口的那条老街。<b>第一个理由是它够安静。</b>整条街只有一辆自行车会慢悠悠地经过，连修鞋师傅敲鞋跟的声音都听得清清楚楚。<b>第二个理由是那儿的生煎。</b>锅盖一掀，白汽“腾”地冲上来，底是焦的，咬开一包汤，烫得我直吸气，还舍不得吐。</p>`},
+  items:[
+    {t:"choice", q:"下面哪一句才算“把推荐理由写清楚了”？", opts:[
+      "那个公园非常漂亮，风景优美，空气清新，我很喜欢。",
+      "那个公园特别好玩，去了的人都说好，你一定要去。",
+      "那个公园最好的是秋天的银杏道，一脚踩下去叶子“咔嚓”响，走一趟鞋面上会沾满金色的小扇子。",
+      "那个公园很大很大，大得走都走不完，真的非常大。"],
+     a:2, why:"A、B、D 都只是结论和形容词。C 给出了一个只有去过的人才写得出的画面，这才是理由。"},
+
+    {t:"choice", q:"写推荐一个好地方，下面哪种开头最好？", opts:[
+      "在我的记忆长河里，有一个地方让我久久不能忘怀。",
+      "今天我要向大家推荐一个好地方，这个地方非常好。",
+      "如果你周末只有半天空，我劝你去一趟城隍庙后面那条小弄堂。",
+      "我推荐的地方是公园，它在我家附近，很近。"],
+     a:2, why:"C 一上来就对读者说话，还给了条件（只有半天空），有吸引力又自然。A 是套话，B 是废话，D 是流水账。"},
+
+    {t:"choice", q:"一位同学推荐图书馆，下面哪一段跑题了？", opts:[
+      "二楼靠窗的位置最好，阳光斜照在桌上，连灰尘都看得见在飘。",
+      "那儿的书按颜色排，远远看过去像一道彩虹。",
+      "上个星期我数学考了 95 分，妈妈夸了我，我很开心。",
+      "最安静的是周三下午，整层楼只听得见翻书的沙沙声。"],
+     a:2, why:"推荐的是“地方”，考试得了多少分和这个地方没关系，属于典型的跑题句，要删掉。"},
+
+    {t:"fill", q:"推荐理由不能只写结论。“那儿很好吃”是结论，改成具体的写法可以是：【　　】。",
+     as:[["糖醋排骨外面裹着亮亮的酱汁，一咬下去酸甜的汁水就冒出来","一掀锅盖白汽腾起来，底是焦的，咬开一包汤","馄饨皮薄得能看见里面的肉馅，汤上飘着几点蛋皮"]],
+     why:"把“好吃”换成看得见、闻得到、吃得出的细节。评卷老师看的就是这一步。"},
+
+    {t:"open", q:"给你要推荐的地方列一个提纲：开头一句 + 三条理由（每条后面写一个具体例子）+ 结尾一句。只写提纲，不要写成文章。",
+     ref:"开头：周末如果想躲清静，去我家楼下的新华书店三楼。／理由一 人少：周六上午整层不到十个人，脚步声都听得见。／理由二 能坐：靠窗一排矮凳，坐一上午没人赶你。／理由三 有漫画也有科普：《昆虫记》旁边就摆着《父与子》。／结尾：出门时手里总会多一本书，像带走了那层楼的一点安静。",
+     points:["提纲有开头、三条理由、结尾五个部分","每条理由后面都跟了一个具体例子，不是形容词","三条理由互相不重复","结尾不是“真好啊”这种空话"],
+     why:"提纲阶段就把“理由 + 例子”配好，写正文时就不会卡住，也不会写成一堆形容词。"},
+
+    {t:"open", q:"用 60 字左右写一段“推荐理由 + 例子”，地点自选，不许出现“美丽”“好玩”“有趣”这三个词。",
+     ref:"我推荐小区东门那片草坡，因为它是整个小区唯一能躺下的地方。上个月我在那儿躺着看云，一只瓢虫顺着我的袖子一直爬到手背上，停了很久才飞走。",
+     points:["有明确的一条理由","理由后面跟了一件自己经历过的具体事","没有出现禁用的三个形容词","不少于 60 字，句子通顺"],
+     why:"禁用形容词是逼自己写细节。写作文时形容词越少，内容往往越实。"}
+  ]
+},
+{
+  id:"u2", title:"单元二 · 小小“动物园”",
+  tip:"考点：家人像什么动物 + 为什么像（外形或脾气）+ 一件事来证明。只写“像”不写“事”拿不到高分。",
+  passage:{ title:"写法拆解", html:`
+    <p class="mat">公式</p>
+    <p><b>谁 + 像什么动物 + 哪里像（外形/性格/习惯）+ 一件具体的事 + 我对他的感情</b></p>
+    <p class="mat">示范</p>
+    <p>我家的“树袋熊”是弟弟。他一醒就要挂在妈妈身上，手臂一圈，腿一夹，妈妈走到哪儿他挂到哪儿。有一回妈妈去厨房端汤，他还挂着不肯下来，妈妈只好单手端着碗，像扛着一袋会说话的米。</p>
+    <p class="mat">注意</p>
+    <p>写家人像动物，是<b>打比方</b>，不是骂人。要写出<b>喜欢</b>，别写成嫌弃。</p>`},
+  items:[
+    {t:"choice", q:"下面哪一句最符合这次习作的要求？", opts:[
+      "我的爸爸像一头狮子。",
+      "我的爸爸像一头狮子，因为他很凶。",
+      "我的爸爸像一头狮子：头发乱蓬蓬的像鬃毛，说话嗓门大，可他打呼噜的时候，又像一只睡着的大猫。",
+      "我的爸爸是我们家最厉害的人，什么都会做。"],
+     a:2, why:"C 既写了外形（鬃毛）、又写了声音，还补了一句反差，人物一下子立起来了。A、B 只有结论，D 和动物没关系。"},
+
+    {t:"choice", q:"写“妈妈像蜜蜂”，下面哪个事例最能证明？", opts:[
+      "妈妈很爱我，对我非常好。",
+      "妈妈每天早上六点就起床，蒸上包子、晾好衣服、把我的书包检查一遍，等我睁眼时她已经在擦桌子了。",
+      "妈妈的工作很忙，经常加班到很晚。",
+      "妈妈长得很漂亮，头上戴着黄色的发卡。"],
+     a:1, why:"蜜蜂的特点是“忙个不停”。B 用一连串动作把“忙”写出来了。D 只是颜色像，不是脾气像，站不住。"},
+
+    {t:"choice", q:"下面这段话的问题是什么？“我家像个动物园。爷爷像牛，奶奶像猫，爸爸像狮子，妈妈像蜜蜂，弟弟像猴子，我像小鹿。我们一家很幸福。”", opts:[
+      "比喻用得不对",
+      "只列了名单，没有一个人写了具体的事",
+      "字数太多",
+      "没有用上拟人"],
+     a:1, why:"六个人全是一句话带过，等于什么都没写。正确做法是挑两到三个人，每人配一件事写具体。"},
+
+    {t:"fill", q:"哥哥吃饭又快又多，三碗饭眨眼就见底。用一个动物来打比方，他像一只【　　】。",
+     as:[["小猪","饿狼","狼","小老虎","饿虎"]],
+     why:"打比方要抓住“最突出的那一点”。吃得快、吃得多，对应的就是这几种动物。"},
+
+    {t:"open", q:"从家人里挑一个，写 80 字左右：他像什么动物 + 哪里像 + 一件能证明的事。不许出现“很”“非常”。",
+     ref:"奶奶是我家的老母鸡。只要我一进门，她就从厨房探出头，先摸额头烫不烫，再按着我坐下喝水。那回我发烧，她把被子掖了四遍，掖完又站在床边看了半天，才踮着脚出去。",
+     points:["点明像什么动物","写出了哪里像（动作或脾气）","有一件具体的事，不是只有结论","没出现“很”“非常”，字数够 80"],
+     why:"禁掉“很”和“非常”，孩子就只能靠动作和细节说话——这正是这次习作要练的。"},
+
+    {t:"open", q:"给《我家的“动物园”》写一个结尾，要求：不说“我爱我的家”这五个字，但让人读出这个意思。",
+     ref:"晚饭桌上，狮子在吼电视里的球赛，蜜蜂还在厨房嗡嗡，树袋熊挂在老母鸡背上不肯下来。我觉得这个动物园有点吵，可我哪儿也不想去。",
+     points:["结尾把前面写过的几个“动物”收拢了一下","没有出现“我爱我的家”","有画面，不是喊口号","最后一句有自己的感受"],
+     why:"结尾的高级写法是“用画面说感情”。把前文的比喻在结尾再用一次，还能起到首尾呼应。"}
+  ]
+},
+{
+  id:"u3", title:"单元三 · 连续观察日记",
+  tip:"考点（习作单元）：连续几天观察同一样东西，写出它的变化；日记格式不能错。",
+  passage:{ title:"格式和要点", html:`
+    <p class="mat">日记格式</p>
+    <p>第一行写<b>日期和星期、天气</b>（如：10 月 8 日　星期三　晴），<b>写在正中间或左上角</b>，下一行空两格开始写正文。每一天是一则，不要合成一篇。</p>
+    <p class="mat">观察要写出三样</p>
+    <ol>
+      <li><b>变化</b>：和昨天比，哪里不一样了（长了多少、颜色变了、位置动了）；</li>
+      <li><b>怎么知道的</b>：用尺子量、用手摸、凑近闻——写出观察的<b>方法</b>；</li>
+      <li><b>心里的想法</b>：你猜它接下来会怎样，猜对了没有。</li>
+    </ol>
+    <p class="mat">示范</p>
+    <p>10 月 8 日　星期三　晴</p>
+    <p>　　泡下去的绿豆鼓起来了。昨天它们还是硬邦邦的小石子，今天捏一下就有点软，皮也皱了，像泡久了的手指。我用尺子量，最大的那颗有 7 毫米，比昨天胖了 1 毫米多。妈妈说明天就能冒芽，我有点不信——它看起来还没醒。</p>`},
+  items:[
+    {t:"choice", q:"下面哪一则日记的开头格式是对的？", opts:[
+      "今天是 10 月 8 日，天气很好。",
+      "10 月 8 日　星期三　晴",
+      "星期三　10 月",
+      "日记一"],
+     a:1, why:"日记第一行必须有日期、星期、天气三样，缺一不可，而且单独占一行。"},
+
+    {t:"choice", q:"连续观察日记里，最不能少的是什么？", opts:[
+      "好词好句",
+      "和前一天相比的变化",
+      "写得多",
+      "开头结尾"],
+     a:1, why:"“连续观察”的核心就是变化。如果三天写的内容一模一样，这次习作就没完成。"},
+
+    {t:"choice", q:"下面哪一句写出了“观察的方法”？", opts:[
+      "绿豆芽长高了很多。",
+      "我拿尺子贴着杯壁量，芽尖刚好到 2 厘米，比昨天高出一个指甲盖。",
+      "绿豆芽真可爱呀。",
+      "我很喜欢观察绿豆芽。"],
+     a:1, why:"量、摸、闻、数、对比——这些动作写出来，观察才显得真实、细致。"},
+
+    {t:"fill", q:"写变化要有比较对象。“芽长到 2 厘米”不如写“比【　　】高出一个指甲盖”。",
+     as:[["昨天","前一天","昨天的"]],
+     why:"有了“比昨天”，读者才感觉得到时间在走、东西在长。这就是连续观察的味道。"},
+
+    {t:"open", q:"按日记格式写一则观察日记（60-80 字），对象自选（泡的豆子、养的小鱼、窗台的花都行），必须写到：一处变化 + 一个观察动作 + 一句自己的猜想。",
+     ref:"11 月 3 日　星期一　阴\n　　蒜瓣的头上冒出一点白。昨天还平平的，今天凑近看，顶上裂了条缝，一粒米大的芽尖顶在那儿。我用手指轻轻碰了碰，硬的，不像嫩芽。我猜明天它会歪着长，因为那条缝是斜的。",
+     points:["第一行有日期、星期、天气","写出了和昨天比的变化","有一个观察动作（看、碰、量、闻）","最后有一句自己的猜想"],
+     why:"变化 + 方法 + 猜想，是观察日记拿高分的三件套，缺一样都显得像流水账。"},
+
+    {t:"open", q:"下面这则日记太空了，请改写得具体些（80 字左右）：“10 月 9 日　星期四　晴　　今天绿豆长芽了，我很高兴，希望它快快长大。”",
+     ref:"10 月 9 日　星期四　晴\n　　早上掀开盖布，三颗绿豆都裂了口，白白的芽尖拱出来，有一颗已经把皮顶掉了半边。我用尺子量，最长的 5 毫米，像一枚小小的鱼钩。昨天我还不信妈妈的话，今天只好认输。",
+     points:["保留了正确的日记格式","把“长芽了”写成了看得见的样子","有数据或比较（量了多少、比昨天怎样）","把“很高兴”换成了具体的表现或想法"],
+     why:"“我很高兴，希望它快快长大”是每个孩子都会写的空话。把它换成一句有性格的话，日记立刻不一样。"}
+  ]
+},
+{
+  id:"u4", title:"单元四 · 我和___过一天（想象）",
+  tip:"考点：想象也要讲道理。对方的本领要符合他的身份，事情要有起因、经过、结果。",
+  passage:{ title:"想象作文的三条规矩", html:`
+    <p><b>一、人物要对得上。</b>和孙悟空过一天，他会的是七十二变、火眼金睛、筋斗云；别让他开飞机。</p>
+    <p><b>二、要有一件事。</b>不是介绍对方有多厉害，而是“我和他一起做了什么、遇到了什么麻烦、怎么解决的”。</p>
+    <p><b>三、要写出“我”的感受。</b>想象作文最容易丢掉的就是“我”。</p>
+    <p class="mat">示范开头</p>
+    <p>早上六点半，闹钟没响，是嫦娥把我摇醒的。她说月宫的桂花落了一地，扫不完，问我愿不愿意去帮一天忙。我一边套鞋一边想：扫地就扫地，可我连作业都没写完。</p>`},
+  items:[
+    {t:"choice", q:"写《我和孙悟空过一天》，下面哪个情节最不合适？", opts:[
+      "他用火眼金睛帮我认出了混在同学里的妖怪。",
+      "他开着一辆跑车带我去上学。",
+      "他变成我的样子去替我上体育课，结果一口气跑了二十圈被老师盯上了。",
+      "他翻个筋斗云把我送到了学校屋顶，害我迟到还被扣了分。"],
+     a:1, why:"想象要符合人物的本领。孙悟空有筋斗云，不需要跑车，开车这个细节会让人出戏。"},
+
+    {t:"choice", q:"想象作文里最该写的是哪一部分？", opts:[
+      "介绍这个人物有多厉害、来历是什么",
+      "我和他一起经历的那件事，特别是中间出的麻烦",
+      "我对他的崇拜之情",
+      "他的外貌"],
+     a:1, why:"没有“麻烦”的想象作文就是流水账。有麻烦才有经过，有经过才有内容。"},
+
+    {t:"choice", q:"下面哪个结尾收得最好？", opts:[
+      "后来我就醒了，原来是一场梦。真是一场奇怪的梦啊！",
+      "闹钟响了。我翻身坐起来，发现手心里还攥着一小片桂花，香得很。",
+      "这一天真是太有意思了，我永远也忘不了。",
+      "我和嫦娥成了好朋友，我们约定下次再见。"],
+     a:1, why:"“原来是一场梦”是最常见也最平的收尾。B 留了一个说不清的小证据，余味就出来了。"},
+
+    {t:"fill", q:"想象作文不能只介绍本领，必须有一件事。判断标准是：这件事里有没有出现【　　】（指让事情不顺利的东西）。",
+     as:[["麻烦","困难","意外","问题","波折"]],
+     why:"起因—麻烦—解决—结果，是一切故事的骨架，想象作文也不例外。"},
+
+    {t:"open", q:"给《我和___过一天》列一个提纲：对象、我们做的事、中间出的一个麻烦、怎么解决、结尾。",
+     ref:"对象：哪吒。／事：他带我去台风里捞被吹走的风筝。／麻烦：风火轮在雨里打滑，我们掉进了黄浦江。／解决：他用混天绫把我卷住，我抓着绫子爬上了岸边的护栏。／结尾：风筝没捞回来，可我书包里多了一截红绳。",
+     points:["对象明确，本领和他的身份相符","有一件完整的事","中间有一个具体的麻烦","麻烦是用对方的本领解决的，不是突然就好了"],
+     why:"用对方的本领来解决麻烦，是想象作文最见功力的地方，也是最容易被老师圈出来表扬的地方。"},
+
+    {t:"open", q:"写一段 80 字左右的想象情节：你和自选的人物遇到了一个麻烦，并且用他的本领解决了。",
+     ref:"雨下得太大，纸风筝糊成了一团，挂在十六楼的空调外机上。哪吒把风火轮一踩，火苗“呼”地窜起来，可雨太急，轮子打了个滑，他整个人歪下去。就在那一下，他甩出混天绫，红光一闪缠住了栏杆，人像荡秋千一样荡了回来。",
+     points:["有一个具体的麻烦","用上了人物本来就有的本领","过程有波折，不是一下子就成了","有动作、有声音，读起来有画面"],
+     why:"波折要写出“差一点失败”的那一瞬间，情节才有张力。"}
+  ]
+},
+{
+  id:"u5", title:"单元五 · 生活万花筒：把一件事写清楚",
+  tip:"考点（习作单元·最重要）：一件事，按顺序写，起因经过结果齐全，把最要紧的那部分写具体。",
+  passage:{ title:"这一单元的全部要求", html:`
+    <p class="mat">三句话记住</p>
+    <ol>
+      <li><b>只写一件事。</b>两件事以上必丢分。</li>
+      <li><b>按顺序写。</b>事情的先后不能乱，该交代的时间、地点不能漏。</li>
+      <li><b>把“最要紧的那一部分”写具体。</b>也就是：详略。</li>
+    </ol>
+    <p class="mat">“写具体”的四把工具</p>
+    <table>
+      <tr><th>工具</th><th>样子</th></tr>
+      <tr><td>拆动作</td><td>我<b>抓起</b>抹布，<b>按</b>在桌角，<b>来回搓</b>了十几下，又<b>翻过来</b>擦了一遍。</td></tr>
+      <tr><td>加语言</td><td>“再来一次！”同桌把绳子往地上一摔。</td></tr>
+      <tr><td>写心里</td><td>我心里直打鼓：万一又踩线怎么办？</td></tr>
+      <tr><td>写别人</td><td>后排那几个“哇”地叫起来，老师在讲台上笑了一下。</td></tr>
+    </table>
+    <p class="mat">示范（经过部分）</p>
+    <p>轮到我了。我把手在裤子上蹭了蹭，弯腰抓住绳子的两头。“预备——开始！”绳子“啪”地抽在地上，我跳得又急又乱，第七下就踩住了绳。我愣在那儿，耳朵烧得发烫。同桌在旁边小声说：“别停，重来。”我吸了一口气，把绳子重新甩起来。</p>`},
+  items:[
+    {t:"choice", q:"题目是《一件难忘的事》，下面哪种写法一定会丢分？", opts:[
+      "写了一件事，经过写了两大段",
+      "写了学骑车、学游泳、学做饭三件事，每件一段",
+      "开头直接从“摔下来的那一瞬间”写起",
+      "结尾写了自己的感受"],
+     a:1, why:"“一件事”是限定词。写三件，每件都写不细，属于审题错误，先掉一档。"},
+
+    {t:"choice", q:"下面哪一段是“把最要紧的部分写具体”了？", opts:[
+      "第二天我们就去了公园，玩了很久，玩得很开心，然后就回家了。",
+      "比赛开始了，我很紧张，后来我赢了，大家都为我鼓掌，我很高兴。",
+      "我蹲下去，手指捏住棋子，刚要落下又收了回来。对面的爷爷把茶杯放下，“嗒”的一声。我盯着那个角看了半天，终于把棋子按了下去。",
+      "这件事虽然过去很久了，但我一直记在心里，永远也不会忘记。"],
+     a:2, why:"C 把短短几秒钟拆成了好几个动作和一个声音，这就是“把一瞬间写长”。"},
+
+    {t:"choice", q:"一件事的“经过”写不长，最有效的办法是什么？", opts:[
+      "多用成语和好词好句",
+      "把一个关键动作拆成三四个小动作，中间插进人物的话和心里想的",
+      "把起因写得更长一些",
+      "多写几件类似的事"],
+     a:1, why:"内容不够不能靠辞藻凑。拆动作 + 加语言 + 写心理，是最可靠的扩写法。"},
+
+    {t:"choice", q:"下面哪一句属于该略写的内容？", opts:[
+      "我第一次颠球时手忙脚乱的样子",
+      "球第五次落地时我心里的想法",
+      "那天早上我是怎么起床、刷牙、吃早饭、走到学校的",
+      "教练纠正我动作时说的那句话"],
+     a:2, why:"和这件事关系不大的日常过程，一句“吃过早饭我就赶去球场”就够了。写长了就是凑字数。"},
+
+    {t:"fill", q:"把一件事写清楚，结构上要有三样：起因、【　　】、结果。其中最要详写的是中间这一样。",
+     as:[["经过","过程"]],
+     why:"起因和结果各一小段，经过要占全篇一半以上，这是四上作文最稳的详略分配。"},
+
+    {t:"open", q:"把这句话扩写成 100 字左右的“经过”：“我上台表演，有点紧张，表演完了。”要求用上拆动作、人物语言、心里想的、别人的反应。",
+     ref:"报幕声一落，我的腿先于脑子动了。走到台中央，我才发现话筒比我高，只好踮起脚去够。台下黑压压的，我心里念了一遍开头那句，却怎么也张不开嘴。前排的陈老师朝我点了点头，用口型说：“慢慢来。”我吸了一口气，手心的汗在裤缝上擦了擦，终于开了口——第一句出来，声音抖得我自己都想笑。",
+     points:["有至少三个连续的动作","有一句别人的话或口型、手势","有“我”心里想的内容","有别人的反应（老师、台下）","不少于 100 字"],
+     why:"同一件事，别人写三行，你写一百字，差别就在这四样东西上。"},
+
+    {t:"open", q:"列一个《一件后悔的事》的完整提纲，标出哪一段详写。",
+     ref:"开头（略）：那只被我摔坏的陶罐，现在还在阳台角落。／起因（略）：外婆让我把腌菜罐搬进屋，我嫌沉，拖着走。／经过（详）：罐子在门槛上一磕，裂了一道缝；我慌了，把裂缝转到墙那边，装作没事；外婆来看了一眼没说话；晚饭时她提起罐子是太婆留下的。／结果（略）：我终于说了，外婆只说了句“早说呀”。／结尾：那道缝现在用胶带贴着，我每次路过都会看一眼。",
+     points:["是一件事，不是几件","五个部分齐全","明确标出了详写的是“经过”","经过部分至少有三个小步骤"],
+     why:"提纲上就把“详”字标出来，写的时候才舍得在那里多花笔墨。"}
+  ]
+},
+{
+  id:"u6", title:"单元六 · 记一次游戏",
+  tip:"考点：游戏规则一句带过，重点写比赛过程里的动作、声音、场面和心情起伏。",
+  passage:{ title:"场面描写：点面结合", html:`
+    <p><b>“面”</b>是全场的样子：教室里一下子炸开了锅，前排的站上了椅子。</p>
+    <p><b>“点”</b>是一两个人的特写：小胖把腰往后一坐，脸涨得通红，鞋底在地上蹭出两道白印。</p>
+    <p>好的场面描写是<b>先给一个面，再切一个点，最后再回到面</b>。只有面会空，只有点会散。</p>
+    <p class="mat">心情起伏</p>
+    <p>游戏作文最怕从头到尾“很开心”。要写出<b>紧张 → 失望 → 不服气 → 高兴</b>这样的变化，文章才有波浪。</p>`},
+  items:[
+    {t:"choice", q:"写《记一次拔河比赛》，下面哪部分应该写得最简略？", opts:[
+      "最后僵持不下的那十几秒",
+      "拔河的规则和两队怎么分的",
+      "我手心磨出红印的感觉",
+      "赢了之后大家的反应"],
+     a:1, why:"规则是背景，一两句交代清楚即可。详写规则、略写比赛，是最常见的详略颠倒。"},
+
+    {t:"choice", q:"下面哪一句是“点”（特写）？", opts:[
+      "操场上热闹极了。",
+      "同学们都在加油。",
+      "小胖把绳子往腰上一绕，整个人往后坐，脖子上的青筋都鼓了出来。",
+      "两个班的人都来了。"],
+     a:2, why:"点就是把镜头推近，只拍一个人的一个动作。A、B、D 都是远景。"},
+
+    {t:"choice", q:"下面哪一段最符合“心情有起伏”？", opts:[
+      "我很开心，我们玩得很开心，结束时还是很开心。",
+      "一开始我信心满满，第二轮连输两局时手都凉了，直到最后一次我才咬着牙扳了回来。",
+      "这个游戏很好玩，我以后还想玩。",
+      "游戏规则是这样的：先分成两组，然后……"],
+     a:1, why:"有起有落才叫过程。从“信心满满”到“手都凉了”再到“扳回来”，读者才跟得住。"},
+
+    {t:"fill", q:"场面描写要“点面结合”：“全班都笑翻了”是【　　】，“同桌笑得趴在桌上直捶桌面”是点。",
+     as:[["面"]],
+     why:"记住口诀：面是人群，点是一个人；先面后点再回面。"},
+
+    {t:"open", q:"用 100 字左右写一段游戏的高潮，要求：一处“面”、一处“点”、一处声音、一处“我”的心理。",
+     ref:"场上一下子静了，又“轰”地炸开——两边的人都往前涌，老师的哨子吹了三声都压不住。我死死盯着中间那条红绸带，它朝我们这边挪了半寸，又被拽了回去。排头的王越把脚后跟抵进土里，鞋底蹭出两道白印，嘴里挤出一声“再——来——”。我的手心全是汗，心里只剩一个念头：别松，千万别松。",
+     points:["有全场的“面”（人群、声音）","有一个人的“点”（具体动作）","有声音描写（哨子、喊声）","有“我”心里想的","不少于 100 字"],
+     why:"这四样凑齐，一个高潮段就立住了。写别的比赛、别的游戏都能套。"},
+
+    {t:"open", q:"给《记一次___游戏》写开头和结尾各一句，要求开头不用“今天我们玩了一个游戏”，结尾不用“真开心”。",
+     ref:"开头：粉笔灰还没落定，讲台上的黑板擦就被陈老师扣在了手心里——“击鼓传花，输的人上来唱一首。”／结尾：下课铃响了很久，教室里还有人在用手指敲桌子，“咚、咚、咚”，像鼓点没停。",
+     points:["开头直接从一个动作或一句话切入","结尾留了一个画面或声音","没有用到被禁的说法","两句能互相呼应"],
+     why:"开头用动作或对话切入、结尾用余音收束，是最好用的两招，哪一类作文都能用。"}
+  ]
+},
+{
+  id:"u7", title:"单元七 · 写信（格式分最好拿）",
+  tip:"考点：书信五部分一个都不能少，位置也不能错。格式错了，内容再好也扣分。",
+  passage:{ title:"书信的五个部分", html:`
+    <table>
+      <tr><th>部分</th><th>写在哪儿</th><th>样子</th></tr>
+      <tr><td>① 称呼</td><td><b>顶格</b>写在第一行，后面加<b>冒号</b></td><td>亲爱的外婆：</td></tr>
+      <tr><td>② 问候语</td><td>另起一行，<b>空两格</b></td><td>　　您好！</td></tr>
+      <tr><td>③ 正文</td><td>另起一行，空两格；一件事一段</td><td>　　最近学校……</td></tr>
+      <tr><td>④ 祝福语</td><td>“祝”<b>空两格</b>，“身体健康”<b>另起一行顶格</b></td><td>　　祝<br>身体健康！</td></tr>
+      <tr><td>⑤ 署名和日期</td><td>都写在<b>右下角</b>，署名在上，日期在下</td><td>您的外孙　明明<br>2026 年 11 月 24 日</td></tr>
+    </table>
+    <p class="mat">最容易错的三处</p>
+    <p>① 称呼后面写成了逗号或者不写；② “祝”和“身体健康”挤在同一行；③ 忘了写日期。</p>
+    <p class="mat">内容上的提醒</p>
+    <p>给长辈用<b>“您”</b>。信里要有<b>具体的事</b>，不能通篇“我很想您，您要注意身体”。最好在结尾<b>问一句对方的事</b>，这封信才像在和人说话。</p>`},
+  items:[
+    {t:"choice", q:"书信里称呼后面应该用什么标点？", opts:[
+      "逗号",
+      "冒号",
+      "句号",
+      "不用标点"],
+     a:1, why:"称呼顶格写，后面必须是冒号。这是最常考也最容易丢的一分。"},
+
+    {t:"choice", q:"下面哪一种写法是对的？", opts:[
+      "　　祝您身体健康！（和正文写在同一段）",
+      "祝身体健康！（两个都顶格写在一行）",
+      "　　祝 / 换行后顶格写：身体健康！",
+      "身体健康！（直接写在署名后面）"],
+     a:2, why:"“祝”空两格另起一行，祝福的内容另起一行顶格。这是书信格式里最有特点的一处。"},
+
+    {t:"choice", q:"署名和日期应该写在哪里？", opts:[
+      "信的开头，称呼上面",
+      "正文结束后另起一行顶格",
+      "信的右下角，署名在上日期在下",
+      "信的左下角"],
+     a:2, why:"右下角，先署名后日期，两行。日期一定要写，漏了要扣格式分。"},
+
+    {t:"fill", q:"给外婆写信，称呼那一行应该写成：【　　】",
+     as:[["亲爱的外婆：","外婆：","敬爱的外婆："]],
+     why:"顶格 + 称呼 + 冒号。加上“亲爱的”“敬爱的”更合适，但冒号绝对不能少。"},
+
+    {t:"choice", q:"下面哪一段正文写得最好？", opts:[
+      "外婆，我很想您，您要注意身体，天冷了多穿衣服，我会好好学习的。",
+      "外婆，上周我们学校运动会，我报了跳绳。一分钟跳了一百二十八下，比上学期多了三十下。您教我的那个“手腕甩、脚尖点”的办法真管用。",
+      "外婆您好，我最近学习很好，身体很好，一切都好，您不用担心。",
+      "外婆，我很好，您也要很好。"],
+     a:1, why:"B 有具体的事、具体的数字，还把外婆写了进去。信里有“我们共同的事”，才不是客套话。"},
+
+    {t:"open", q:"按完整格式给一位亲人写一封短信（100 字左右），必须包含五个部分，正文里要写一件具体的事，并且在结尾问对方一个问题。",
+     ref:"亲爱的外婆：\n　　您好！\n　　上周我们学校开运动会，我报了一分钟跳绳，跳了一百二十八下，比上学期多三十下。您教我的“手腕甩、脚尖点”真管用，我还把这招教给了同桌。\n　　您院子里那棵柿子树今年结了多少？等放假我就来数。\n　　祝\n身体健康！\n　　　　　　　　　　您的外孙　明明\n　　　　　　　　　　2026 年 11 月 24 日",
+     points:["称呼顶格，后面是冒号","问候语另起一行空两格","正文有一件具体的事（有细节或数字）","“祝”空两格，祝福语另起一行顶格","署名和日期在右下角，两行"],
+     why:"写信这类题，格式分是送分题。把这五条背下来，每次写完逐条对一遍。"}
+  ]
+},
+{
+  id:"u8", title:"单元八 · 我的心儿怦怦跳",
+  tip:"考点：写一件让心跳加速的事，重点是把那一瞬间的身体反应和心里活动写出来。",
+  passage:{ title:"写心情的四个层次", html:`
+    <table>
+      <tr><th>层次</th><th>例子</th><th>评价</th></tr>
+      <tr><td>① 直接说</td><td>我很紧张。</td><td>最差，等于没写</td></tr>
+      <tr><td>② 加程度词</td><td>我非常非常紧张。</td><td>还是没写</td></tr>
+      <tr><td>③ 写身体反应</td><td>手心全是汗，腿肚子发软，耳朵嗡嗡的。</td><td>合格</td></tr>
+      <tr><td>④ 写心里的念头 + 周围变慢</td><td>我脑子里只剩一句“别摔、别摔”，连讲台上的粉笔灰都看得一清二楚。</td><td>高分</td></tr>
+    </table>
+    <p class="mat">好用的身体反应清单</p>
+    <p>手心出汗／心跳得像擂鼓／喉咙发干／腿发软／耳朵发烫／声音发抖／手指不听使唤／脑子一片空白／听不见周围的声音</p>
+    <p class="mat">还要写“起伏”</p>
+    <p>心跳不是一直快。要写出：<b>什么时候开始跳 → 最快的那一下 → 后来怎么平下来的</b>。</p>`},
+  items:[
+    {t:"choice", q:"下面哪一句属于“高分写法”？", opts:[
+      "我紧张极了。",
+      "我的心怦怦直跳。",
+      "我的心跳得厉害，手指捏着纸的边角，把那一角都捏软了，耳边老师念名字的声音像隔着一层玻璃。",
+      "我非常害怕，特别特别怕。"],
+     a:2, why:"C 既有身体反应（捏纸、心跳），又写了“听不清”的感觉，把那一刻放慢了。"},
+
+    {t:"choice", q:"写《我的心儿怦怦跳》，下面哪个选材最不合适？", opts:[
+      "第一次一个人在家，听见门外有脚步声",
+      "上台演讲前被点到名的那一刻",
+      "介绍我家附近的公园一年四季的景色",
+      "考试卷子发下来、还没敢翻过来的那几秒"],
+     a:2, why:"题目要求写“心跳加速的一件事”，写景跑题。选材时先问一句：这件事里有没有那一瞬间？"},
+
+    {t:"choice", q:"这篇作文最该详写哪一段？", opts:[
+      "事情的起因",
+      "心跳最快的那几秒",
+      "事情的结果",
+      "当时的天气"],
+     a:1, why:"题目的题眼是“怦怦跳”。心跳最快的那一刻就是全文的高潮，必须写长、写慢。"},
+
+    {t:"fill", q:"不许直接写“害怕”，可以写“我【　　】”（写一个身体反应）。",
+     as:[["腿直打颤","后背一阵发凉","喉咙发干","手心全是汗","头皮发麻","一动也不敢动"]],
+     why:"情绪词是结论，身体反应才是证据。四年级起就要养成“不写结论写证据”的习惯。"},
+
+    {t:"open", q:"写一段 100 字左右的“最紧张的那几秒”，要求：至少三处身体反应 + 一句心里想的 + 一处“周围变慢/变静”的感觉。",
+     ref:"老师的手停在那摞卷子的中间。我的喉咙一下子干了，咽口水的声音自己都听得见。手指在桌肚里攥着橡皮，攥得发烫。心里只剩一个念头：别念我、别念我。教室里有人在翻书，纸页的声音被拉得很长很长，像慢动作。",
+     points:["至少三处身体反应","有一句心里的念头","有“变慢或变静”的感觉","没有直接写“紧张”两个字","不少于 100 字"],
+     why:"“周围变慢”是写紧张的高级招，几乎没有同学会用，用上就显眼。"},
+
+    {t:"open", q:"给这篇作文写一个结尾：心跳平复下来之后，写出你的一点收获或变化（50 字左右，不许写“这件事让我明白了一个道理”）。",
+     ref:"后来名字到底没念到我。我把橡皮松开时，手心里印着一道深深的红痕。现在每次轮到我上台，我都会先攥一下那块橡皮——它好像替我紧张过一回了。",
+     points:["写出了心跳平复下来的过程或细节","有一点变化或收获","没有用被禁的套话","结尾留了一个具体的东西（物件、动作、画面）"],
+     why:"把收获挂在一个具体的小物件上，比喊口号高明得多，也更容易被记住。"}
+  ]
+},
+{
+  id:"g1", title:"通用一 · 审题与选材",
+  tip:"练：圈限定词，判断跑题；三选一挑出最好写的材料。审题错，满盘皆输。",
+  passage:{ title:"审题就是圈限定词", html:`
+    <table>
+      <tr><th>题目</th><th>要圈的限定词</th><th>容易犯的错</th></tr>
+      <tr><td>《一件难忘的事》</td><td><b>一件</b>、难忘</td><td>写了三件</td></tr>
+      <tr><td>《我和妈妈的一次冲突》</td><td>我<b>和</b>妈妈、<b>冲突</b>、一次</td><td>通篇写妈妈多辛苦，没有冲突</td></tr>
+      <tr><td>《第一次做饭》</td><td><b>第一次</b>、做饭</td><td>写成了经常做饭</td></tr>
+      <tr><td>《窗外》</td><td>窗<b>外</b></td><td>大段写屋里的事</td></tr>
+    </table>
+    <p class="mat">选材三问</p>
+    <ol>
+      <li>这件事<b>我记得清细节吗</b>？（记不清 → 换）</li>
+      <li>这件事<b>只有我写得出来吗</b>？（人人都会写 → 尽量换）</li>
+      <li>这件事里<b>有没有一个波折</b>？（一帆风顺 → 不好写）</li>
+    </ol>`},
+  items:[
+    {t:"choice", q:"题目《我和爸爸的一次“较量”》，下面哪篇一定跑题？", opts:[
+      "写我和爸爸下象棋，我悔棋，他不让",
+      "写我和爸爸比赛跑步，我输了不服气",
+      "写爸爸每天怎么辛苦工作，我很感动",
+      "写我和爸爸争论该不该养狗，各说各的理"],
+     a:2, why:"题眼是“我和爸爸”“较量”，必须两个人针尖对麦芒。C 里既没有“我”的参与，也没有较量。"},
+
+    {t:"choice", q:"题目是《窗外》，下面哪种写法最切题？", opts:[
+      "写我在屋里做作业的过程",
+      "写我趴在窗台上，看见楼下修车师傅从早到晚的那半天",
+      "写我家房子有多大",
+      "写我最好的朋友"],
+     a:1, why:"题目限定了观察的位置和对象——窗外。有“我在窗内看”这个视角，文章才扣题。"},
+
+    {t:"choice", q:"写《一次失败的尝试》，下面哪个材料最好写？", opts:[
+      "我学骑车，摔了三次，第四次才歪歪扭扭骑出去",
+      "我做了一件好事，受到了表扬",
+      "我每天都按时完成作业",
+      "我们班得了流动红旗"],
+     a:0, why:"A 有明确的失败、有次数、有波折、有细节可写。另外三个和“失败”无关。"},
+
+    {t:"choice", q:"下面哪条选材思路最容易写出高分？", opts:[
+      "选一件大家都会写的事，比较保险",
+      "选一件自己记得住细节、中间出过岔子的小事",
+      "选一件特别大的事，显得有意义",
+      "选一件别人告诉我的事"],
+     a:1, why:"小事 + 细节 + 波折，是小学高分作文的通用配方。事情大不大不重要，写不写得细最重要。"},
+
+    {t:"fill", q:"审题第一步是圈出题目里的【　　】，比如“一件”“第一次”“最”“我和”。",
+     as:[["限定词","关键词","题眼"]],
+     why:"每次动笔前花十秒圈一圈，能避免掉最惨的那一类失分。"},
+
+    {t:"open", q:"给题目《那一次，我长大了》写三条候选材料，并说明你选哪一条、为什么。",
+     ref:"候选一：第一次独自去买菜，钱算错了被阿姨提醒。／候选二：妈妈住院那周，我学会了自己煮面。／候选三：弟弟摔了，我没哭，先扶他起来。／我选二：有连续几天的过程，有一个具体的波折（第一次煮糊了），而且“长大”不是靠嘴说，是靠动作体现出来的。",
+     points:["写了三条候选","每条都是一件具体的事","说明了选哪条","理由扣住了细节多、有波折、能体现题眼"],
+     why:"养成“先列三个再挑一个”的习惯，比抓到什么写什么稳得多。"}
+  ]
+},
+{
+  id:"g2", title:"通用二 · 列提纲与详略",
+  tip:"练：两分钟列出提纲；判断哪段该详、哪段该略；把详写的那段撑起来。",
+  passage:{ title:"详略的判断标准", html:`
+    <p><b>一句话：扣题的详写，不扣题的略写。</b></p>
+    <table>
+      <tr><th>题目</th><th>详写</th><th>略写</th></tr>
+      <tr><td>《一次难忘的运动会》</td><td>我参加的那个项目的比赛过程</td><td>开幕式、别的班的项目</td></tr>
+      <tr><td>《学做一道菜》</td><td>下锅、翻炒、手忙脚乱的那几分钟</td><td>去超市买菜的路上</td></tr>
+      <tr><td>《我的好朋友》</td><td>最能体现他性格的那一件事</td><td>外貌、认识的经过</td></tr>
+    </table>
+    <p class="mat">详写段的“撑开”公式</p>
+    <p><b>拆动作（3-4 个小动作）＋ 一句对话 ＋ 一句心理 ＋ 一处别人的反应 ＋ 一个声音或画面</b>＝ 轻松 150 字。</p>`},
+  items:[
+    {t:"choice", q:"写《一次难忘的运动会》，下面哪部分最该详写？", opts:[
+      "早上几点起床、怎么到学校",
+      "开幕式上各班入场的顺序",
+      "我跑 400 米最后一圈冲刺的那段",
+      "运动会结束后怎么回家"],
+     a:2, why:"扣住“难忘”和“我”的那一段才是重点。其余都是过场，一两句带过。"},
+
+    {t:"choice", q:"一篇 400 字的写事作文，经过部分大约应该占多少？", opts:[
+      "五十字左右",
+      "一百字左右",
+      "两百字以上",
+      "越少越好"],
+     a:2, why:"经过是正文的主体，至少占一半。起因、结果、开头结尾加起来不超过一半。"},
+
+    {t:"choice", q:"下面这个提纲最大的问题是什么？“开头：那天下雨。／起因：妈妈让我去买酱油，我不想去，我们吵了几句，我摔门出去，雨很大，我没带伞。／经过：我买了酱油回家。／结果：妈妈给我擦头发。／结尾：我很感动。”", opts:[
+      "没有开头",
+      "起因写得比经过还细，详略颠倒了",
+      "字数太少",
+      "没有写天气"],
+     a:1, why:"经过只有一句“我买了酱油回家”，而起因却铺了四句。提纲阶段就该把笔墨挪到经过上去。"},
+
+    {t:"fill", q:"判断一段该不该详写，只要问一句：这一段【　　】吗？扣题就详，不扣题就略。",
+     as:[["扣题","扣住题目","和题目有关"]],
+     why:"这是详略唯一的标准，比“精彩不精彩”可靠得多。"},
+
+    {t:"open", q:"给《一次小小的失误》列提纲（五部分），并在每一部分后面标上“详”或“略”和大致字数。",
+     ref:"开头（略·40）：那瓶墨水现在还在我书包最里面的夹层。／起因（略·50）：小组展板要我写标题，我自告奋勇。／经过（详·200）：我端着墨水走过去，脚被椅子腿绊了一下；瓶子脱手，墨汁在展板右下角炸开一片；全组人都停下来看我；我蹲下去用纸巾擦，越擦越黑；组长说了句“算了，改成一棵树吧”。／结果（略·60）：我们把那片墨改成了一棵歪脖子树，展板拿了第二。／结尾（略·40）：现在看见那棵树，我还会想起手滑的那一下。",
+     points:["五个部分齐全","标了详略和字数","详写的是“经过”，字数最多","经过里至少有三个小步骤或一句对话"],
+     why:"提纲写到这个细度，正文基本就是照抄加扩写，考场上最省时间。"},
+
+    {t:"open", q:"用“撑开公式”把这句话写成 150 字左右的详写段：“我帮奶奶穿针，穿了好几次才穿上。”",
+     ref:"奶奶把针递过来时，线头已经被她捻得尖尖的。我左手捏针，右手捏线，眯起一只眼睛，线头到了针鼻跟前又歪了出去。第二次我把线往舌尖上抿了抿，再送，还是差一点点。奶奶在旁边笑：“别憋气，憋气手就抖。”我吸了一口气，手腕贴住膝盖稳住，第三次线头“哧”地钻了过去。奶奶“哎”了一声，把老花镜往上推了推，说现在该她谢谢我了。",
+     points:["有三个以上连续的小动作","有一句人物对话","有“我”的感觉或心理","有别人的反应","有声音或细节画面，字数够 150"],
+     why:"同一个公式可以套在任何一个详写段上——穿针、系鞋带、打鸡蛋、投篮，全都适用。"}
+  ]
+},
+{
+  id:"g3", title:"通用三 · 顺序、过渡与分段",
+  tip:"练：按顺序排段落；选合适的过渡句；判断该在哪里分段。一逗到底、不分段最容易丢分。",
+  passage:{ title:"什么时候要另起一段", html:`
+    <ol>
+      <li><b>时间变了</b>：第二天、过了一个星期；</li>
+      <li><b>地点变了</b>：走出校门、来到河边；</li>
+      <li><b>说话的人变了</b>：对话要一人一段；</li>
+      <li><b>意思变了</b>：从写景转到写事、从起因转到经过。</li>
+    </ol>
+    <p class="mat">过渡的两种做法</p>
+    <p><b>过渡词</b>：接着、然后、没过多久、就在这时、直到……才；<br>
+    <b>过渡句</b>（更好）：“风筝终于飞起来了，可麻烦也跟着来了。”——既收上文，又起下文。</p>`},
+  items:[
+    {t:"choice", q:"下面哪一句是最好的过渡句？", opts:[
+      "然后我们就继续玩了。",
+      "风筝终于飞起来了，可麻烦也跟着来了。",
+      "我们玩了很久。",
+      "下面我来说说第二件事。"],
+     a:1, why:"好的过渡句一半收上文（风筝飞起来了），一半开下文（麻烦来了），读者自然被带着往下走。"},
+
+    {t:"choice", q:"写游记类作文，最常用的顺序是什么？", opts:[
+      "时间顺序",
+      "游览顺序（方位）",
+      "重要程度顺序",
+      "随便写"],
+     a:1, why:"游记按脚步走：一进门——穿过小桥——沿着石阶往上——走到山顶。方位清楚，读者才跟得上。"},
+
+    {t:"choice", q:"下面哪种情况必须另起一段？", opts:[
+      "句子太长了",
+      "用了一个成语",
+      "换了另一个人说话",
+      "写到了天气"],
+     a:2, why:"对话要一人一段，这是小学作文的硬规矩，也是让卷面变好看的最快办法。"},
+
+    {t:"choice", q:"下面这段话应该在哪儿分段？“我们在河边放风筝。风筝飞得很高。第二天下起了大雨，我们只好待在家里折纸飞机。”", opts:[
+      "不用分段",
+      "在“风筝飞得很高”后面分，因为时间变了",
+      "在第一句后面分",
+      "每句都分一段"],
+     a:1, why:"“第二天”是明显的时间转换信号，必须另起一段。"},
+
+    {t:"fill", q:"写观察类作文，段与段之间常用表示时间变化的词来过渡，比如“过了三天”“【　　】”。",
+     as:[["又过了一个星期","第二天","一个星期后","没过几天","半个月后"]],
+     why:"把这一类词准备好，写连续观察或写长过程的时候就不会卡住。"},
+
+    {t:"open", q:"下面四句顺序乱了，请按游览顺序重新排列，并在中间加上两个过渡句。①山顶的风很大，把帽子吹跑了 ②一进公园大门，就看见两排高大的梧桐 ③沿着石阶往上爬，台阶越来越陡 ④穿过梧桐道，一座小石桥横在前面",
+     ref:"②④③①。过渡句示例：“走完梧桐道，脚下的路忽然窄了。”（接在②④之间）；“过了桥，真正的爬山才开始。”（接在④③之间）。",
+     points:["顺序是 ②④③①","按游览的脚步，不是按重要程度","加了两个过渡句","过渡句既收上文又启下文"],
+     why:"游记的顺序题几乎年年考。记住：按脚走到哪儿写到哪儿，不能跳来跳去。"}
+  ]
+},
+{
+  id:"g4", title:"通用四 · 自己改作文",
+  tip:"练：找错别字和标点、断长句、删跑题句、把空句升格。改作文的能力，才是真正的写作能力。",
+  passage:{ title:"四遍修改法", html:`
+    <ol>
+      <li><b>一遍找错别字</b>：的地得、在再、做作、已以。</li>
+      <li><b>二遍看标点</b>：有没有一逗到底？对话的引号冒号配对了吗？</li>
+      <li><b>三遍读句子</b>：读出声，哪儿卡住就改哪儿；超过 25 个字的句子考虑断成两句。</li>
+      <li><b>四遍看结构</b>：有没有跑题的句子要删？详略有没有反？分段够不够？</li>
+    </ol>
+    <p class="mat">对话的标点</p>
+    <p>他说<b>：“</b>我来试试。<b>”</b>／“我来试试<b>，</b>”他说<b>，</b>“你让开一点。”／“我来试试<b>。</b>”他说。</p>
+    <p class="mat">升格练习的方向</p>
+    <p>结论句 → 画面句；形容词 → 动作；长句 → 短句；重复 → 删掉。</p>`},
+  items:[
+    {t:"choice", q:"下面哪一句的标点是对的？", opts:[
+      "他说，“我来试试。”",
+      "他说：“我来试试。”",
+      "他说：我来试试。",
+      "他说“我来试试”。"],
+     a:1, why:"“某某说”在前面，后面用冒号加引号，句号放在引号里面。这是对话最基本的格式。"},
+
+    {t:"choice", q:"下面哪个句子该断开？", opts:[
+      "雨停了。",
+      "我跑到楼下，发现自行车不见了。",
+      "那天早上我起得很早因为要去参加比赛所以我很紧张吃了两口饭就背着书包出门了一路上我都在想万一输了怎么办。",
+      "他笑着朝我挥了挥手。"],
+     a:2, why:"一句话塞了四五个意思，中间全是没有标点的连接。至少要断成三句，并补上句号。"},
+
+    {t:"choice", q:"《记一次大扫除》里，下面哪一句应该删掉？", opts:[
+      "我举着拖把，把讲台底下那块黑印来回磨了十几下。",
+      "小雨踮着脚擦窗户的上沿，袖子上全是水。",
+      "我家的小狗最近换了新狗粮，特别爱吃。",
+      "下课铃响时，教室地板亮得能照出人影。"],
+     a:2, why:"和大扫除毫无关系，是典型的跑题句。改作文第四遍就是专门抓这种句子。"},
+
+    {t:"choice", q:"“我高兴得不得了，心里特别特别开心，非常高兴。”这句话的毛病是什么？", opts:[
+      "有错别字",
+      "同一个意思重复三遍，等于一句话",
+      "标点错了",
+      "太短了"],
+     a:1, why:"重复不是具体。应该删到只剩一句，再换成动作：我蹦起来，一路小跑着把卷子塞给妈妈看。"},
+
+    {t:"fill", q:"修改符号里，要在漏字的地方补字，用的是【　　】号。",
+     as:[["增补","增补号","补充"]],
+     why:"课本要求掌握四个符号：删除号、增补号、对调号、改正号。考试里可能直接考。"},
+
+    {t:"open", q:"修改下面这段话（至少改三处：断句、删跑题句、把结论句改成画面句）：“今天我们大扫除我很高兴大家都很努力我家小狗也很可爱我擦了窗户擦得很干净最后老师表扬了我们我们都特别特别开心。”",
+     ref:"今天我们大扫除。我领到的活儿是擦窗户。我踩着凳子，先用湿抹布把玻璃上的灰抹开，再换干布顺着一个方向打圈，擦到最后，窗玻璃亮得能照见对面楼的阳台。老师走过来，用指关节在玻璃上敲了敲，说了句“干净”。我和小雨对看了一眼，谁也没说话，可两个人都笑了。",
+     points:["把一长串断成了几个句子，标点补全","删掉了和大扫除无关的小狗那句","把“很高兴”“很干净”换成了具体画面","保留了原来的事情，没有另写一件"],
+     why:"改作文的三板斧：断句、删废句、把结论换成画面。会了这三样，自己就能把作文往上提一档。"},
+
+    {t:"open", q:"把下面这个结尾升格：“这次活动真有意义，我以后一定要多参加这样的活动。”（50 字左右，要求留一个画面）",
+     ref:"回家的路上，书包里那包没用完的种子一直硌着我的背。我想，等明年开春，阳台上那只空花盆总算有东西可以装了。",
+     points:["去掉了“真有意义”这类套话","留下了一个具体的东西或画面","有自己的想法或打算，但不是喊口号","句子通顺，字数够"],
+     why:"套话结尾人人会写，画面结尾只有改过的人会写。这是最后两分钟最划算的修改。"}
+  ]
+},
+];
+
+/* ===================== 引擎 ===================== */
+const TOTAL = DATA.reduce((n,s)=>n+s.items.length,0);
+const SET_TOTAL={}; DATA.forEach(s=>SET_TOTAL[s.id]=s.items.length);
+const KEY="writing-unit-v1";
+let saved={}; try{ saved=JSON.parse(localStorage.getItem(KEY)||"{}"); }catch(e){ saved={}; }
+const correct=new Set(saved.correct||[]), wrong=new Set(saved.wrong||[]),
+      half=new Set(saved.half||[]), fixedS=new Set(saved.fixed||[]), flag=new Set(saved.flag||[]);
+const picked=saved.picked||{};
+const INDEX={};
+const CN=["①","②","③","④","⑤","⑥","⑦","⑧"];
+const TAG={choice:"选择",fill:"填空",open:"简答"};
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+// 批改填空：去掉空格和常见标点再比，避免因为一个句号判错
+const norm=s=>String(s).replace(/[\s，,。．.、；;：:！!？?"'“”‘’（）()《》【】]/g,"").trim();
+
+function render(){
+  const app=document.getElementById("app"), jump=document.getElementById("jump");
+  DATA.forEach(set=>{
+    jump.insertAdjacentHTML("beforeend",`<a href="#${set.id}">${set.title.split(" · ")[0]}</a>`);
+    const sec=document.createElement("section");
+    sec.className="set"; sec.id=set.id;
+
+    // 习作这边的"短文"其实是例子，所以 passage 允许整段写成 html，也允许没有
+    const p=set.passage;
+    const body = !p ? "" : (p.html ? p.html
+      : p.paras.map((t,i)=>`<p><span class="pn">${CN[i]}</span>${esc(t)}</p>`).join(""));
+    sec.innerHTML=`<h2>${set.title}</h2><p class="tip">${set.tip}</p>
+      <div class="setbar">
+        <button class="primary" data-act="check" data-set="${set.id}">检查本节</button>
+        <button data-act="reveal" data-set="${set.id}">显示本节答案</button>
+        <button data-act="clear" data-set="${set.id}">清空重做</button>
+        <span class="sc" id="sc-${set.id}"></span>
+      </div>
+      ${p?`<div class="passage"><h3>${esc(p.title)}</h3>${p.by?`<div class="by">${esc(p.by)}</div>`:""}${body}</div>`:""}`;
+
+    set.items.forEach((it,i)=>{
+      const id=`${set.id}-${i}`;
+      INDEX[id]={item:it,setId:set.id,setTitle:set.title.split(" · ")[0],num:i+1};
+      const div=document.createElement("div");
+      div.className="item"; div.id="it-"+id;
+
+      // 题干：fill 的 【　　】 换成输入框
+      let n=0, qh="";
+      if(it.t==="fill"){
+        it.q.split(/(【.*?】)/).forEach(seg=>{
+          if(/^【.*?】$/.test(seg)){ qh+=`<input class="blank" id="in-${id}-${n}" autocomplete="off">`; n++; }
+          else qh+=esc(seg);
+        });
+        it._n=n;
+      } else qh=esc(it.q);
+
+      const head=`<p class="q"><span class="n">${i+1}.</span><span class="tag">${TAG[it.t]}</span>${qh}<span class="badge" id="bd-${id}"></span></p>`;
+
+      let body2="", rv="";
+      if(it.t==="choice"){
+        body2=`<div class="opts" id="op-${id}">`+it.opts.map((o,k)=>
+          `<button class="opt" data-act="pick" data-id="${id}" data-k="${k}">${String.fromCharCode(65+k)}. ${esc(o)}</button>`).join("")+`</div>`;
+        rv=`<b>${String.fromCharCode(65+it.a)}. ${esc(it.opts[it.a])}</b><span class="why">${esc(it.why)}</span>`;
+      }else if(it.t==="fill"){
+        rv=`<b>${it.as.map(a=>esc(a[0])).join("　|　")}</b>`+
+           `<span class="why">（意思对即可）${esc(it.why)}</span>`;
+      }else{
+        body2=`<textarea class="ans" id="tx-${id}" placeholder="写在这里……想好了再写，写完点下面的「对照参考答案」"></textarea>
+          <div class="selfbar" id="sb-${id}"><span class="lab">对照之后，自己评一下：</span>
+            <button class="self" data-act="self" data-id="${id}" data-v="1">✓ 答对了</button>
+            <button class="self" data-act="self" data-id="${id}" data-v="0.5">◐ 答得不全</button>
+            <button class="self" data-act="self" data-id="${id}" data-v="0">✗ 没答对</button>
+          </div>`;
+        rv=`<b>参考答案：</b>${esc(it.ref)}<ul>`+
+           it.points.map(x=>`<li>${esc(x)}</li>`).join("")+`</ul>`+
+           `<span class="why">${esc(it.why)}</span>`;
+      }
+
+      const mainBtn = it.t==="open"
+        ? `<button class="primary" data-act="show" data-id="${id}">对照参考答案</button>`
+        : `<button data-act="one" data-id="${id}">检查</button>
+           <button data-act="ans" data-id="${id}">答案</button>`;
+
+      div.innerHTML=head+body2+`
+        <div class="row">
+          ${mainBtn}
+          <button class="flag" data-act="flag" data-id="${id}" title="标记这道题，之后要复习">🚩</button>
+        </div>
+        <div class="fb" id="fb-${id}"></div>
+        <div class="reveal" id="rv-${id}">${it.t==="open"?"":"<b>参考答案：</b>"}${rv}</div>`;
+      sec.appendChild(div);
+    });
+    app.appendChild(sec);
+  });
+
+  // 回填上次做的内容
+  const inputs=saved.inputs||{};
+  Object.keys(inputs).forEach(k=>{ const el=document.getElementById("in-"+k); if(el) el.value=inputs[k]; });
+  const texts=saved.texts||{};
+  Object.keys(texts).forEach(k=>{ const el=document.getElementById("tx-"+k); if(el) el.value=texts[k]; });
+  Object.keys(picked).forEach(id=>{
+    const r=INDEX[id]; if(!r) return;
+    if(r.item.t==="choice"){
+      const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${picked[id]}"]`);
+      if(b) b.classList.add("pick");
+    }else if(r.item.t==="open"){
+      setShow(id,true);   // 上次已经自评过，答案保持展开，按钮文字也要跟着对
+      const b=document.querySelector(`button.self[data-id="${id}"][data-v="${picked[id]}"]`);
+      if(b) b.classList.add("pick");
+    }
+  });
+  correct.forEach(id=>{ const r=INDEX[id]; if(!r) return;
+    if(r.item.t==="choice"){ const b=document.querySelector(`button.opt[data-id="${id}"][data-k="${r.item.a}"]`); if(b){b.classList.remove("pick");b.classList.add("good");} }
+    else if(r.item.t==="fill"){ for(let k=0;k<(r.item._n||0);k++){ const e=document.getElementById(`in-${id}-${k}`); if(e) e.classList.add("good"); } }
+  });
+  DATA.forEach(s=>updateSetScore(s.id));
+  updateTotal(); Object.keys(INDEX).forEach(updateMarks); renderMistakes();
+}
+
+function save(){
+  const inputs={}, texts={};
+  document.querySelectorAll("input.blank").forEach(el=>{ if(el.value.trim()) inputs[el.id.slice(3)]=el.value; });
+  document.querySelectorAll("textarea.ans").forEach(el=>{ if(el.value.trim()) texts[el.id.slice(3)]=el.value; });
+  localStorage.setItem(KEY,JSON.stringify({inputs,texts,picked,correct:[...correct],
+    wrong:[...wrong],half:[...half],fixed:[...fixedS],flag:[...flag]}));
+}
+
+function checkOne(id){
+  const r=INDEX[id]; if(!r) return;
+  const it=r.item, fb=document.getElementById("fb-"+id);
+  let res=null; fb.className="fb show";
+
+  if(it.t==="choice"){
+    const sel=picked[id];
+    if(sel===undefined){ fb.innerHTML='<span class="note">先选一个～</span>'; correct.delete(id); }
+    else{
+      document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach((b,k)=>{
+        b.className="opt"+(k===it.a?" good":(k===sel?" bad":""));
+      });
+      if(sel===it.a){ correct.add(id); res=true; fb.innerHTML='<span class="good">✓ 对！</span> <span class="why">'+esc(it.why)+'</span>'; }
+      else{ correct.delete(id); res=false;
+        fb.innerHTML='<span class="bad">✗ 应该选 '+String.fromCharCode(65+it.a)+'</span> <span class="why">'+esc(it.why)+'</span>'; }
+    }
+  }else if(it.t==="fill"){
+    let all=true, empty=true, firstBad=-1;
+    it.as.forEach((acc,k)=>{
+      const el=document.getElementById(`in-${id}-${k}`), v=norm(el.value);
+      if(v) empty=false;
+      const good = v!=="" && acc.some(a=>norm(a)===v);
+      el.className="blank"+(v?(good?" good":" bad"):"");
+      if(!good){ all=false; if(firstBad<0) firstBad=k; }
+    });
+    if(empty){ fb.innerHTML='<span class="note">还没写哦～</span>'; correct.delete(id); }
+    else if(all){ correct.add(id); res=true; fb.innerHTML='<span class="good">✓ 对！</span> <span class="why">'+esc(it.why)+'</span>'; }
+    else{ correct.delete(id); res=false;
+      fb.innerHTML='<span class="bad">✗ 第 '+(firstBad+1)+' 个空还不对。</span>'+
+        ' <span class="note">（意思对但写法不同，可以点「答案」自己判断）</span> <span class="why">💡 '+esc(it.why)+'</span>'; }
+  }else{
+    // 开放题：按自评结果计分
+    const v=picked[id];
+    if(v===undefined){ fb.innerHTML='<span class="note">先点「对照参考答案」，再自己评一下～</span>'; correct.delete(id); }
+    else if(v==="1"){ correct.add(id); half.delete(id); res=true; fb.innerHTML='<span class="good">✓ 自评：答对了</span>'; }
+    else if(v==="0.5"){ correct.delete(id); res=false; half.add(id);
+      fb.innerHTML='<span class="note">◐ 自评：答得不全 —— 对照上面的要点，把漏掉的补上。</span>'; }
+    else{ correct.delete(id); half.delete(id); res=false;
+      fb.innerHTML='<span class="bad">✗ 自评：没答对 —— 收进错题本，过两天再写一遍。</span>'; }
+  }
+
+  if(res===false){ wrong.add(id); fixedS.delete(id); }
+  else if(res===true){ half.delete(id); if(wrong.has(id)){ wrong.delete(id); fixedS.add(id);
+    fb.innerHTML+=' <span class="note">👏 错题订正成功！</span>'; } }
+  updateMarks(id); renderMistakes(); updateSetScore(r.setId); updateTotal(); save();
+}
+
+function updateMarks(id){
+  const el=document.getElementById("it-"+id), bd=document.getElementById("bd-"+id);
+  if(!el) return;
+  const isHalf=half.has(id)&&!correct.has(id);
+  el.classList.toggle("wrong",wrong.has(id)&&!isHalf);
+  el.classList.toggle("half",isHalf);
+  el.classList.toggle("fixed",fixedS.has(id)&&!wrong.has(id));
+  el.classList.toggle("flagged",flag.has(id)&&!wrong.has(id)&&!fixedS.has(id)&&!isHalf);
+  const fb=document.querySelector(`button.flag[data-id="${id}"]`); if(fb) fb.classList.toggle("on",flag.has(id));
+  if(isHalf) bd.className="badge half",bd.textContent="◐ 不全";
+  else if(wrong.has(id)) bd.className="badge wrong",bd.textContent="✗ 错题";
+  else if(fixedS.has(id)) bd.className="badge fixed",bd.textContent="✓ 已订正";
+  else if(correct.has(id)) bd.className="badge ok",bd.textContent="✓";
+  else if(flag.has(id)) bd.className="badge",bd.textContent="🚩";
+  else bd.className="badge",bd.textContent="";
+}
+
+function renderMistakes(){
+  const ids=Object.keys(INDEX).filter(id=>wrong.has(id)||flag.has(id));
+  document.getElementById("msum").textContent=
+    `📕 错题本（${wrong.size} 道待订正${flag.size?"，🚩 "+flag.size+" 道待复习":""}）`;
+  document.getElementById("mlist").innerHTML = !ids.length
+    ? '<p class="empty">还没有错题 👍 做错的题会自动收进这里，点题目可以跳回去订正。</p>'
+    : '<ol class="mlist">'+ids.map(id=>{const r=INDEX[id];
+        const q=r.item.q.replace(/【.*?】/g,"____");
+        return `<li>${half.has(id)?"◐":"✗"} <a href="#it-${id}" data-go="${id}">${esc(q.length>30?q.slice(0,30)+"…":q)}</a>
+        <span class="where">（${r.setTitle} 第 ${r.num} 题）</span></li>`;}).join("")+'</ol>';
+  document.getElementById("markStat").textContent=
+    `错题 ${wrong.size} 道 · 已订正 ${fixedS.size} 道 · 标记 ${flag.size} 道`;
+  DATA.forEach(s=>{ let has=false; eachId(s.id,id=>{ if(wrong.has(id)||flag.has(id)) has=true; });
+    document.getElementById(s.id).classList.toggle("nowrong",!has); });
+}
+
+function eachId(setId,fn){
+  DATA.find(s=>s.id===setId).items.forEach((it,i)=>fn(`${setId}-${i}`,it));
+}
+function updateSetScore(setId){
+  let n=0; eachId(setId,id=>{ if(correct.has(id)) n++; });
+  const t=SET_TOTAL[setId];
+  document.getElementById("sc-"+setId).textContent=`本节：${n} / ${t}`+(n===t?"  🎉 全对！":"");
+}
+function updateTotal(){
+  document.getElementById("totalTxt").textContent=`${correct.size} / ${TOTAL} 题答对`;
+  document.getElementById("totalBar").style.width=(correct.size/TOTAL*100)+"%";
+}
+/* 开放题的「对照参考答案」是可以收起的：孩子手滑点开，或者想再想一想
+   自己重答一遍，都能把答案盖回去。参考答案、自评按钮、按钮文字一起切换。 */
+function setShow(id,on){
+  const rv=document.getElementById("rv-"+id), sb=document.getElementById("sb-"+id);
+  if(!rv) return;
+  rv.classList.toggle("show",on);
+  if(sb) sb.classList.toggle("show",on);
+  const b=document.querySelector(`button[data-act="show"][data-id="${id}"]`);
+  if(b) b.textContent = on ? "收起参考答案" : "对照参考答案";
+}
+function clearItem(id){
+  const r=INDEX[id], it=r.item;
+  delete picked[id];
+  document.querySelectorAll(`button.opt[data-id="${id}"],button.self[data-id="${id}"]`)
+    .forEach(b=>b.className=b.classList.contains("self")?"self":"opt");
+  for(let k=0;k<(it._n||0);k++){ const e=document.getElementById(`in-${id}-${k}`); if(e){ e.value=""; e.className="blank"; } }
+  const tx=document.getElementById("tx-"+id); if(tx) tx.value="";
+  document.getElementById("fb-"+id).className="fb";
+  if(it.t==="open") setShow(id,false);
+  else document.getElementById("rv-"+id).classList.remove("show");
+  correct.delete(id); half.delete(id);
+}
+function flash(id){
+  const el=document.getElementById("it-"+id); if(!el) return;
+  document.body.classList.remove("only-wrong");
+  document.getElementById("btnOnlyWrong").textContent="只看错题 🔍";
+  el.scrollIntoView({behavior:"smooth",block:"center"});
+  el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),1200);
+}
+
+document.addEventListener("click",e=>{
+  const go=e.target.closest("a[data-go]"); if(go){ flash(go.dataset.go); return; }
+  const b=e.target.closest("button"); if(!b) return;
+  const act=b.dataset.act, id=b.dataset.id;
+  if(act==="pick"){
+    picked[id]=+b.dataset.k;
+    document.querySelectorAll(`button.opt[data-id="${id}"]`).forEach(x=>x.className="opt");
+    b.classList.add("pick"); save(); checkOne(id);
+  }
+  if(act==="self"){
+    picked[id]=b.dataset.v;
+    document.querySelectorAll(`button.self[data-id="${id}"]`).forEach(x=>x.className="self");
+    b.classList.add("pick"); save(); checkOne(id);
+  }
+  if(act==="show") setShow(id, !document.getElementById("rv-"+id).classList.contains("show"));
+  if(act==="one") checkOne(id);
+  if(act==="ans") document.getElementById("rv-"+id).classList.toggle("show");
+  if(act==="flag"){ flag.has(id)?flag.delete(id):flag.add(id); updateMarks(id); renderMistakes(); save(); }
+  if(act==="check") eachId(b.dataset.set,x=>checkOne(x));
+  if(act==="reveal"){
+    const on=b.textContent.indexOf("显示")>-1;
+    eachId(b.dataset.set,(x,it)=>{
+      if(it.t==="open") setShow(x,on);
+      else document.getElementById("rv-"+x).classList.toggle("show",on);
+    });
+    b.textContent=on?"隐藏本节答案":"显示本节答案";
+  }
+  if(act==="clear"){
+    eachId(b.dataset.set,x=>{ clearItem(x); updateMarks(x); });
+    updateSetScore(b.dataset.set); updateTotal(); renderMistakes(); save();
+  }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter"||!e.target.classList.contains("blank")) return;
+  const id=e.target.id.slice(3,e.target.id.lastIndexOf("-"));
+  const k=+e.target.id.slice(e.target.id.lastIndexOf("-")+1);
+  const next=document.getElementById(`in-${id}-${k+1}`);
+  if(next) next.focus(); else checkOne(id);
+});
+document.addEventListener("input",e=>{
+  if(e.target.classList.contains("blank")||e.target.classList.contains("ans")) save();
+});
+document.getElementById("btnOnlyWrong").addEventListener("click",function(){
+  const on=document.body.classList.toggle("only-wrong");
+  this.textContent=on?"显示全部题目 ↩":"只看错题 🔍";
+  if(on) document.getElementById("mbox").open=false;
+});
+document.getElementById("btnRedo").addEventListener("click",()=>{
+  const ids=[...wrong];
+  if(!ids.length){ alert("现在没有错题，太棒了 🎉"); return; }
+  ids.forEach(id=>{ clearItem(id); updateMarks(id); });
+  DATA.forEach(s=>updateSetScore(s.id)); updateTotal(); renderMistakes(); save(); flash(ids[0]);
+});
+document.getElementById("btnClearMarks").addEventListener("click",()=>{
+  if(!confirm("清除所有错题记录和🚩标记？（已写的答案会保留）")) return;
+  [...wrong,...fixedS,...flag,...half].forEach(id=>{
+    wrong.delete(id); fixedS.delete(id); flag.delete(id); half.delete(id); updateMarks(id); });
+  renderMistakes(); save();
+});
+render();
+</script>
+<script src="同步.js?v=202611241450" data-key="writing-unit-v1"></script>
+<script src="回到顶部.js"></script>
+<script src="检查更新.js?v=202611241450" data-build="202611241450"></script>
+</body>
+</html>
